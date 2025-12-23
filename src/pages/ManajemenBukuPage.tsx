@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Plus, Download, Filter, Eye, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -22,6 +23,7 @@ const BOOKS_DATA = [
 const ITEMS_PER_PAGE = 10;
 
 export function ManajemenBukuPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewModalOpen, setViewModalOpen] = useState(false);
@@ -54,11 +56,6 @@ export function ManajemenBukuPage() {
     }
   };
 
-  const handleViewBook = (book: (typeof BOOKS_DATA)[0]) => {
-    setSelectedBook(book);
-    setViewModalOpen(true);
-  };
-
   const handleDeleteBook = (book: (typeof BOOKS_DATA)[0]) => {
     setSelectedBook(book);
     setDeleteModalOpen(true);
@@ -67,29 +64,29 @@ export function ManajemenBukuPage() {
   return (
     <div className="space-y-6">
       {/* Search and Action Bar */}
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+      <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139]">
         <div className="flex gap-4 items-center">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+            <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="Cari"
+              placeholder="✨ Cari buku..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="pl-10 bg-gray-50 border-gray-300"
+              className="pl-10 bg-white border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
             />
           </div>
-          <Button onClick={() => setAddModalOpen(true)} className="gap-2 text-white bg-[#BE4139] hover:bg-[#A03A2F]">
+          <Button onClick={() => setAddModalOpen(true)} className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold">
             <Plus size={18} />
             Tambah Buku
           </Button>
-          <Button variant="outline" className="gap-2 border-gray-300 bg-transparent">
+          <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530] transition-all duration-300 font-semibold">
             <Download size={18} />
             Import
           </Button>
-          <Button variant="outline" className="gap-2 border-gray-300 bg-transparent">
+          <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530] transition-all duration-300 font-semibold">
             <Filter size={18} />
             Filter
           </Button>
@@ -97,48 +94,48 @@ export function ManajemenBukuPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-xl border-2 border-[#BE4139] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-[#BE4139] border-b-2 border-[#BE4139]">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">No</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Judul</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Penulis</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">ISBN</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Kategori</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Jumlah</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Action</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">No</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Judul</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Penulis</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">ISBN</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Kategori</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Jumlah</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {paginatedBooks.map((book) => (
-                <tr key={book.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-gray-700">{book.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{book.title}</td>
+                <tr key={book.id} className="hover:bg-gray-50 transition-all duration-200">
+                  <td className="px-6 py-4 text-sm text-gray-700 font-medium">{book.id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700 font-medium">{book.title}</td>
                   <td className="px-6 py-4 text-sm text-gray-700">{book.author}</td>
                   <td className="px-6 py-4 text-sm text-gray-700">{book.isbn}</td>
                   <td className="px-6 py-4 text-sm">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryBadgeColor(book.category)}`}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold shadow-sm ${getCategoryBadgeColor(book.category)}`}
                     >
                       {book.category}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{book.quantity}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.quantity}</td>
                   <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleViewBook(book)}
-                        className="p-2 hover:bg-gray-200 rounded transition-colors"
+                        onClick={() => navigate('/manajemen-buku/detail')}
+                        className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
                       >
-                        <Eye size={16} className="text-gray-600" />
+                        <Eye size={16} className="text-[#BE4139]" />
                       </button>
                       <button
                         onClick={() => handleDeleteBook(book)}
-                        className="p-2 hover:bg-gray-200 rounded transition-colors"
+                        className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
                       >
-                        <Trash2 size={16} className="text-[#BE4139]" />
+                        <Trash2 size={16} className="text-red-500" />
                       </button>
                     </div>
                   </td>
@@ -149,11 +146,11 @@ export function ManajemenBukuPage() {
         </div>
 
         {/* Pagination */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-center gap-2">
+        <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-2">
           <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            className="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-xl border-2 border-[#BE4139] text-[#BE4139] hover:bg-gray-50 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
           >
             Previous
           </button>
@@ -163,21 +160,21 @@ export function ManajemenBukuPage() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`px-3 py-2 rounded ${
+                className={`px-4 py-2 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
                   currentPage === page
-                    ? "bg-gray-900 text-white"
-                    : "border border-gray-300 text-gray-700 hover:bg-gray-100"
+                    ? "bg-[#BE4139] text-white shadow-lg"
+                    : "border-2 border-[#BE4139] text-[#BE4139] hover:bg-gray-50"
                 }`}
               >
                 {page}
               </button>
             );
           })}
-          {totalPages > 5 && <span className="text-gray-600">...</span>}
+          {totalPages > 5 && <span className="text-[#BE4139] font-bold">✨</span>}
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            className="px-3 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-xl border-2 border-[#BE4139] text-[#BE4139] hover:bg-gray-50 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
           >
             Next
           </button>

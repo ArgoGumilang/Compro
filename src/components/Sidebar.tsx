@@ -60,19 +60,19 @@ const Sidebar: React.FC = () => {
   }
 
   return (
-    <div className="w-52 bg-white border border-gray-200 shadow-md rounded-lg flex flex-col fixed left-0 top-[60px] bottom-0 z-40 m-0">
+    <div className="w-52 bg-gradient-to-b from-white to-red-50/30 border-r-2 border-[#BE4139]/20 shadow-xl flex flex-col fixed left-0 top-[60px] bottom-0 z-40 m-0">
       {/* User Profile Section */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b-2 border-[#BE4139]/20 bg-gradient-to-br from-[#BE4139]/5 to-orange-100/30">
         <div className="flex flex-col items-center">
-          <Avatar className="w-16 h-16 mb-4">
+          <Avatar className="w-16 h-16 mb-4 ring-4 ring-[#BE4139]/30 shadow-lg transform hover:scale-110 transition-all duration-300">
             <AvatarImage
               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop"
               alt="Dinda Desfira"
             />
             <AvatarFallback>DD</AvatarFallback>
           </Avatar>
-          <h3 className="font-semibold text-gray-900">Dinda Desfira</h3>
-          <p className="text-sm text-gray-500">Administrator</p>
+          <h3 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-[#BE4139] to-[#d94d43]">Dinda Desfira</h3>
+          <p className="text-xs text-[#BE4139] font-semibold mt-1">👑 Administrator</p>
         </div>
       </div>
 
@@ -90,31 +90,31 @@ const Sidebar: React.FC = () => {
                 <li key={item.id}>
                   <button
                     onClick={() => toggleDropdown(item.id)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-colors ${
-                      isParentActive || isOpen ? "bg-[#BE4139] text-white" : "text-gray-700 hover:bg-gray-100"
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                      isParentActive || isOpen ? "bg-gradient-to-r from-[#BE4139] to-[#d94d43] text-white shadow-lg" : "text-gray-700 hover:bg-gradient-to-r hover:from-[#BE4139]/10 hover:to-orange-100/50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Icon size={20} />
-                      <span className="font-medium">{item.label}</span>
+                      <span className="font-bold">{item.label}</span>
                     </div>
                     <ChevronDown 
                       size={16} 
-                      className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} 
+                      className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} 
                     />
                   </button>
                   {/* Dropdown Sub-items - Below the button */}
                   {isOpen && (
-                    <ul className="mt-1 bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                    <ul className="mt-1 bg-white border-2 border-[#BE4139]/20 rounded-xl shadow-md overflow-hidden">
                       {item.subItems?.map((subItem) => (
                         <li key={subItem.id}>
                           <NavLink
                             to={subItem.path}
                             className={({ isActive }) =>
-                              `block px-4 py-2 transition-colors text-sm border-b border-gray-100 last:border-b-0 ${
+                              `block px-4 py-2 transition-all duration-300 text-sm border-b border-[#BE4139]/10 last:border-b-0 ${
                                 isActive 
-                                  ? "text-[#BE4139] font-semibold bg-red-50" 
-                                  : "text-gray-600 hover:bg-gray-50"
+                                  ? "text-white bg-gradient-to-r from-[#BE4139] to-[#d94d43] font-bold" 
+                                  : "text-gray-600 hover:bg-gradient-to-r hover:from-[#BE4139]/5 hover:to-orange-50 font-semibold"
                               }`
                             }
                           >
@@ -133,13 +133,13 @@ const Sidebar: React.FC = () => {
                 <NavLink
                   to={item.path || "/"}
                   className={({ isActive }) =>
-                    `w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                      isActive ? "bg-[#BE4139] text-white" : "text-gray-700 hover:bg-gray-100"
+                    `w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                      isActive ? "bg-gradient-to-r from-[#BE4139] to-[#d94d43] text-white shadow-lg" : "text-gray-700 hover:bg-gradient-to-r hover:from-[#BE4139]/10 hover:to-orange-100/50"
                     }`
                   }
                 >
                   <Icon size={20} />
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-bold">{item.label}</span>
                 </NavLink>
               </li>
             );
