@@ -21,30 +21,79 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ isOpen, member, onClo
   if (!member) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Lihat Data Anggota">
+    <Modal isOpen={isOpen} onClose={onClose} title="Detail Anggota">
       <div className="space-y-4">
+        {/* Nama */}
         <div>
-          <label className="text-sm font-medium text-gray-500">Nama Lengkap</label>
-          <p className="text-gray-800">{member.nama}</p>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Nama Lengkap
+          </label>
+          <input
+            type="text"
+            value={member.nama}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
         </div>
+
+        {/* NIS / NIP */}
         <div>
-          <label className="text-sm font-medium text-gray-500">NIS / NIP</label>
-          <p className="text-gray-800">{member.nisNip}</p>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            NIS / NIP
+          </label>
+          <input
+            type="text"
+            value={member.nisNip}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
         </div>
+
+        {/* Email */}
         <div>
-          <label className="text-sm font-medium text-gray-500">Email</label>
-          <p className="text-gray-800">{member.email}</p>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Email
+          </label>
+          <input
+            type="text"
+            value={member.email}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
         </div>
+
+        {/* Kelas */}
         <div>
-          <label className="text-sm font-medium text-gray-500">Kelas</label>
-          <p className="text-gray-800">{member.kelas}</p>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Kelas
+          </label>
+          <input
+            type="text"
+            value={member.kelas}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
         </div>
+
+        {/* Role */}
         <div>
-          <label className="text-sm font-medium text-gray-500">Role</label>
-          <p className="text-gray-800">{member.role}</p>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Role
+          </label>
+          <input
+            type="text"
+            value={member.role}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
         </div>
-        <div className="pt-4">
-          <Button onClick={onClose} className="w-full">
+
+        {/* Footer */}
+        <div className="flex justify-end pt-4 border-t border-gray-200">
+          <Button
+            onClick={onClose}
+            className="bg-[#BE4139] hover:bg-[#A03A2F] text-white"
+          >
             Tutup
           </Button>
         </div>

@@ -3,33 +3,33 @@ import { Modal } from "../ui/modal";
 import { Button } from "../ui/button";
 import { AlertTriangle } from "lucide-react";
 
-interface Member {
+interface Borrow {
   id: number;
   nama: string;
-  nisNip: string;
-  email: string;
-  kelas: string;
-  role: string;
+  judul: string;
+  tanggalPinjam: string;
+  tanggalKembali: string;
+  status: 'Dipinjam' | 'Dikembalikan' | 'Terlambat';
 }
 
-interface DeleteMemberModalProps {
+interface DeleteBorrowModalProps {
   isOpen: boolean;
-  member?: Member;
+  borrow?: Borrow;
   onClose: () => void;
 }
 
-const DeleteMemberModal: React.FC<DeleteMemberModalProps> = ({
+const DeleteBorrowModal: React.FC<DeleteBorrowModalProps> = ({
   isOpen,
-  member,
+  borrow,
   onClose,
 }) => {
   const handleDelete = () => {
     // Handle delete logic here
-    console.log("Deleting member:", member);
+    console.log("Deleting book borrowing data:", borrow);
     onClose();
   };
 
-  if (!member) return null;
+  if (!borrow) return null;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Hapus Anggota">
@@ -42,10 +42,10 @@ const DeleteMemberModal: React.FC<DeleteMemberModalProps> = ({
 
         <div>
           <p className="text-gray-800 font-medium">
-            Apakah Anda yakin ingin menghapus data anggota ini?
+            Apakah Anda yakin ingin menghapus data peminjaman buku ini?
           </p>
           <p className="text-gray-500 text-sm mt-1">
-            "{member.nama}" ({member.nisNip})
+            "{borrow.nama}" ({borrow.judul})
           </p>
         </div>
 
@@ -75,4 +75,4 @@ const DeleteMemberModal: React.FC<DeleteMemberModalProps> = ({
   );
 };
 
-export { DeleteMemberModal };
+export { DeleteBorrowModal };

@@ -3,6 +3,7 @@ import { Search, Filter, Eye, Trash2 } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import DetailPeminjamanModal from '../components/modals/DetailPeminjamanModal';
+import { DeleteBorrowModal } from "../components/modals/delete-pinjam-modal";
 
 interface PeminjamanData {
   id: number;
@@ -17,8 +18,9 @@ const PeminjamanAktifPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
-  const [selectedPeminjaman, setSelectedPeminjaman] = useState<PeminjamanData | null>(null);
+  const [selectedPeminjaman, setSelectedPeminjaman] = useState<PeminjamanData | undefined>(undefined);
   const itemsPerPage = 10;
+  const [deleteBorrowOpen, setDeleteModalOpen] = useState<boolean>(false);
 
   // Sample data
   const peminjamanData: PeminjamanData[] = [
@@ -78,6 +80,11 @@ const PeminjamanAktifPage: React.FC = () => {
     }
 
     return <>{pages}</>;
+  };
+
+  const handleDeleteBorrow = (borrow: PeminjamanData) => {
+    setSelectedPeminjaman(borrow);
+    setDeleteModalOpen(true);
   };
 
   return (
@@ -145,8 +152,11 @@ const PeminjamanAktifPage: React.FC = () => {
                       >
                         <Eye size={18} className="text-[#BE4139]" />
                       </button>
-                      <button className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110">
-                        <Trash2 size={18} className="text-red-500" />
+                      <button
+                        onClick={() => handleDeleteBorrow(item)}
+                        className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
+                        <Trash2 size={16} className="text-red-500" />
                       </button>
                     </div>
                   </td>
@@ -176,6 +186,7 @@ const PeminjamanAktifPage: React.FC = () => {
           }}
         />
       )}
+      <DeleteBorrowModal isOpen={deleteBorrowOpen} borrow={selectedPeminjaman} onClose={() => setDeleteModalOpen(false)}/>
     </div>
   );
 };

@@ -3,36 +3,37 @@ import { Modal } from "../ui/modal";
 import { Button } from "../ui/button";
 import { AlertTriangle } from "lucide-react";
 
-interface Member {
+interface TempoData {
   id: number;
   nama: string;
-  nisNip: string;
-  email: string;
-  kelas: string;
-  role: string;
+  judul: string;
+  tanggalPinjam: string;
+  tanggalKembali: string;
+  //pengembalian: string;
+  denda: string;
+  status: 'Dipinjam' | 'Dikembalikan' | 'Terlambat';
 }
 
-interface DeleteMemberModalProps {
+interface DeleteTempoModalProps {
   isOpen: boolean;
-  member?: Member;
+  data?: TempoData;
   onClose: () => void;
 }
 
-const DeleteMemberModal: React.FC<DeleteMemberModalProps> = ({
+const DeleteTempoModal: React.FC<DeleteTempoModalProps> = ({
   isOpen,
-  member,
+  data,
   onClose,
 }) => {
   const handleDelete = () => {
-    // Handle delete logic here
-    console.log("Deleting member:", member);
+    console.log("Deleting book due date data:", data);
     onClose();
   };
 
-  if (!member) return null;
+  if (!data) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Hapus Anggota">
+    <Modal isOpen={isOpen} onClose={onClose} title="Hapus Data Pengembalian">
       <div className="text-center space-y-4">
         <div className="flex justify-center">
           <div className="p-3 bg-red-100 rounded-full">
@@ -42,10 +43,10 @@ const DeleteMemberModal: React.FC<DeleteMemberModalProps> = ({
 
         <div>
           <p className="text-gray-800 font-medium">
-            Apakah Anda yakin ingin menghapus data anggota ini?
+            Apakah Anda yakin ingin menghapus data jatuh tempo buku ini?
           </p>
           <p className="text-gray-500 text-sm mt-1">
-            "{member.nama}" ({member.nisNip})
+            "{data.nama}" ({data.judul})
           </p>
         </div>
 
@@ -75,4 +76,4 @@ const DeleteMemberModal: React.FC<DeleteMemberModalProps> = ({
   );
 };
 
-export { DeleteMemberModal };
+export { DeleteTempoModal };

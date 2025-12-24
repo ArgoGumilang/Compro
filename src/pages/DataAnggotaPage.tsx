@@ -28,7 +28,7 @@ export function DataAnggotaPage() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] =
-    useState<(typeof ANGGOTA_DATA)[0] | null>(null);
+    useState<(typeof ANGGOTA_DATA)[0] | undefined>(undefined);
 
   const filteredData = useMemo(() => {
     return ANGGOTA_DATA.filter(
