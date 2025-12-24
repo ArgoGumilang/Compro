@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ChevronRight, Edit, Save, X } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage: React.FC = () => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     namaDepan: 'Anu',
@@ -31,6 +33,12 @@ const ProfilePage: React.FC = () => {
 
   const handleChange = (field: string, value: string) => {
     setProfileData({ ...profileData, [field]: value });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("rememberUser");
+    navigate("/login");
   };
 
   return (
@@ -173,10 +181,7 @@ const ProfilePage: React.FC = () => {
 
       {/* Keluar Button */}
       <button
-        onClick={() => {
-          // Handle logout
-          console.log('Logout');
-        }}
+        onClick={handleLogout}
         className="w-full bg-[#BE4139] rounded-2xl shadow-xl border-2 border-[#BE4139] p-8 hover:bg-[#9e3530] transition-all duration-300 transform hover:scale-105"
       >
         <div className="flex items-center justify-between">
