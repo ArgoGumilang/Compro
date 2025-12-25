@@ -82,7 +82,7 @@ export function DataPresensiPage() {
     // Ellipsis
     if (totalPages > 5) {
       pages.push(
-        <span key="ellipsis" className="px-2 text-[#BE4139]/60 font-bold">✨</span>
+        <span key="ellipsis" className="px-2 text-[#BE4139]/60 font-bold">...</span>
       );
     }
 
@@ -128,7 +128,7 @@ export function DataPresensiPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="✨ Cari presensi..."
+              placeholder="Cari presensi..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);

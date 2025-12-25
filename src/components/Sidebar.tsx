@@ -72,7 +72,7 @@ const Sidebar: React.FC = () => {
             <AvatarFallback>DD</AvatarFallback>
           </Avatar>
           <h3 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-[#BE4139] to-[#d94d43]">Dinda Desfira</h3>
-          <p className="text-xs text-[#BE4139] font-semibold mt-1">👑 Administrator</p>
+          <p className="text-xs text-[#BE4139] font-semibold mt-1">Administrator</p>
         </div>
       </div>
 

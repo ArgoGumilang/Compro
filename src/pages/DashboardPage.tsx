@@ -24,15 +24,15 @@ const DashboardPage: React.FC = () => {
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[#BE4139] rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl transform hover:scale-105 transition-all duration-300">
-          <h3 className="text-white text-sm font-bold mb-2">📚 Total Buku</h3>
+          <h3 className="text-white text-sm font-bold mb-2">Total Buku</h3>
           <p className="text-4xl font-black text-white">1,234</p>
         </div>
         <div className="bg-[#BE4139] rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl transform hover:scale-105 transition-all duration-300">
-          <h3 className="text-white text-sm font-bold mb-2">🔖 Dipinjam</h3>
+          <h3 className="text-white text-sm font-bold mb-2">Dipinjam</h3>
           <p className="text-4xl font-black text-white">89</p>
         </div>
         <div className="bg-[#BE4139] rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl transform hover:scale-105 transition-all duration-300">
-          <h3 className="text-white text-sm font-bold mb-2">👥 Anggota</h3>
+          <h3 className="text-white text-sm font-bold mb-2">Anggota</h3>
           <p className="text-4xl font-black text-white">567</p>
         </div>
       </div>
@@ -41,7 +41,7 @@ const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Grafik Kunjungan */}
         <div className="bg-white rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl">
-          <h2 className="text-xl font-black text-[#BE4139] mb-4 text-center">📊 Grafik Kunjungan</h2>
+          <h2 className="text-xl font-black text-[#BE4139] mb-4 text-center">Grafik Kunjungan</h2>
           
           {/* Filter Buttons */}
           <div className="flex justify-center gap-2 mb-6">
@@ -93,7 +93,7 @@ const DashboardPage: React.FC = () => {
 
         {/* Grafik Peminjaman */}
         <div className="bg-white rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl">
-          <h2 className="text-xl font-black text-[#BE4139] mb-4 text-center">📈 Grafik Peminjaman</h2>
+          <h2 className="text-xl font-black text-[#BE4139] mb-4 text-center">Grafik Peminjaman</h2>
           
           {/* Filter Buttons */}
           <div className="flex justify-center gap-2 mb-6">
@@ -149,12 +149,12 @@ const DashboardPage: React.FC = () => {
 
       {/* Recent Activities */}
       <div className="bg-white rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl">
-        <h2 className="text-xl font-black text-[#BE4139] mb-4">⚡ Aktivitas Terbaru</h2>
+        <h2 className="text-xl font-black text-[#BE4139] mb-4">Aktivitas Terbaru</h2>
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((item) => (
             <div key={item} className="flex items-center justify-between py-3 px-4 bg-white rounded-xl hover:bg-gray-50 hover:shadow-md transition-all duration-300 transform hover:scale-105 border-2 border-gray-200">
               <div>
-                <p className="text-sm font-bold text-gray-800">📖 Peminjaman Buku</p>
+                <p className="text-sm font-bold text-gray-800">Peminjaman Buku</p>
                 <p className="text-xs text-gray-600 font-medium">Nama Lengkap - Judul Buku</p>
               </div>
               <span className="text-xs text-[#BE4139] font-semibold bg-red-100 px-3 py-1 rounded-full">10/26/2022</span>

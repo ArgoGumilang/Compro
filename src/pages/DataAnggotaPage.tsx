@@ -148,7 +148,7 @@ export function DataAnggotaPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="✨ Cari anggota..."
+              placeholder="Cari anggota..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);

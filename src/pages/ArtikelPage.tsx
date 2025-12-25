@@ -52,7 +52,6 @@ const ArtikelPage: React.FC = () => {
     }
   ];
 
-  // 👉 kalau artikel dipilih, pindah ke halaman baca selengkapnya
   if (selectedArticle) {
     return (
       <BacaSelengkapnya
@@ -94,7 +93,7 @@ const ArtikelPage: React.FC = () => {
 
     if (totalPages > 5) {
       pages.push(
-        <span key="dots" className="px-2 text-[#BE4139]">✨</span>
+        <span key="dots" className="px-2 text-[#BE4139]">...</span>
       );
     }
 
@@ -120,7 +119,7 @@ const ArtikelPage: React.FC = () => {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="✨ Cari artikel seru..."
+              placeholder="Cari artikel seru..."
               className="pl-10 bg-white border-2 border-gray-300 rounded-xl"
             />
           </div>
@@ -166,7 +165,6 @@ const ArtikelPage: React.FC = () => {
         {renderPagination()}
       </div>
 
-      {/* ✅ PERBAIKAN: MODAL DITAMBAHKAN LAGI */}
       <TambahArtikelModal
         isOpen={isTambahModalOpen}
         onClose={() => setIsTambahModalOpen(false)}

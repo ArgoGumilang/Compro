@@ -102,7 +102,7 @@ const PengembalianPage: React.FC = () => {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="✨ Cari pengembalian..."
+              placeholder="Cari pengembalian..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
