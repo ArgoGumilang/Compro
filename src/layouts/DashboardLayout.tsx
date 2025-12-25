@@ -1,4 +1,3 @@
-// layouts/DashboardLayout.tsx
 import { Routes, Route, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -7,15 +6,20 @@ import {
   ArtikelPage,
   ManajemenBukuPage,
   DataPresensiPage,
+  BarcodePage,
   DataAnggotaPage,
   PeminjamanAktifPage,
   PengembalianPage,
   JatuhTempoPage,
+  PinjamanSaya,
+  Kategori,
+  Forum,
 } from "../pages";
 
 import DashboardPage from "../pages/DashboardPage";
 import DetailBukuPage from "../pages/DetailBukuPage";
 import ProfilePage from "../pages/ProfilePage";
+import DashAnggota from "../pages/DashAnggota";
 
 const pageTitles: { [key: string]: string } = {
   "/": "Dashboard",
@@ -26,8 +30,13 @@ const pageTitles: { [key: string]: string } = {
   "/peminjaman/pengembalian": "Pengembalian",
   "/peminjaman/jatuh-tempo": "Jatuh Tempo",
   "/presensi/data": "Presensi",
+  "/presensi/barcode": "Barcode",
   "/upload-artikel": "Upload Artikel",
   "/profile": "Profile",
+  "/dashanggota": "Dashboard Anggota",
+  "/pinjamansaya": "Pinjaman Saya",
+  "/kategori": "Kategori",
+  "/Forum": "Forum",
 };
 
 const DashboardLayout = () => {
@@ -54,8 +63,13 @@ const DashboardLayout = () => {
             <Route path="/peminjaman/pengembalian" element={<PengembalianPage />} />
             <Route path="/peminjaman/jatuh-tempo" element={<JatuhTempoPage />} />
             <Route path="/presensi/data" element={<DataPresensiPage />} />
+            <Route path="/presensi/barcode" element={<BarcodePage />} />
             <Route path="/upload-artikel" element={<ArtikelPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/dashanggota" element={<DashAnggota />} />
+            <Route path="/PinjamanSaya" element={<PinjamanSaya />} />
+            <Route path="/kategori" element={<Kategori />} />
+            <Route path="/Forum" element={<Forum />} />
           </Routes>
         </div>
       </main>

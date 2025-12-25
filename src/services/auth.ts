@@ -4,14 +4,25 @@ export const fakeLoginApi = async (
 ) => {
   return new Promise<{ token: string; role: string }>((resolve, reject) => {
     setTimeout(() => {
+      // ADMIN
       if (username === "admin" && password === "admin123") {
         resolve({
-          token: "fake-jwt-token",
+          token: "fake-jwt-admin",
           role: "Administrator",
         });
-      } else {
-        reject(new Error("Username atau password salah"));
+        return;
       }
+
+      // ANGGOTA
+      if (username === "anggota" && password === "anggota123") {
+        resolve({
+          token: "fake-jwt-anggota",
+          role: "Anggota",
+        });
+        return;
+      }
+
+      reject(new Error("Username atau password salah"));
     }, 1000);
   });
 };

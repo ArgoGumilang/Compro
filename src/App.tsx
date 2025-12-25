@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
+
 import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import { DataAnggotaPage } from "./pages/DataAnggotaPage";
@@ -12,6 +13,11 @@ import { DataPresensiPage } from "./pages/DataPresensiPage";
 import ArtikelPage from "./pages/ArtikelPage";
 import BarcodePage from "./pages/BarcodePage";
 
+import DashAnggota from "./pages/DashAnggota";
+import PinjamanSaya from "./pages/PinjamanSaya";
+import Kategori from "./pages/Kategori";
+import Forum from "./pages/Forum";
+
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
@@ -22,7 +28,13 @@ function App() {
         {/* ================= PUBLIC ================= */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* ================= PROTECTED ================= */}
+        {/* ================= DASH ANGGOTA (NO ADMIN LAYOUT) ================= */}
+        <Route path="/dashanggota" element={ <ProtectedRoute><DashAnggota /></ProtectedRoute>}/>
+        <Route path="/pinjamansaya" element={<PinjamanSaya />} />
+        <Route path="/kategori" element={<Kategori />} />
+        <Route path="/forum" element={<Forum />} />
+
+        {/* ================= ADMIN ================= */}
         <Route
           element={
             <ProtectedRoute>
@@ -30,29 +42,16 @@ function App() {
             </ProtectedRoute>
           }
         >
-          {/* Dashboard */}
           <Route path="/" element={<DashboardPage />} />
-
-          {/* Profile */}
           <Route path="/profile" element={<ProfilePage />} />
-
-          {/* Data Anggota */}
           <Route path="/data-anggota" element={<DataAnggotaPage />} />
-
-          {/* Manajemen Buku */}
           <Route path="/manajemen-buku" element={<ManajemenBukuPage />} />
           <Route path="/manajemen-buku/detail" element={<DetailBukuPage />} />
-
-          {/* Peminjaman */}
           <Route path="/peminjaman/aktif" element={<PeminjamanAktifPage />} />
           <Route path="/peminjaman/pengembalian" element={<PengembalianPage />} />
           <Route path="/peminjaman/jatuh-tempo" element={<JatuhTempoPage />} />
-
-          {/* Presensi */}
           <Route path="/presensi/data" element={<DataPresensiPage />} />
           <Route path="/presensi/scan-barcode" element={<BarcodePage />} />
-
-          {/* Artikel */}
           <Route path="/upload-artikel" element={<ArtikelPage />} />
         </Route>
       </Routes>

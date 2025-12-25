@@ -42,17 +42,26 @@ const LoginPage: React.FC = () => {
 
       const res = await fakeLoginApi(username, password);
 
-      // Simpan token
+      // 🔧 simpan token & role
       localStorage.setItem("token", res.token);
+      localStorage.setItem("role", res.role);
 
-      // Remember me
+      // remember me
       if (rememberMe) {
         localStorage.setItem("rememberUser", username);
       } else {
         localStorage.removeItem("rememberUser");
       }
 
-      navigate("/");
+      // 🔧 redirect berdasarkan role
+      if (res.role === "Administrator") {
+        navigate("/");
+      } else if (res.role === "Anggota") {
+        navigate("/dashanggota");
+      } else {
+        navigate("/");
+      }
+
     } catch (err: any) {
       setError(err.message || "Login gagal");
     } finally {
@@ -69,14 +78,12 @@ const LoginPage: React.FC = () => {
             Login
           </h1>
 
-          {/* ERROR */}
           {error && (
             <div className="mb-6 p-3 bg-red-100 text-red-600 rounded-lg text-sm">
               {error}
             </div>
           )}
 
-          {/* USERNAME */}
           <div className="mb-6">
             <label className="block text-sm font-semibold mb-2">
               Username / NIS
@@ -88,7 +95,6 @@ const LoginPage: React.FC = () => {
             />
           </div>
 
-          {/* PASSWORD */}
           <div className="mb-4">
             <label className="text-sm font-semibold mb-2">
               Password
@@ -111,7 +117,6 @@ const LoginPage: React.FC = () => {
             </div>
           </div>
 
-          {/* REMEMBER ME */}
           <div className="flex items-center mb-8">
             <input
               type="checkbox"
@@ -122,7 +127,6 @@ const LoginPage: React.FC = () => {
             <span className="text-sm">Keep me logged in</span>
           </div>
 
-          {/* BUTTON */}
           <button
             onClick={handleLogin}
             disabled={loading}
@@ -136,7 +140,7 @@ const LoginPage: React.FC = () => {
       {/* RIGHT IMAGE */}
       <div className="hidden md:block">
         <img
-          src="https://cdn.prod.website-files.com/604a97c70aee09eed25ce991/61897a35583a9b51db018d3e_MartinPublicSeating-97560-Importance-School-Library-blogbanner1.jpg"
+          src="https://images.pexels.com/photos/1907785/pexels-photo-1907785.jpeg?_gl=1*6i4575*_ga*ODU3MDE0NjYwLjE3NTk1NTkzNTY.*_ga_8JE65Q40S6*czE3NjY2NzI3NzMkbzEzJGcxJHQxNzY2NjcyODc3JGo0NCRsMCRoMA.."
           alt="Library"
           className="w-full h-full object-cover"
         />
