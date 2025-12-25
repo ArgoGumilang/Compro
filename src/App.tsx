@@ -10,6 +10,7 @@ import PengembalianPage from "./pages/PengembalianPage";
 import JatuhTempoPage from "./pages/JatuhTempoPage";
 import { DataPresensiPage } from "./pages/DataPresensiPage";
 import ArtikelPage from "./pages/ArtikelPage";
+import BarcodePage from "./pages/BarcodePage";
 
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -49,10 +50,7 @@ function App() {
 
           {/* Presensi */}
           <Route path="/presensi/data" element={<DataPresensiPage />} />
-          <Route
-            path="/presensi/scan-barcode"
-            element={<div>Scan Barcode Page</div>}
-          />
+          <Route path="/presensi/scan-barcode" element={<BarcodePage />} />
 
           {/* Artikel */}
           <Route path="/upload-artikel" element={<ArtikelPage />} />

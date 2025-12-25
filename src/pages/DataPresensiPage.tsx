@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Search, Plus, Filter } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { AddAbsenceModal } from "../components/modals/add-presensi-modal";
 
 const PRESENSI_DATA = [
   { id: 1, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
@@ -21,6 +22,7 @@ const ITEMS_PER_PAGE = 10;
 export function DataPresensiPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [addModalOpen, setAddModalOpen] = useState(false);
 
   const filteredData = useMemo(() => {
     return PRESENSI_DATA.filter(
@@ -135,9 +137,9 @@ export function DataPresensiPage() {
               className="pl-10 bg-white border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
             />
           </div>
-          <Button className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold">
+          <Button onClick={() => setAddModalOpen(true)} className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold">
             <Plus size={18} />
-            Tambah Presensi
+            Tambah Pengguna
           </Button>
           <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530] transition-all duration-300 font-semibold">
             <Filter size={18} />
@@ -188,6 +190,7 @@ export function DataPresensiPage() {
           {renderPagination()}
         </div>
       </div>
+      <AddAbsenceModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} />
     </div>
   );
 }
