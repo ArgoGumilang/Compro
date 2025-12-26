@@ -1,0 +1,11 @@
+export { default as ArtikelPage } from "./ArtikelPage";
+export { default as ManajemenBukuPage } from "./ManajemenBukuPage";
+export { default as DataPresensiPage } from "./DataPresensiPage";
+export { default as BarcodePage } from "./BarcodePage";
+export { default as DataAnggotaPage } from "./DataAnggotaPage";
+export { default as PeminjamanAktifPage } from "./PeminjamanAktifPage";
+export { default as PengembalianPage } from "./PengembalianPage";
+export { default as JatuhTempoPage } from "./JatuhTempoPage";
+export { default as PinjamanSaya } from "./PinjamanSaya";
+export { default as Kategori } from "./Kategori";
+export { default as Forum } from "./Forum";

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Search, Filter, Eye, Trash2 } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
+import { ViewReturnModal } from "../components/modals/view-kembali-modal";
+import { DeleteReturnModal } from "../components/modals/delete-kembali-modal";
 
 interface PengembalianData {
   id: number;
@@ -18,6 +20,9 @@ const PengembalianPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [deleteReturnOpen, setDeleteReturnOpen] = useState(false);
+  const [selectedReturn, setSelectedReturn] = useState<PengembalianData | undefined>(undefined);
 
   // Sample data
   const pengembalianData: PengembalianData[] = [
@@ -79,6 +84,16 @@ const PengembalianPage: React.FC = () => {
     return <>{pages}</>;
   };
 
+  const handleViewReturn = (data: PengembalianData) => {
+    setSelectedReturn(data);
+    setViewModalOpen(true);
+  };
+
+  const handleDeleteReturn = (data: PengembalianData) => {
+    setSelectedReturn(data);
+    setDeleteReturnOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Search and Filter Bar */}
@@ -87,7 +102,7 @@ const PengembalianPage: React.FC = () => {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="✨ Cari pengembalian..."
+              placeholder="Cari pengembalian..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -109,15 +124,15 @@ const PengembalianPage: React.FC = () => {
           <table className="w-full">
             <thead className="bg-[#BE4139] border-b-2 border-[#BE4139]">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">No</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">Nama</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">Judul</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">Tanggal Pinjam</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">Tanggal Kembali</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">Pengembalian</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">Denda</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-[#BE4139]">Aksi</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">No</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Nama</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Judul</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Tanggal Pinjam</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Tanggal Kembali</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Pengembalian</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Denda</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#BE4139]/10">
@@ -139,11 +154,17 @@ const PengembalianPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-[#BE4139]/20 rounded-xl transition-all duration-300 transform hover:scale-110">
-                        <Eye size={18} className="text-[#BE4139]" />
+                      <button
+                        onClick={() => handleViewReturn(item)}
+                        className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
+                        <Eye size={16} className="text-[#BE4139]" />
                       </button>
-                      <button className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110">
-                        <Trash2 size={18} className="text-red-500" />
+                      <button
+                        onClick={() => handleDeleteReturn(item)}
+                        className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
+                        <Trash2 size={16} className="text-red-500" />
                       </button>
                     </div>
                   </td>
@@ -158,6 +179,8 @@ const PengembalianPage: React.FC = () => {
           {renderPagination()}
         </div>
       </div>
+      <ViewReturnModal isOpen={viewModalOpen} data={selectedReturn ?? undefined} onClose={() => setViewModalOpen(false)}/>
+      <DeleteReturnModal isOpen={deleteReturnOpen} data={selectedReturn} onClose={() => setDeleteReturnOpen(false)}/>
     </div>
   );
 };

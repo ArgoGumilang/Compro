@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Search, Filter, Eye, Trash2 } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
+import { ViewTempoModal } from "../components/modals/view-tempo-modal";
+import { DeleteTempoModal } from "../components/modals/delete-tempo-modal";
 
 interface JatuhTempoData {
   id: number;
@@ -17,6 +19,10 @@ const JatuhTempoPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [deleteTempoOpen, setDeleteTempoOpen] = useState(false);
+  const [selectedTempo, setSelectedTempo] = useState<JatuhTempoData | undefined>(undefined);
+  
 
   // Sample data
   const jatuhTempoData: JatuhTempoData[] = [
@@ -78,6 +84,16 @@ const JatuhTempoPage: React.FC = () => {
     return <>{pages}</>;
   };
 
+  const handleViewTempo = (data: JatuhTempoData) => {
+    setSelectedTempo(data);
+    setViewModalOpen(true);
+  };
+
+  const handleDeleteTempo = (data: JatuhTempoData) => {
+    setSelectedTempo(data);
+    setDeleteTempoOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Search and Filter Bar */}
@@ -86,7 +102,7 @@ const JatuhTempoPage: React.FC = () => {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="✨ Cari jatuh tempo..."
+              placeholder="Cari jatuh tempo..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -136,11 +152,17 @@ const JatuhTempoPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center gap-2">
-                      <button className="p-2 hover:bg-purple-200 rounded-xl transition-all duration-300 transform hover:scale-110">
-                        <Eye size={18} className="text-[#BE4139]" />
+                      <button
+                        onClick={() => handleViewTempo(item)}
+                        className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
+                        <Eye size={16} className="text-[#BE4139]" />
                       </button>
-                      <button className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110">
-                        <Trash2 size={18} className="text-red-500" />
+                      <button
+                        onClick={() => handleDeleteTempo(item)}
+                        className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
+                        <Trash2 size={16} className="text-red-500" />
                       </button>
                     </div>
                   </td>
@@ -155,6 +177,8 @@ const JatuhTempoPage: React.FC = () => {
           {renderPagination()}
         </div>
       </div>
+      <ViewTempoModal isOpen={viewModalOpen} data={selectedTempo ?? undefined} onClose={() => setViewModalOpen(false)}/>
+      <DeleteTempoModal isOpen={deleteTempoOpen} data={selectedTempo} onClose={() => setDeleteTempoOpen(false)}/>
     </div>
   );
 };

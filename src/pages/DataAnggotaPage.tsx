@@ -2,6 +2,9 @@ import { useState, useMemo } from "react";
 import { Search, Plus, Filter, Eye, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { ViewMemberModal } from "../components/modals/view-member-modal";
+import { AddMemberModal } from "../components/modals/add-member-modal";
+import { DeleteMemberModal } from "../components/modals/delete-member-modal";
 
 const ANGGOTA_DATA = [
   { id: 1, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
@@ -21,6 +24,11 @@ const ITEMS_PER_PAGE = 10;
 export function DataAnggotaPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] =
+    useState<(typeof ANGGOTA_DATA)[0] | undefined>(undefined);
 
   const filteredData = useMemo(() => {
     return ANGGOTA_DATA.filter(
@@ -31,8 +39,12 @@ export function DataAnggotaPage() {
     );
   }, [searchQuery]);
 
-  const totalPages = 68; // Sesuai gambar
-  const paginatedData = filteredData.slice(0, ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    return filteredData.slice(start, end);
+  }, [filteredData, currentPage]);
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -118,6 +130,16 @@ export function DataAnggotaPage() {
     return pages;
   };
 
+  const handleViewMember = (member: (typeof ANGGOTA_DATA)[0]) => {
+    setSelectedMember(member);
+    setViewModalOpen(true);
+  };
+
+  const handleDeleteMember = (member: (typeof ANGGOTA_DATA)[0]) => {
+    setSelectedMember(member);
+    setDeleteModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Search and Action Bar */}
@@ -126,7 +148,7 @@ export function DataAnggotaPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="✨ Cari anggota..."
+              placeholder="Cari anggota..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -135,7 +157,7 @@ export function DataAnggotaPage() {
               className="pl-10 bg-white border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
             />
           </div>
-          <Button className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold">
+          <Button onClick={() => setAddModalOpen(true)} className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold">
             <Plus size={18} />
             Tambah Pengguna
           </Button>
@@ -178,10 +200,16 @@ export function DataAnggotaPage() {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex gap-2">
-                      <button className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110">
+                      <button
+                        onClick={() => handleViewMember(item)}
+                        className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
                         <Eye size={16} className="text-[#BE4139]" />
                       </button>
-                      <button className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110">
+                      <button
+                        onClick={() => handleDeleteMember(item)}
+                        className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
                         <Trash2 size={16} className="text-red-500" />
                       </button>
                     </div>
@@ -197,6 +225,9 @@ export function DataAnggotaPage() {
           {renderPagination()}
         </div>
       </div>
+      <ViewMemberModal isOpen={viewModalOpen} member={selectedMember ?? undefined} onClose={() => setViewModalOpen(false)}/>
+      <AddMemberModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} />
+      <DeleteMemberModal isOpen={deleteModalOpen} member={selectedMember} onClose={() => setDeleteModalOpen(false)} />
     </div>
   );
 }

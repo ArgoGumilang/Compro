@@ -48,7 +48,7 @@ const TambahArtikelModal: React.FC<TambahArtikelModalProps> = ({ isOpen, onClose
             >
               <Paperclip size={18} className="text-gray-400" />
               <span className="text-sm">
-                {formData.cover ? formData.cover.name : 'attach image'}
+                {formData.cover ? formData.cover.name : 'Attach Image'}
               </span>
             </label>
           </div>
@@ -58,7 +58,7 @@ const TambahArtikelModal: React.FC<TambahArtikelModalProps> = ({ isOpen, onClose
         <div>
           <label className="block text-sm font-semibold text-gray-800 mb-2">Judul Artikel</label>
           <Input
-            placeholder="Judul Artikel"
+            placeholder="Masukkan judul artikel"
             value={formData.judul}
             onChange={(e) => setFormData({ ...formData, judul: e.target.value })}
             className="bg-white border-gray-300"
@@ -69,7 +69,7 @@ const TambahArtikelModal: React.FC<TambahArtikelModalProps> = ({ isOpen, onClose
         <div>
           <label className="block text-sm font-semibold text-gray-800 mb-2">Sub judul</label>
           <Input
-            placeholder="ISBN"
+            placeholder="Masukkan sub judul"
             value={formData.subJudul}
             onChange={(e) => setFormData({ ...formData, subJudul: e.target.value })}
             className="bg-white border-gray-300"
@@ -80,7 +80,7 @@ const TambahArtikelModal: React.FC<TambahArtikelModalProps> = ({ isOpen, onClose
         <div>
           <label className="block text-sm font-semibold text-gray-800 mb-2">Isi</label>
           <textarea
-            placeholder="Isi artikel"
+            placeholder="Masukkan isi artikel"
             value={formData.isi}
             onChange={(e) => setFormData({ ...formData, isi: e.target.value })}
             rows={6}

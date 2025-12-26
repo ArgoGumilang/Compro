@@ -56,6 +56,79 @@ export function ManajemenBukuPage() {
     }
   };
 
+  const renderPagination = () => {
+    const pages = [];
+    
+    // Previous button
+    pages.push(
+      <button
+        key="prev"
+        disabled={currentPage === 1}
+        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        className="flex items-center gap-1 px-4 py-2 text-[#BE4139] hover:text-[#9e3530] disabled:opacity-50 disabled:cursor-not-allowed font-semibold rounded-xl hover:bg-white transition-all duration-300"
+      >
+        ← Previous
+      </button>
+    );
+
+    // First pages
+    for (let i = 1; i <= Math.min(3, totalPages); i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => setCurrentPage(i)}
+          className={`px-4 py-2 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
+            currentPage === i
+              ? "bg-[#BE4139] text-white shadow-lg"
+              : "text-[#BE4139] hover:bg-white"
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // Ellipsis
+    if (totalPages > 5) {
+      pages.push(
+        <span key="ellipsis" className="px-2 text-[#BE4139]/60 font-bold">✨</span>
+      );
+    }
+
+    // Last pages
+    if (totalPages > 3) {
+      for (let i = Math.max(totalPages - 1, 4); i <= totalPages; i++) {
+        pages.push(
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i)}
+            className={`px-4 py-2 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
+              currentPage === i
+                ? "bg-[#BE4139] text-white shadow-lg"
+                : "text-[#BE4139] hover:bg-white"
+            }`}
+          >
+            {i}
+          </button>
+        );
+      }
+    }
+
+    // Next button
+    pages.push(
+      <button
+        key="next"
+        disabled={currentPage === totalPages}
+        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+        className="flex items-center gap-1 px-4 py-2 text-[#BE4139] hover:text-[#9e3530] disabled:opacity-50 disabled:cursor-not-allowed font-semibold rounded-xl hover:bg-white transition-all duration-300"
+      >
+        Next →
+      </button>
+    );
+
+    return pages;
+  };
+
   const handleDeleteBook = (book: (typeof BOOKS_DATA)[0]) => {
     setSelectedBook(book);
     setDeleteModalOpen(true);
@@ -69,7 +142,7 @@ export function ManajemenBukuPage() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="✨ Cari buku..."
+              placeholder="Cari buku..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -146,38 +219,8 @@ export function ManajemenBukuPage() {
         </div>
 
         {/* Pagination */}
-        <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-2">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            className="px-4 py-2 rounded-xl border-2 border-[#BE4139] text-[#BE4139] hover:bg-gray-50 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-          >
-            Previous
-          </button>
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const page = i + 1;
-            return (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 rounded-xl font-bold transition-all duration-300 transform hover:scale-105 ${
-                  currentPage === page
-                    ? "bg-[#BE4139] text-white shadow-lg"
-                    : "border-2 border-[#BE4139] text-[#BE4139] hover:bg-gray-50"
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
-          {totalPages > 5 && <span className="text-[#BE4139] font-bold">✨</span>}
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            className="px-4 py-2 rounded-xl border-2 border-[#BE4139] text-[#BE4139] hover:bg-gray-50 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
-          >
-            Next
-          </button>
+        <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-1">
+          {renderPagination()}
         </div>
       </div>
 

@@ -20,7 +20,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ title, description }) => {
           {description}
         </p>
         <button className="text-white bg-[#BE4139] px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#9e3530] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
-          Baca Selengkapnya ✨
+          Baca Selengkapnya
         </button>
       </div>
     </div>
