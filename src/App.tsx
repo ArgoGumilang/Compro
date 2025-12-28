@@ -14,6 +14,7 @@ import ArtikelPage from "./pages/ArtikelPage";
 import BarcodePage from "./pages/BarcodePage";
 
 import DashAnggota from "./pages/DashAnggota";
+import DetailBukuAng from "./pages/DetailBukuAng";
 import PinjamanSaya from "./pages/PinjamanSaya";
 import Kategori from "./pages/Kategori";
 import Forum from "./pages/Forum";
@@ -30,6 +31,8 @@ function App() {
 
         {/* ================= DASH ANGGOTA (NO ADMIN LAYOUT) ================= */}
         <Route path="/dashanggota" element={ <ProtectedRoute><DashAnggota /></ProtectedRoute>}/>
+        <Route path="/detailbuku" element={<DetailBukuAng />} />
+        <Route path="/pinjamansaya" element={<PinjamanSaya />} />
         <Route path="/pinjamansaya" element={<PinjamanSaya />} />
         <Route path="/kategori" element={<Kategori />} />
         <Route path="/forum" element={<Forum />} />

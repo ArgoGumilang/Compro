@@ -20,7 +20,7 @@ const DashboardPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[#BE4139] rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl transform hover:scale-105 transition-all duration-300">

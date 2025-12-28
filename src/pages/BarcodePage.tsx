@@ -127,7 +127,7 @@ export default function BarcodePage() {
   }
 
   return (
-    <div className="space-y-6 px-6 md:px-10 pb-10">
+    <div className="space-y-6 p-8">
       {/* Header */}
       <header className="bg-[#BE4139] rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl">
         <h1 className="text-4xl font-bold text-white">Scan kartu untuk presensi</h1>
@@ -135,7 +135,7 @@ export default function BarcodePage() {
       </header>
 
       {/* Pilih Role */}
-      <div className="bg-white rounded-xl border shadow p-4">
+      <div className="bg-white rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl">
         <label className="font-semibold text-gray-700 mr-4">Pilih Role:</label>
         <select
           value={role}
@@ -148,9 +148,9 @@ export default function BarcodePage() {
       </div>
 
       {/* Kamera & Capture */}
-      <div className="bg-white rounded-xl border shadow p-4 space-y-4">
+      <div className="bg-white rounded-2xl border-2 border-[#BE4139] p-6 shadow-xl">
         <div className="text-xl font-semibold text-gray-700">Ambil Foto / Scan Kartu</div>
-        <div className="rounded-xl border overflow-hidden">
+        <div className="rounded-xl border overflow-hidden mt-4 mb-4">
           {captured ? (
             <img src={captured} alt="Captured" className="w-full max-h-80 object-contain bg-black" />
           ) : (
@@ -163,7 +163,7 @@ export default function BarcodePage() {
             {captured ? "Ambil Ulang" : "Ambil Foto"}
           </button>
           {captured && (
-            <button onClick={onScanBarcode} className="px-4 py-2 rounded-lg border border-lime-500 text-lime-700 font-semibold hover:bg-lime-50">
+            <button onClick={onScanBarcode} className="px-4 py-2 rounded-lg border border-gray-500 text-gray-700 font-semibold hover:bg-gray-200">
               Scan Barcode
             </button>
           )}

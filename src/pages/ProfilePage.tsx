@@ -44,13 +44,13 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 min-h-screen">
+    <div className="space-y-6 min-h-screen p-8">
       {/* Profile Card */}
       <div className="bg-white rounded-2xl shadow-xl border-2 border-[#BE4139] p-8 transform hover:scale-105 transition-all duration-300">
         <div className="flex items-center gap-6">
           <div className="w-24 h-24 bg-[#BE4139] rounded-full flex-shrink-0 overflow-hidden shadow-lg ring-4 ring-white">
             <img 
-              src="https://via.placeholder.com/150" 
+              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" 
               alt="Profile" 
               className="w-full h-full object-cover"
             />

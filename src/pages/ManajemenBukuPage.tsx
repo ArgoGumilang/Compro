@@ -8,16 +8,16 @@ import { AddBookModal } from "../components/modals/add-book-modal";
 import { DeleteBookModal } from "../components/modals/delete-book-modal";
 
 const BOOKS_DATA = [
-  { id: 1, title: "Judul Buku", author: "Ruslan Ismail", isbn: "10/26/2022", category: "Terlambat", quantity: 1 },
-  { id: 2, title: "Judul Buku", author: "Ahmad Abdullah", isbn: "08/26/2022", category: "Sudah Kembali", quantity: 2 },
-  { id: 3, title: "Judul Buku", author: "Surya Firdaus", isbn: "10/26/2022", category: "Belum Kembali", quantity: 3 },
-  { id: 4, title: "Judul Buku", author: "Ismail Sulaiman", isbn: "10/26/2022", category: "Belum Kembali", quantity: 4 },
-  { id: 5, title: "Judul Buku", author: "Rahman Mansur", isbn: "10/26/2022", category: "Sudah Kembali", quantity: 5 },
-  { id: 6, title: "Judul Buku", author: "Buana Ahmad", isbn: "10/26/2022", category: "Belum Kembali", quantity: 6 },
-  { id: 7, title: "Judul Buku", author: "Putri Melati", isbn: "10/26/2022", category: "Belum Kembali", quantity: 7 },
-  { id: 8, title: "Judul Buku", author: "Wira Cahya", isbn: "10/26/2022", category: "Belum Kembali", quantity: 8 },
-  { id: 9, title: "Judul Buku", author: "Mohamad Zakaria", isbn: "05/09/2022", category: "Sudah Kembali", quantity: 9 },
-  { id: 10, title: "Judul Buku", author: "Putra Idris", isbn: "10/26/2022", category: "Belum Kembali", quantity: 10 },
+  { id: 1, title: "Matematika Wajib untuk SMA/MA Kelas XII", author: "B. K. Noormandiri", isbn: "10/26/2022", category: "Matematika", quantity: 12 },
+  { id: 2, title: "Judul Buku", author: "Ahmad Abdullah", isbn: "08/26/2022", category: "Fisika", quantity: 23 },
+  { id: 3, title: "Judul Buku", author: "Surya Firdaus", isbn: "10/26/2022", category: "Kimia", quantity: 31 },
+  { id: 4, title: "Judul Buku", author: "Ismail Sulaiman", isbn: "10/26/2022", category: "Biologi", quantity: 40 },
+  { id: 5, title: "Judul Buku", author: "Rahman Mansur", isbn: "10/26/2022", category: "Sejarah", quantity: 55 },
+  { id: 6, title: "Judul Buku", author: "Buana Ahmad", isbn: "10/26/2022", category: "Geografi", quantity: 67 },
+  { id: 7, title: "Judul Buku", author: "Putri Melati", isbn: "10/26/2022", category: "Ekonomi", quantity: 73 },
+  { id: 8, title: "Judul Buku", author: "Wira Cahya", isbn: "10/26/2022", category: "Alkitab", quantity: 82 },
+  { id: 9, title: "Judul Buku", author: "Mohamad Zakaria", isbn: "05/09/2022", category: "Ensiklopedia", quantity: 91 },
+  { id: 10, title: "Judul Buku", author: "Putra Idris", isbn: "10/26/2022", category: "Seni Budaya", quantity: 10 },
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -45,12 +45,52 @@ export function ManajemenBukuPage() {
 
   const getCategoryBadgeColor = (category: string) => {
     switch (category) {
-      case "Terlambat":
-        return "bg-[#BE4139] text-white";
-      case "Sudah Kembali":
+      case "Matematika":
+        return "bg-blue-100 text-blue-700";
+      case "Fisika":
+        return "bg-indigo-100 text-indigo-700";
+      case "Kimia":
+        return "bg-purple-100 text-purple-700";
+      case "Biologi":
         return "bg-green-100 text-green-700";
-      case "Belum Kembali":
+      case "Ilmu Pengetahuan Alam (IPA)":
+        return "bg-teal-100 text-teal-700";
+      case "Ilmu Pengetahuan Sosial (IPS)":
+        return "bg-orange-100 text-orange-700";
+      case "Sejarah":
         return "bg-yellow-100 text-yellow-700";
+      case "Geografi":
+        return "bg-lime-100 text-lime-700";
+      case "Ekonomi":
+        return "bg-emerald-100 text-emerald-700";
+      case "Sosiologi":
+        return "bg-rose-100 text-rose-700";
+      case "Bahasa Indonesia":
+        return "bg-red-100 text-red-700";
+      case "Bahasa Inggris":
+        return "bg-sky-100 text-sky-700";
+      case "Bahasa Asing Lainnya":
+        return "bg-cyan-100 text-cyan-700";
+      case "Pendidikan Pancasila dan Kewarganegaraan (PPKn)":
+        return "bg-gray-100 text-gray-700";
+      case "Informatika / TIK":
+        return "bg-zinc-100 text-zinc-700";
+      case "Seni Budaya":
+        return "bg-pink-100 text-pink-700";
+      case "Pendidikan Jasmani dan Kesehatan":
+        return "bg-fuchsia-100 text-fuchsia-700";
+      case "Novel dan Fiksi":
+        return "bg-violet-100 text-violet-700";
+      case "Cerpen dan Puisi":
+        return "bg-amber-100 text-amber-700";
+      case "Ensiklopedia":
+        return "bg-stone-100 text-stone-700";
+      case "Al-Qur’an":
+        return "bg-green-200 text-green-800";
+      case "Juz Amma":
+        return "bg-green-300 text-green-900";
+      case "Alkitab":
+        return "bg-blue-200 text-blue-800";
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -135,7 +175,7 @@ export function ManajemenBukuPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       {/* Search and Action Bar */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139]">
         <div className="flex gap-4 items-center">

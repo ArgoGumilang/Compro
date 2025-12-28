@@ -121,7 +121,7 @@ export function DataPresensiPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       {/* Search and Action Bar */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139]">
         <div className="flex gap-4 items-center">
