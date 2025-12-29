@@ -10,9 +10,21 @@ const Header = () => {
   const [openProfile, setOpenProfile] = useState(false);
 
   const notifications = [
-    { title: "Buku hampir jatuh tempo", desc: "Buku Matematika harus dikembalikan besok", time: "1 jam lalu" },
-    { title: "Peminjaman berhasil", desc: "Kamu berhasil meminjam buku Fisika", time: "2 hari lalu" },
-    { title: "Info Perpustakaan", desc: "Jam operasional berubah selama ujian", time: "1 minggu lalu" },
+    {
+      title: "Buku hampir jatuh tempo",
+      desc: "Buku Matematika Wajib harus dikembalikan besok",
+      time: "1 jam lalu",
+    },
+    {
+      title: "Peminjaman berhasil",
+      desc: "Kamu berhasil meminjam buku Fisika Dasar",
+      time: "2 hari lalu",
+    },
+    {
+      title: "Info Perpustakaan",
+      desc: "Jam operasional berubah selama ujian",
+      time: "1 minggu lalu",
+    },
   ];
 
   const handleLogout = () => {
@@ -31,40 +43,61 @@ const Header = () => {
 
         {/* CENTER */}
         <nav className="hidden md:flex gap-6 text-sm text-gray-600">
-          <button onClick={() => navigate("/dashanggota")}>Home</button>
-          <button onClick={() => navigate("/pinjamansaya")}>Pinjaman Saya</button>
-          <button className="font-semibold text-black" onClick={() => navigate("/kategori")}>Kategori</button>
-          <button onClick={() => navigate("/forum")}>Forum</button>
+          <button
+            onClick={() => navigate("/dashanggota")}
+          >
+            Home
+          </button>
+          <button onClick={() => navigate("/pinjamansaya")}>
+            Pinjaman Saya
+          </button>
+          <button 
+          className="font-semibold text-black"
+          onClick={() => navigate("/kategori")}>
+            Kategori
+          </button>
+          <button onClick={() => navigate("/forum")}>
+            Forum
+          </button>
         </nav>
 
         {/* RIGHT */}
         <div className="flex items-center gap-4 relative">
-          {/* SEARCH */}
           <div className="hidden md:flex items-center border rounded-lg px-2 py-1 text-sm">
             <Search size={16} className="text-gray-400" />
-            <input placeholder="Search kategori..." className="outline-none px-2 w-32" />
+            <input placeholder="Search" className="outline-none px-2 w-32" />
           </div>
 
-          {/* ICON NOTIF & PROFILE */}
           <div className="flex items-center gap-4 relative">
             <button
-              onClick={() => { setOpenNotif(!openNotif); setOpenProfile(false); }}
+              onClick={() => {
+                setOpenNotif(!openNotif);
+                setOpenProfile(false);
+              }}
             >
               <Bell size={20} />
             </button>
+
             <button
-              onClick={() => { setOpenProfile(!openProfile); setOpenNotif(false); }}
+              onClick={() => {
+                setOpenProfile(!openProfile);
+                setOpenNotif(false);
+              }}
             >
               <User size={20} />
             </button>
           </div>
 
-          {/* DROPDOWN NOTIF */}
           {openNotif && (
             <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg">
-              <div className="px-4 py-3 font-semibold text-sm border-b">Notifikasi</div>
+              <div className="px-4 py-3 font-semibold text-sm border-b">
+                Notifikasi
+              </div>
               {notifications.map((n, i) => (
-                <div key={i} className="px-4 py-3 hover:bg-gray-100 border-b last:border-b-0">
+                <div
+                  key={i}
+                  className="px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
+                >
                   <p className="font-semibold text-sm">{n.title}</p>
                   <p className="text-xs text-gray-500">{n.desc}</p>
                   <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
@@ -73,10 +106,18 @@ const Header = () => {
             </div>
           )}
 
-          {/* PROFILE DROPDOWN */}
           {openProfile && (
-            <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md overflow-hidden">
-              <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">Profil</button>
+            <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">
+              <button
+                onClick={() => {
+                  navigate("/profileang");
+                  setOpenProfile(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+              >
+                Profil
+              </button>
+
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -85,6 +126,7 @@ const Header = () => {
               </button>
             </div>
           )}
+
         </div>
       </div>
     </header>
@@ -94,18 +136,38 @@ const Header = () => {
 /* ================= FOOTER ================= */
 const Footer = () => (
   <footer className="bg-white border-t mt-24">
-    <div className="max-w-7xl mx-auto px-6 py-12 text-sm">
-      <div className="grid md:grid-cols-3 gap-8">
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="grid md:grid-cols-3 gap-8 text-sm items-start">
         <div>
           <p className="font-bold mb-3">SMA TELKOM BANDUNG</p>
           <div className="flex gap-4 text-gray-600">
-            <a href="https://twitter.com/smatelkombandung" target="_blank" rel="noopener noreferrer" className="hover:text-[#BE4139] transition">
+            {/* Twitter/X */}
+            <a
+              href="https://twitter.com/smatelkombandung"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#BE4139] transition"
+            >
               <FaXTwitter size={18} />
             </a>
-            <a href="https://www.instagram.com/smatelkombandung/" target="_blank" rel="noopener noreferrer" className="hover:text-[#BE4139] transition">
+
+            {/* Instagram */}
+            <a
+              href="https://www.instagram.com/smatelkombandungjuara"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#BE4139] transition"
+            >
               <FaInstagram size={18} />
             </a>
-            <a href="https://www.facebook.com/smatelkombandung" target="_blank" rel="noopener noreferrer" className="hover:text-[#BE4139] transition">
+
+            {/* Facebook */}
+            <a
+              href="https://www.facebook.com/smatelkombandung"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-[#BE4139] transition"
+            >
               <FaFacebook size={18} />
             </a>
           </div>
@@ -122,7 +184,7 @@ const Footer = () => (
           </ul>
         </div>
 
-        <div className="text-gray-500 md:text-right">
+        <div className="md:text-right text-gray-500">
           <p className="font-semibold text-gray-700 mb-2">Perpustakaan Digital</p>
           <p>Mendukung budaya literasi dan pembelajaran digital siswa SMA Telkom Bandung.</p>
         </div>
@@ -136,16 +198,32 @@ const Footer = () => (
 );
 
 /* ================= CATEGORY CARD ================= */
-const GenreCard = ({ genre, subtitle, image }) => (
-  <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden cursor-pointer">
-    <img src={image} alt={genre} className="h-40 w-full object-cover" />
-    <div className="p-4">
-      <p className="font-bold">{genre}</p>
-      <p className="text-sm text-gray-500 mb-3">{subtitle}</p>
-      <span className="text-[#BE4139] text-sm font-semibold">Jelajahi →</span>
+const GenreCard = ({ genre, subtitle, image }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+      <img
+        src={image}
+        alt={genre}
+        className="h-40 w-full object-cover"
+      />
+
+      <div className="p-4">
+        <p className="font-bold">{genre}</p>
+        <p className="text-sm text-gray-500 mb-3">{subtitle}</p>
+
+        <button
+          onClick={() => navigate("/jelajahi")}
+          className="text-[#BE4139] text-sm font-semibold hover:underline flex items-center gap-1"
+        >
+          Jelajahi
+          <span>→</span>
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* ================= KATEGORI PAGE ================= */
 export default function KategoriPage() {
@@ -179,7 +257,7 @@ export default function KategoriPage() {
     <div className="min-h-screen bg-gray-100">
       <Header />
 
-      <main className="pt-24 max-w-7xl mx-auto px-6 space-y-12">
+      <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-12">
         <section>
           <h2 className="text-2xl font-bold text-center mb-6">Kategori Buku</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">

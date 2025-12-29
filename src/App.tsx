@@ -14,10 +14,13 @@ import ArtikelPage from "./pages/ArtikelPage";
 import BarcodePage from "./pages/BarcodePage";
 
 import DashAnggota from "./pages/DashAnggota";
+import ArtikelAng from "./pages/ArtikelAng";
 import DetailBukuAng from "./pages/DetailBukuAng";
 import PinjamanSaya from "./pages/PinjamanSaya";
 import Kategori from "./pages/Kategori";
 import Forum from "./pages/Forum";
+import Jelajahi from "./pages/Jelajahi";
+import ProfileAng from "./pages/ProfileAng";
 
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -32,10 +35,13 @@ function App() {
         {/* ================= DASH ANGGOTA (NO ADMIN LAYOUT) ================= */}
         <Route path="/dashanggota" element={ <ProtectedRoute><DashAnggota /></ProtectedRoute>}/>
         <Route path="/detailbuku" element={<DetailBukuAng />} />
+        <Route path="/artikelang" element={<ArtikelAng />} />
         <Route path="/pinjamansaya" element={<PinjamanSaya />} />
         <Route path="/pinjamansaya" element={<PinjamanSaya />} />
         <Route path="/kategori" element={<Kategori />} />
         <Route path="/forum" element={<Forum />} />
+        <Route path="/jelajahi" element={<Jelajahi />} />
+        <Route path="/profileang" element={<ProfileAng />} />
 
         {/* ================= ADMIN ================= */}
         <Route

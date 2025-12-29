@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, ChevronLeft } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
-
 /* ================= HEADER ================= */
 const Header = () => {
   const navigate = useNavigate();
@@ -48,12 +47,12 @@ const Header = () => {
           >
             Home
           </button>
-          <button 
-          className="font-semibold text-black"
-          onClick={() => navigate("/pinjamansaya")}>
+          <button onClick={() => navigate("/pinjamansaya")}>
             Pinjaman Saya
           </button>
-          <button onClick={() => navigate("/kategori")}>
+          <button 
+          className="font-semibold text-black"
+          onClick={() => navigate("/kategori")}>
             Kategori
           </button>
           <button onClick={() => navigate("/forum")}>
@@ -197,61 +196,105 @@ const Footer = () => (
   </footer>
 );
 
-/* ================= BOOK ITEM CARD ================= */
-const BorrowedBookCard = ({ cover, title, author, borrowedAt, dueDate }) => (
-  <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-    <img src={cover} alt={title} className="h-44 w-full object-cover" />
-    <div className="p-4">
-      <p className="font-bold text-lg">{title}</p>
-      <p className="text-sm text-gray-500 mb-1">{author}</p>
-      <p className="text-xs text-gray-400 mt-2 mb-2">Dipinjam: {borrowedAt}</p>
-      <p className="text-xs text-red-600">Harus kembali: {dueDate}</p>
-      {/*<button className="mt-2 w-full bg-[#BE4139] text-white py-1 rounded text-sm hover:opacity-90 transition">
-        Kembalikan Buku
-      </button>*/}
-    </div>
-  </div>
-);
+/* ================= BOOK ================= */
+interface Book {
+  cover: string;
+  title: string;
+  author: string;
+}
 
-/* ================= PINJAMAN SAYA PAGE ================= */
-export default function PinjamanSaya() {
+const books: Book[] = Array.from({ length: 42 }).map((_, i) => ({
+  cover: `https://picsum.photos/200/300?random=${i + 1}`,
+  title: `Judul Buku ${i + 1}`,
+  author: `Penulis ${i + 1}`,
+}));
+
+const BookCard: React.FC<Book> = ({ cover, title, author }) => {
   const navigate = useNavigate();
 
-  const borrowedBooks = [
-    {
-      cover: "https://ebooks.gramedia.com/ebook-covers/63652/image_highres/BLK_FUSKX2021670148.jpg",
-      title: "Fisika SMA/MA X",
-      author: "Sunardi, Paramitha Retno P. & Andreas B. Darmawan",
-      borrowedAt: "01/12/2025",
-      dueDate: "15/12/2025",
-    },
-    {
-      cover: "https://ebooks.gramedia.com/ebook-covers/63647/image_highres/BLK_BUSKX20218227.jpg",
-      title: "Biologi SMA/MA X",
-      author: "Nunung Nurhayati & Resty Wijayanti",
-      borrowedAt: "28/11/2025",
-      dueDate: "12/12/2025",
-    },
-    {
-      cover: "https://static.mizanstore.com/d/img/book/cover/kimia-sma-klsxk13n.jpg",
-      title: "Kimia SMA/MA X",
-      author: "Unggul Sudarmo",
-      borrowedAt: "30/11/2025",
-      dueDate: "14/12/2025",
-    },
-  ];
+  return (
+    <div
+      className="cursor-pointer"
+      onClick={() => navigate("/detailbuku")}
+    >
+      <img
+        src={cover}
+        alt={title}
+        className="h-52 w-full object-cover rounded-xl mb-2"
+      />
+      <p className="font-semibold text-sm">{title}</p>
+      <p className="text-xs text-gray-500">{author}</p>
+    </div>
+  );
+};
+
+/* ================= PAGE ================= */
+export default function Jelajahi() {
+  const navigate = useNavigate(); // ⬅️ TAMBAHKAN INI
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 14;
+
+  const totalPages = Math.ceil(books.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentBooks = books.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   return (
-    <div className="min-h-screen bg-gray-100 ">
+    <div className="min-h-screen bg-gray-100">
       <Header />
 
-      <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-8">
-        <h2 className="text-2xl font-bold text-center mt-6">Buku yang Sedang Dipinjam</h2>
+      <main className="px-6 py-10 max-w-7xl mx-auto">
+        <button
+            onClick={() => navigate("/kategori")}
+            className="flex items-center gap-2 text-sm text-gray-600 mb-6 hover:text-gray-800 transition"
+        >
+            <ChevronLeft size={16} />
+            Kembali
+        </button>
+        
+        <h1 className="text-2xl font-bold mb-6">
+          Jelajahi Koleksi Buku
+        </h1>
 
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {borrowedBooks.map((book, i) => (
-            <BorrowedBookCard key={i} {...book} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
+          {currentBooks.map((book, idx) => (
+            <BookCard key={idx} {...book} />
           ))}
+        </div>
+
+        {/* ================= PAGINATION ================= */}
+        <div className="flex justify-center items-center gap-2 mt-10">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-200 transition"
+          >
+            Prev
+          </button>
+
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                currentPage === i + 1
+                  ? "bg-[#BE4139] text-white"
+                  : "border hover:bg-gray-200"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-200 transition"
+          >
+            Next
+          </button>
         </div>
       </main>
 

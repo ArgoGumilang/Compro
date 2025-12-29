@@ -107,9 +107,16 @@ const Header = () => {
 
           {openProfile && (
             <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">
-              <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+              <button
+                onClick={() => {
+                  navigate("/profileang");
+                  setOpenProfile(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+              >
                 Profil
               </button>
+
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -118,6 +125,7 @@ const Header = () => {
               </button>
             </div>
           )}
+
         </div>
       </div>
     </header>
@@ -196,18 +204,26 @@ const Hero: React.FC = () => {
     <section
       className="rounded-2xl py-24 text-center bg-cover bg-center"
       style={{
-        backgroundImage: "url('https://images.pexels.com/photos/185764/pexels-photo-185764.jpeg')",
+        backgroundImage: "url('https://anulib.anu.edu.au/files/2024-11/book-banner-2300x600.png')",
+        /*backgroundImage: "url('https://www.state.gov/wp-content/uploads/2019/04/shutterstock_83045623-e1555360482941-2560x852.jpg')",*/
       }}
     >
-      <h1 className="text-4xl font-bold text-white">
+      <h1 className="text-4xl font-bold text-white 
+               drop-shadow-[0_6px_14px_rgba(0,0,0,0.9)]">
         Cari & Baca Koleksi Favoritmu
       </h1>
-      <p className="mt-4 text-white max-w-lg mx-auto">
+
+      <p className="mt-4 text-white max-w-lg mx-auto
+                    drop-shadow-[0_4px_10px_rgba(0,0,0,0.85)]">
         Perpustakaan digital untuk setiap langkah perjalanan belajarmu.
       </p>
+
       <button
-        onClick={() => navigate("/kategori")} // sekarang berfungsi
-        className="mt-8 bg-[#BE4139] text-white px-8 py-3 rounded-xl text-sm hover:opacity-90 transition"
+        onClick={() => navigate("/kategori")}
+        className="mt-8 bg-[#BE4139] text-white px-8 py-3 rounded-xl text-sm
+                  shadow-[0_10px_30px_rgba(0,0,0,0.7)]
+                  hover:shadow-[0_14px_40px_rgba(0,0,0,0.85)]
+                  hover:opacity-95 transition-all duration-300"
       >
         Mulai Jelajahi
       </button>
@@ -298,16 +314,32 @@ const articles = [
   },
 ];
 
-const ArticleCard = ({ title, subtitle, image }) => (
-  <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden cursor-pointer">
-    <img src={image} alt={title} className="h-40 w-full object-cover" />
-    <div className="p-4">
-      <p className="font-bold">{title}</p>
-      <p className="text-sm text-gray-500 mb-3">{subtitle}</p>
-      <span className="text-[#BE4139] text-sm font-semibold">Baca Selengkapnya →</span>
+const ArticleCard = ({ title, subtitle, image }) => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+      <img
+        src={image}
+        alt={title}
+        className="h-40 w-full object-cover"
+      />
+
+      <div className="p-4">
+        <p className="font-bold">{title}</p>
+        <p className="text-sm text-gray-500 mb-4">{subtitle}</p>
+
+        <button
+          onClick={() => navigate("/artikelang")}
+          className="text-[#BE4139] text-sm font-semibold 
+                     hover:underline hover:opacity-80 transition"
+        >
+          Baca Selengkapnya
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* ================= MAIN PAGE ================= */
 export default function DashAnggota() {
@@ -323,7 +355,7 @@ export default function DashAnggota() {
     <div className="min-h-screen bg-gray-100">
       <Header />
 
-      <main className="pt-24 max-w-7xl mx-auto px-6 space-y-20">
+      <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-16">
         <Hero />
 
         <section>

@@ -55,42 +55,39 @@ const Header = () => {
             Kategori
           </button>
           <button 
-            className="font-semibold text-black"
-            onClick={() => navigate("/forum")}
-          >
+          className="font-semibold text-black"
+          onClick={() => navigate("/forum")}>
             Forum
           </button>
         </nav>
 
         {/* RIGHT */}
         <div className="flex items-center gap-4 relative">
-          {/* SEARCH */}
           <div className="hidden md:flex items-center border rounded-lg px-2 py-1 text-sm">
             <Search size={16} className="text-gray-400" />
-            <input
-              placeholder="Search"
-              className="outline-none px-2 w-32"
-            />
+            <input placeholder="Search" className="outline-none px-2 w-32" />
           </div>
 
-          {/* ICON NOTIF & PROFILE (SESUSAI REVISI) */}
           <div className="flex items-center gap-4 relative">
-            <button onClick={() => {
-              setOpenNotif(!openNotif);
-              setOpenProfile(false);
-            }}>
+            <button
+              onClick={() => {
+                setOpenNotif(!openNotif);
+                setOpenProfile(false);
+              }}
+            >
               <Bell size={20} />
             </button>
 
-            <button onClick={() => {
-              setOpenProfile(!openProfile);
-              setOpenNotif(false);
-            }}>
+            <button
+              onClick={() => {
+                setOpenProfile(!openProfile);
+                setOpenNotif(false);
+              }}
+            >
               <User size={20} />
             </button>
           </div>
 
-          {/* NOTIF DROPDOWN */}
           {openNotif && (
             <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg">
               <div className="px-4 py-3 font-semibold text-sm border-b">
@@ -109,12 +106,18 @@ const Header = () => {
             </div>
           )}
 
-          {/* PROFILE DROPDOWN */}
           {openProfile && (
             <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">
-              <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
+              <button
+                onClick={() => {
+                  navigate("/profileang");
+                  setOpenProfile(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+              >
                 Profil
               </button>
+
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -123,6 +126,7 @@ const Header = () => {
               </button>
             </div>
           )}
+
         </div>
       </div>
     </header>
@@ -282,7 +286,7 @@ export default function ForumPage() {
     <div className="min-h-screen bg-gray-100">
       <Header />
 
-      <main className="max-w-3xl mx-auto px-6 py-10 space-y-6 mb-12">
+      <main className="pt-16 pb-8 max-w-3xl mx-auto px-6 py-10 space-y-6 mb-12">
         {/* FORUM LIST */}
         {view === "list" && (
           <>
