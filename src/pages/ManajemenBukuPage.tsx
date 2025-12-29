@@ -8,16 +8,16 @@ import { AddBookModal } from "../components/modals/add-book-modal";
 import { DeleteBookModal } from "../components/modals/delete-book-modal";
 
 const BOOKS_DATA = [
-  { id: 1, title: "Matematika Wajib untuk SMA/MA Kelas XII", author: "B. K. Noormandiri", isbn: "10/26/2022", category: "Matematika", quantity: 12 },
-  { id: 2, title: "Judul Buku", author: "Ahmad Abdullah", isbn: "08/26/2022", category: "Fisika", quantity: 23 },
-  { id: 3, title: "Judul Buku", author: "Surya Firdaus", isbn: "10/26/2022", category: "Kimia", quantity: 31 },
-  { id: 4, title: "Judul Buku", author: "Ismail Sulaiman", isbn: "10/26/2022", category: "Biologi", quantity: 40 },
-  { id: 5, title: "Judul Buku", author: "Rahman Mansur", isbn: "10/26/2022", category: "Sejarah", quantity: 55 },
-  { id: 6, title: "Judul Buku", author: "Buana Ahmad", isbn: "10/26/2022", category: "Geografi", quantity: 67 },
-  { id: 7, title: "Judul Buku", author: "Putri Melati", isbn: "10/26/2022", category: "Ekonomi", quantity: 73 },
-  { id: 8, title: "Judul Buku", author: "Wira Cahya", isbn: "10/26/2022", category: "Alkitab", quantity: 82 },
-  { id: 9, title: "Judul Buku", author: "Mohamad Zakaria", isbn: "05/09/2022", category: "Ensiklopedia", quantity: 91 },
-  { id: 10, title: "Judul Buku", author: "Putra Idris", isbn: "10/26/2022", category: "Seni Budaya", quantity: 10 },
+  { id: 1, title: "Matematika Wajib untuk SMA/MA Kelas XII", author: "B. K. Noormandiri", isbn: "10/26/2022", category: "Matematika", quantity: 12, place: "Pelajaran (5)" },
+  { id: 2, title: "Judul Buku", author: "Ahmad Abdullah", isbn: "08/26/2022", category: "Fisika", quantity: 23, place: "Novel dan Fiksi (1)" },
+  { id: 3, title: "Judul Buku", author: "Surya Firdaus", isbn: "10/26/2022", category: "Kimia", quantity: 31, place: "Pelajaran (5)" },
+  { id: 4, title: "Judul Buku", author: "Ismail Sulaiman", isbn: "10/26/2022", category: "Biologi", quantity: 40, place: "Pelajaran (6)" },
+  { id: 5, title: "Judul Buku", author: "Rahman Mansur", isbn: "10/26/2022", category: "Sejarah", quantity: 55, place: "Keagamaan (3)" },
+  { id: 6, title: "Judul Buku", author: "Buana Ahmad", isbn: "10/26/2022", category: "Geografi", quantity: 67, place: "Pelajaran (6)" },
+  { id: 7, title: "Judul Buku", author: "Putri Melati", isbn: "10/26/2022", category: "Ekonomi", quantity: 73, place: "Ensiklopedia (2)" },
+  { id: 8, title: "Judul Buku", author: "Wira Cahya", isbn: "10/26/2022", category: "Alkitab", quantity: 82, place: "Novel dan Fiksi (1)" },
+  { id: 9, title: "Judul Buku", author: "Mohamad Zakaria", isbn: "05/09/2022", category: "Ensiklopedia", quantity: 91, place: "Novel dan Fiksi (1)" },
+  { id: 10, title: "Judul Buku", author: "Putra Idris", isbn: "10/26/2022", category: "Seni Budaya", quantity: 10, place: "Pelajaran (5)" },
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -218,6 +218,7 @@ export function ManajemenBukuPage() {
                 <th className="px-6 py-4 text-left text-sm font-black text-white">ISBN</th>
                 <th className="px-6 py-4 text-left text-sm font-black text-white">Kategori</th>
                 <th className="px-6 py-4 text-left text-sm font-black text-white">Jumlah</th>
+                <th className="px-6 py-4 text-left text-sm font-black text-white">Lokasi</th>
                 <th className="px-6 py-4 text-left text-sm font-black text-white">Action</th>
               </tr>
             </thead>
@@ -236,6 +237,7 @@ export function ManajemenBukuPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.quantity}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{book.place}</td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center gap-2">
                       <button

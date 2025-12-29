@@ -1,9 +1,10 @@
 import React, { useState } from "react";
+import { ChevronLeft } from "lucide-react";
 
 interface Article {
   title: string;
   description: string;
-  coverImage?: string; // optional biar fleksibel
+  coverImage?: string; 
 }
 
 interface Props {
@@ -57,13 +58,14 @@ const BacaSelengkapnya: React.FC<Props> = ({ article, onBack }) => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto pb-16">
+    <div className="max-w-5xl mx-auto p-8">
       {/* Tombol Kembali */}
       <button
         onClick={onBack}
-        className="mb-6 text-[#BE4139] font-semibold hover:underline"
+        className="mb-6 flex items-center gap-2 bg-[#BE4139] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#9e3530]"
       >
-        ← Kembali ke Artikel
+        <ChevronLeft size={18} />
+        Kembali
       </button>
 
       {/* ================= HEADER ARTIKEL ================= */}
@@ -109,7 +111,7 @@ const BacaSelengkapnya: React.FC<Props> = ({ article, onBack }) => {
       {/* ================= KOMENTAR ================= */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139]">
         <h3 className="text-xl font-bold text-[#BE4139] mb-4">
-          💬 Komentar
+          Komentar
         </h3>
 
         {comments.map((c) => (
