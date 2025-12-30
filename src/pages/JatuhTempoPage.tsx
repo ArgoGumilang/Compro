@@ -95,7 +95,7 @@ const JatuhTempoPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       {/* Search and Filter Bar */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139]">
         <div className="flex gap-4 items-center">
@@ -176,6 +176,7 @@ const JatuhTempoPage: React.FC = () => {
         <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-1">
           {renderPagination()}
         </div>
+        
       </div>
       <ViewTempoModal isOpen={viewModalOpen} data={selectedTempo ?? undefined} onClose={() => setViewModalOpen(false)}/>
       <DeleteTempoModal isOpen={deleteTempoOpen} data={selectedTempo} onClose={() => setDeleteTempoOpen(false)}/>

@@ -138,7 +138,7 @@ const LoginPage: React.FC = () => {
       </div>
 
       {/* RIGHT IMAGE */}
-      <div className="hidden md:block">
+      <div className="hidden md:block h-screen">
         <img
           src="https://images.pexels.com/photos/1907785/pexels-photo-1907785.jpeg?_gl=1*6i4575*_ga*ODU3MDE0NjYwLjE3NTk1NTkzNTY.*_ga_8JE65Q40S6*czE3NjY2NzI3NzMkbzEzJGcxJHQxNzY2NjcyODc3JGo0NCRsMCRoMA.."
           alt="Library"

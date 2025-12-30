@@ -47,6 +47,12 @@ const Header: React.FC = () => {
       document.removeEventListener("mousedown", handleClickOutsideNotif)
   }, [])
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("rememberUser");
+    navigate("/login");
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex h-[60px] shadow-lg">
       {/* Sidebar Title Area */}
@@ -185,15 +191,25 @@ const Header: React.FC = () => {
                 <div className="border-t border-gray-200 my-1"></div>
 
                 <button
-                  onClick={() => {
-                    console.log("Logout")
-                    setIsDropdownOpen(false)
-                  }}
+                  onClick={handleLogout}
                   className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-all duration-300 rounded-xl mx-1 font-semibold"
                 >
                   <LogOut size={18} />
                   <span className="font-bold">Logout</span>
                 </button>
+
+                {/*
+                <button
+                  onClick={handleLogout}
+                  className="w-full bg-[#BE4139] rounded-2xl shadow-xl border-2 border-[#BE4139] p-8 hover:bg-[#9e3530] transition-all duration-300 transform hover:scale-105"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-black text-white">Keluar</span>
+                    <ChevronRight size={28} className="text-white" />
+                  </div>
+                </button>
+                */}
+
               </div>
             )}
           </div>
