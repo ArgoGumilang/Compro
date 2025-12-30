@@ -48,9 +48,7 @@ const Header = () => {
           >
             Home
           </button>
-          <button 
-          className="font-semibold text-black"
-          onClick={() => navigate("/pinjamansaya")}>
+          <button onClick={() => navigate("/pinjamansaya")}>
             Pinjaman Saya
           </button>
           <button onClick={() => navigate("/kategori")}>
@@ -135,7 +133,7 @@ const Header = () => {
 
 /* ================= FOOTER ================= */
 const Footer = () => (
-  <footer className="bg-white border-t mt-24">
+  <footer className="bg-white border-t mt-40">
     <div className="max-w-7xl mx-auto px-6 py-12">
       <div className="grid md:grid-cols-3 gap-8 text-sm items-start">
         <div>
@@ -197,61 +195,58 @@ const Footer = () => (
   </footer>
 );
 
-/* ================= BOOK ITEM CARD ================= */
-const BorrowedBookCard = ({ cover, title, author, borrowedAt, dueDate }) => (
-  <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-    <img src={cover} alt={title} className="h-44 w-full object-cover" />
-    <div className="p-4">
-      <p className="font-bold text-lg">{title}</p>
-      <p className="text-sm text-gray-500 mb-1">{author}</p>
-      <p className="text-xs text-gray-400 mt-2 mb-2">Dipinjam: {borrowedAt}</p>
-      <p className="text-xs text-red-600">Harus kembali: {dueDate}</p>
-      {/*<button className="mt-2 w-full bg-[#BE4139] text-white py-1 rounded text-sm hover:opacity-90 transition">
-        Kembalikan Buku
-      </button>*/}
-    </div>
-  </div>
-);
-
-/* ================= PINJAMAN SAYA PAGE ================= */
-export default function PinjamanSaya() {
+/* ================= PROFILE PAGE ================= */
+export default function ProfileAng() {
   const navigate = useNavigate();
 
-  const borrowedBooks = [
-    {
-      cover: "https://ebooks.gramedia.com/ebook-covers/63652/image_highres/BLK_FUSKX2021670148.jpg",
-      title: "Fisika SMA/MA X",
-      author: "Sunardi, Paramitha Retno P. & Andreas B. Darmawan",
-      borrowedAt: "01/12/2025",
-      dueDate: "15/12/2025",
-    },
-    {
-      cover: "https://ebooks.gramedia.com/ebook-covers/63647/image_highres/BLK_BUSKX20218227.jpg",
-      title: "Biologi SMA/MA X",
-      author: "Nunung Nurhayati & Resty Wijayanti",
-      borrowedAt: "28/11/2025",
-      dueDate: "12/12/2025",
-    },
-    {
-      cover: "https://static.mizanstore.com/d/img/book/cover/kimia-sma-klsxk13n.jpg",
-      title: "Kimia SMA/MA X",
-      author: "Unggul Sudarmo",
-      borrowedAt: "30/11/2025",
-      dueDate: "14/12/2025",
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-100 ">
+    <div className="min-h-screen bg-gray-100">
       <Header />
 
-      <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-8">
-        <h2 className="text-2xl font-bold text-center mt-6">Buku yang Sedang Dipinjam</h2>
+      <main className="pt-20 max-w-4xl mx-auto px-6">
+        <div className="bg-white rounded-2xl shadow p-8">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-16 h-16 rounded-full bg-[#BE4139]/10 flex items-center justify-center">
+              <User size={32} className="text-[#BE4139]" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Profil Anggota</h1>
+              <p className="text-sm text-gray-500">
+                Informasi akun perpustakaan
+              </p>
+            </div>
+          </div>
 
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {borrowedBooks.map((book, i) => (
-            <BorrowedBookCard key={i} {...book} />
-          ))}
+          <div className="grid md:grid-cols-2 gap-6 text-sm">
+            <div>
+              <p className="text-gray-500">Nama</p>
+              <p className="font-semibold">Dinda Putri</p>
+            </div>
+            <div>
+              <p className="text-gray-500">NIS</p>
+              <p className="font-semibold">123456789</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Kelas</p>
+              <p className="font-semibold">XII IPA 2</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Email</p>
+              <p className="font-semibold">
+                dinda@siswa.smatelkom.sch.id
+              </p>
+            </div>
+          </div>
+            {/*
+          <div className="mt-10">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-5 py-2 rounded-xl border text-sm hover:bg-gray-100"
+            >
+              Kembali
+            </button>
+          </div>
+          */}
         </div>
       </main>
 

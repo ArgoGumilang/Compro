@@ -1,209 +1,223 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Star } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { ChevronLeft, Star } from "lucide-react";
 
 const DetailBukuPage: React.FC = () => {
   const navigate = useNavigate();
 
-  // Sample data
+  /* ======================
+     DATA
+  ====================== */
   const bookData = {
-    judul: 'Judul Buku',
-    kategori: 'Judul Buku',
-    isbn: 'Judul Buku',
-    penulis: 'Judul Buku',
-    jumlahBukuTersedia: 'Judul Buku',
-    ddc: 'Judul Buku',
-    publisher: 'Judul Buku',
-    asalKota: 'Judul Buku',
-    deskripsiFisikBuku: 'Judul Buku',
-    totalHalaman: 'Judul Buku',
-    tahunTerbit: 'Judul Buku',
-    deskripsiSingkatBuku: 'Judul Buku',
+    judul: "Matematika Wajib untuk SMA/MA Kelas XII",
+    kategori: "Matematika",
+    isbn: "9786020321231",
+    penulis: "B. K. Noormandiri",
+    jumlahBukuTersedia: "12",
+    ddc: "510 MAT",
+    publisher:
+      "Pusat Kurikulum dan Perbukuan, Kementerian Pendidikan dan Kebudayaan, Penerbit Erlangga",
+    asalKota: "Jakarta",
+    deskripsiFisikBuku: "Softcover, ukuran A4, cetakan ke-2",
+    totalHalaman: "280 halaman",
+    tahunTerbit: "2021",
+    deskripsiSingkatBuku:
+      "Buku ini disusun berdasarkan Kurikulum 2013 revisi, mencakup materi limit, turunan, integral, dan statistika. Dilengkapi latihan soal dan evaluasi akhir bab.",
+    denah: "Rak Koleksi Buku Pelajaran (5)",
   };
 
   const ratingData = {
     averageRating: 4.5,
     totalReviews: 123,
     ratings: [
-      { star: 5, percentage: 48, count: 59 },
-      { star: 4, percentage: 32, count: 40 },
-      { star: 3, percentage: 14, count: 17 },
-      { star: 2, percentage: 4, count: 5 },
-      { star: 1, percentage: 2, count: 2 },
-    ]
+      { star: 5, percentage: 48 },
+      { star: 4, percentage: 32 },
+      { star: 3, percentage: 14 },
+      { star: 2, percentage: 4 },
+      { star: 1, percentage: 2 },
+    ],
   };
 
   const reviews = [
     {
-      name: 'Dinda Desfira',
-      date: '10 Dec 2022',
+      name: "Dinda D",
+      date: "10 Dec 2022",
       rating: 4,
-      comment: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+      comment:
+        "Struktur materinya sistematis dan mudah dipahami. Cocok untuk persiapan UTBK.",
     },
     {
-      name: 'Dinda Desfira',
-      date: '10 Dec 2022',
+      name: "Desfira A",
+      date: "04 Oct 2021",
       rating: 4,
-      comment: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+      comment:
+        "Latihan soalnya bervariasi dan menantang. Sangat membantu siswa.",
     },
     {
-      name: 'Dinda Desfira',
-      date: '10 Dec 2022',
+      name: "Argo Gumilang",
+      date: "26 Sept 2020",
       rating: 4,
-      comment: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+      comment:
+        "Bahasanya jelas dan contoh soalnya relevan dengan kehidupan sehari-hari.",
     },
   ];
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            size={16}
-            className={star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}
-          />
-        ))}
-      </div>
-    );
-  };
+  const renderStars = (rating: number) => (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <Star
+          key={s}
+          size={16}
+          className={
+            s <= rating
+              ? "fill-yellow-400 text-yellow-400"
+              : "text-gray-300"
+          }
+        />
+      ))}
+    </div>
+  );
 
+  /* ======================
+     UI
+  ====================== */
   return (
-    <div className="bg-white rounded-2xl shadow-xl border-2 border-[#BE4139] p-8">
-      {/* Header with Back Button */}
-      <div className="mb-6">
-        <button
-          onClick={() => navigate('/manajemen-buku')}
-          className="flex items-center gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] px-4 py-2 rounded-xl transition-all duration-300 transform hover:scale-105 font-semibold shadow-lg"
-        >
-          <ChevronLeft size={20} />
-          <span className="text-sm font-bold">Kembali</span>
-        </button>
+    <div className="min-h-screen bg-gray-100 p-8">
+      {/* BACK */}
+      <button
+        onClick={() => navigate("/manajemen-buku")}
+        className="mb-6 flex items-center gap-2 bg-[#BE4139] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#9e3530]"
+      >
+        <ChevronLeft size={18} />
+        Kembali
+      </button>
+
+      {/* TITLE */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-[#BE4139]">
+          Detail Data Buku
+        </h1>
+        {/*<p className="text-sm text-gray-600 mt-2">
+          Informasi lengkap buku & ulasan pengguna
+        </p>*/}
       </div>
 
-      <h1 className="text-3xl font-black text-[#BE4139] mb-6">📖 Data Buku #1</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Book Cover */}
-        <div className="lg:col-span-1">
-          <div className="bg-[#BE4139] rounded-2xl aspect-[3/4] flex items-center justify-center shadow-xl border-2 border-[#BE4139] transform hover:scale-105 transition-all duration-300">
-            <span className="text-white font-black text-xl">📖 Book Cover</span>
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        {/* COVER */}
+        <div className="xl:col-span-1">
+          <div className="bg-white rounded-xl border shadow p-4">
+            <img
+              src="https://cdn.eurekabookhouse.co.id/ebh/product/all/004510075020.jpg"
+              alt="Cover"
+              className="rounded-lg object-cover w-full aspect-[3/4]"
+            />
           </div>
         </div>
 
-        {/* Right Column - Book Details */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Book Information Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Column 1 */}
-            <div className="space-y-4">
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">📝 Judul</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.judul}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">✍️ Penulis</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.penulis}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">🏢 Publisher</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.publisher}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">📚 Total Halaman</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.totalHalaman}</p>
-              </div>
+        {/* INFO */}
+        <div className="xl:col-span-3 space-y-8">
+          {/* METADATA */}
+          <div className="bg-white rounded-xl border shadow p-6">
+            <h2 className="font-bold text-[#BE4139] mb-4">
+              Informasi Buku
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              {[
+                ["Judul", bookData.judul],
+                ["Penulis", bookData.penulis],
+                ["Publisher", bookData.publisher],
+                ["Kategori", bookData.kategori],
+                ["ISBN", bookData.isbn],
+                ["DDC", bookData.ddc],
+                ["Total Halaman", bookData.totalHalaman],
+                ["Tahun Terbit", bookData.tahunTerbit],
+                ["Asal Kota", bookData.asalKota],
+                ["Jumlah Buku", bookData.jumlahBukuTersedia],
+                ["Deskripsi Fisik", bookData.deskripsiFisikBuku],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <p className="font-semibold text-gray-500">{label}</p>
+                  <p className="text-gray-800">{value}</p>
+                </div>
+              ))}
             </div>
 
-            {/* Column 2 */}
-            <div className="space-y-4">
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">🏷️ Kategori</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.kategori}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">📚 Jumlah Buku Tersedia</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.jumlahBukuTersedia}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">🌆 Asal Kota</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.asalKota}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">📅 Tahun Terbit</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.tahunTerbit}</p>
-              </div>
-            </div>
-
-            {/* Column 3 */}
-            <div className="space-y-4">
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">🔢 ISBN</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.isbn}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">📊 DDC</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.ddc}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">📕 Deskripsi Fisik Buku</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.deskripsiFisikBuku}</p>
-              </div>
-              <div className="bg-white p-4 rounded-xl border-2 border-[#BE4139]">
-                <h3 className="text-sm font-black text-[#BE4139] mb-2">📝 Deskripsi Singkat Buku</h3>
-                <p className="text-sm text-gray-700 font-semibold">{bookData.deskripsiSingkatBuku}</p>
-              </div>
+            <div className="mt-6">
+              <p className="font-semibold text-gray-500">
+                Deskripsi Singkat
+              </p>
+              <p className="text-gray-700 mt-1">
+                {bookData.deskripsiSingkatBuku}
+              </p>
             </div>
           </div>
 
-          {/* Rating and Reviews Section */}
-          <div className="pt-6 border-t-2 border-[#BE4139]">
-            <h2 className="text-2xl font-black text-[#BE4139] mb-4">⭐ Rating dan Ulasan</h2>
-            
-            {/* Rating Summary */}
-            <div className="flex flex-col md:flex-row gap-8 mb-8 bg-white p-6 rounded-2xl border-2 border-[#BE4139]">
-              {/* Average Rating */}
-              <div className="flex flex-col items-center md:items-start">
-                <div className="text-6xl font-black text-[#BE4139] mb-2">{ratingData.averageRating}</div>
+          {/* LOCATION */}
+          <div className="bg-white rounded-xl border shadow p-6">
+            <h2 className="font-bold text-[#BE4139] mb-2">
+              Lokasi Buku
+            </h2>
+            <p className="text-gray-700 mb-4">{bookData.denah}</p>
+            <img
+              src="/images/denah.png"
+              alt="Denah"
+              className="rounded-lg mx-auto"
+            />
+          </div>
+
+          {/* RATINGS */}
+          <div className="bg-white rounded-xl border shadow p-6">
+            <h2 className="font-bold text-[#BE4139] mb-6">
+              Rating & Ulasan
+            </h2>
+
+            <div className="flex flex-col md:flex-row gap-8 mb-8">
+              <div className="text-center md:text-left">
+                <div className="text-5xl font-black text-[#BE4139]">
+                  {ratingData.averageRating}
+                </div>
                 {renderStars(Math.round(ratingData.averageRating))}
-                <p className="text-sm text-[#BE4139] mt-2 font-bold">{ratingData.totalReviews} reviews</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {ratingData.totalReviews} ulasan
+                </p>
               </div>
 
-              {/* Rating Bars */}
               <div className="flex-1 space-y-2">
-                {ratingData.ratings.map((rating) => (
-                  <div key={rating.star} className="flex items-center gap-3">
-                    <span className="text-sm text-gray-600 w-3 font-bold">{rating.star}</span>
-                    <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                {ratingData.ratings.map((r) => (
+                  <div key={r.star} className="flex items-center gap-3">
+                    <span className="w-4 text-sm">{r.star}</span>
+                    <div className="flex-1 bg-gray-200 h-2 rounded-full">
                       <div
-                        className="bg-[#BE4139] h-full rounded-full transition-all duration-500"
-                        style={{ width: `${rating.percentage}%` }}
+                        className="bg-[#BE4139] h-full rounded-full"
+                        style={{ width: `${r.percentage}%` }}
                       />
                     </div>
-                    <span className="text-sm text-[#BE4139] w-12 text-right font-bold">{rating.percentage}%</span>
+                    <span className="w-10 text-sm text-right">
+                      {r.percentage}%
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Reviews List */}
-            <div className="space-y-6">
-              {reviews.map((review, index) => (
-                <div key={index} className="bg-white rounded-2xl p-6 border-2 border-[#BE4139] hover:border-[#9e3530] transition-all duration-300 transform hover:scale-105">
-                  <div className="flex items-start gap-4">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 bg-[#BE4139] rounded-full flex-shrink-0 shadow-lg" />
-                    
-                    {/* Review Content */}
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-black text-[#BE4139]">{review.name}</h4>
-                        <span className="text-xs text-gray-500">{review.date}</span>
-                      </div>
-                      {renderStars(review.rating)}
-                      <p className="text-sm text-gray-600 mt-3 leading-relaxed">{review.comment}</p>
-                    </div>
+            <div className="space-y-4">
+              {reviews.map((r, i) => (
+                <div
+                  key={i}
+                  className="border rounded-lg p-4 bg-gray-50"
+                >
+                  <div className="flex justify-between mb-1">
+                    <p className="font-semibold">{r.name}</p>
+                    <span className="text-xs text-gray-500">
+                      {r.date}
+                    </span>
                   </div>
+                  {renderStars(r.rating)}
+                  <p className="text-sm text-gray-600 mt-2">
+                    {r.comment}
+                  </p>
                 </div>
               ))}
             </div>

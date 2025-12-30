@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, ChevronDown, ChevronLeft } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 
 /* ================= HEADER ================= */
@@ -44,13 +44,12 @@ const Header = () => {
         {/* CENTER */}
         <nav className="hidden md:flex gap-6 text-sm text-gray-600">
           <button
+            className="font-semibold text-black"
             onClick={() => navigate("/dashanggota")}
           >
             Home
           </button>
-          <button 
-          className="font-semibold text-black"
-          onClick={() => navigate("/pinjamansaya")}>
+          <button onClick={() => navigate("/pinjamansaya")}>
             Pinjaman Saya
           </button>
           <button onClick={() => navigate("/kategori")}>
@@ -197,61 +196,162 @@ const Footer = () => (
   </footer>
 );
 
-/* ================= BOOK ITEM CARD ================= */
-const BorrowedBookCard = ({ cover, title, author, borrowedAt, dueDate }) => (
-  <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-    <img src={cover} alt={title} className="h-44 w-full object-cover" />
-    <div className="p-4">
-      <p className="font-bold text-lg">{title}</p>
-      <p className="text-sm text-gray-500 mb-1">{author}</p>
-      <p className="text-xs text-gray-400 mt-2 mb-2">Dipinjam: {borrowedAt}</p>
-      <p className="text-xs text-red-600">Harus kembali: {dueDate}</p>
-      {/*<button className="mt-2 w-full bg-[#BE4139] text-white py-1 rounded text-sm hover:opacity-90 transition">
-        Kembalikan Buku
-      </button>*/}
-    </div>
-  </div>
-);
+/* ================= ARTIKEL PAGE ================= */
+interface Comment {
+  id: number;
+  name: string;
+  role: "Mahasiswa" | "Guru";
+  date: string;
+  message: string;
+}
 
-/* ================= PINJAMAN SAYA PAGE ================= */
-export default function PinjamanSaya() {
+const formatDateIndonesia = (date: Date) =>
+  date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+const article = {
+  title: "Tips Membaca Efektif",
+  description: "Cara meningkatkan konsentrasi saat membaca buku pelajaran.",
+  coverImage:
+    "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f",
+};
+
+export default function ArtikelAng() {
   const navigate = useNavigate();
 
-  const borrowedBooks = [
+  const [comments, setComments] = useState<Comment[]>([
     {
-      cover: "https://ebooks.gramedia.com/ebook-covers/63652/image_highres/BLK_FUSKX2021670148.jpg",
-      title: "Fisika SMA/MA X",
-      author: "Sunardi, Paramitha Retno P. & Andreas B. Darmawan",
-      borrowedAt: "01/12/2025",
-      dueDate: "15/12/2025",
+      id: 1,
+      name: "Dinda",
+      role: "Mahasiswa",
+      date: "12 September 2025",
+      message:
+        "Artikelnya relevan banget buat mahasiswa, bahasannya ringan tapi insightful 👍",
     },
     {
-      cover: "https://ebooks.gramedia.com/ebook-covers/63647/image_highres/BLK_BUSKX20218227.jpg",
-      title: "Biologi SMA/MA X",
-      author: "Nunung Nurhayati & Resty Wijayanti",
-      borrowedAt: "28/11/2025",
-      dueDate: "12/12/2025",
+      id: 2,
+      name: "Pak Andi",
+      role: "Guru",
+      date: "13 September 2025",
+      message: "Sangat membantu sebagai referensi pembelajaran di kelas.",
     },
-    {
-      cover: "https://static.mizanstore.com/d/img/book/cover/kimia-sma-klsxk13n.jpg",
-      title: "Kimia SMA/MA X",
-      author: "Unggul Sudarmo",
-      borrowedAt: "30/11/2025",
-      dueDate: "14/12/2025",
-    },
-  ];
+  ]);
+
+  const [newComment, setNewComment] = useState("");
+
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+
+    setComments([
+      ...comments,
+      {
+        id: Date.now(),
+        name: "User",
+        role: "Mahasiswa",
+        date: formatDateIndonesia(new Date()),
+        message: newComment,
+      },
+    ]);
+
+    setNewComment("");
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 ">
+    <div className="min-h-screen bg-gray-100">
       <Header />
 
-      <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-8">
-        <h2 className="text-2xl font-bold text-center mt-6">Buku yang Sedang Dipinjam</h2>
+      <main className="px-6 py-8 max-w-5xl mx-auto">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-sm text-gray-600 mb-6"
+        >
+          <ChevronLeft size={16} />
+          Kembali
+        </button>
 
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {borrowedBooks.map((book, i) => (
-            <BorrowedBookCard key={i} {...book} />
+        <div
+          className="h-80 rounded-2xl mb-10 relative overflow-hidden flex items-end"
+          style={{
+            backgroundImage: `url(${article.coverImage})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          <div className="relative z-10 p-6">
+            <h1 className="text-4xl font-extrabold text-white">
+              {article.title}
+            </h1>
+            <p className="text-white/90 mt-3 max-w-3xl">
+              {article.description}
+            </p>
+          </div>
+        </div>
+
+        {/* ISI ARTIKEL */}
+        <div className="bg-white rounded-2xl p-8 shadow-lg mb-10 space-y-6">
+          <p className="text-gray-700 leading-relaxed indent-8">
+            Membaca buku pelajaran merupakan aktivitas penting dalam proses belajar,
+            baik bagi mahasiswa maupun guru. Namun, banyak pembaca mengalami kesulitan
+            berkonsentrasi akibat gangguan lingkungan atau kurangnya strategi membaca
+            yang tepat. Oleh karena itu, membaca secara efektif menjadi kunci agar
+            materi dapat dipahami dengan lebih baik.
+        </p>
+
+        <p className="text-gray-700 leading-relaxed indent-8">
+            Langkah awal untuk meningkatkan konsentrasi adalah menciptakan lingkungan
+            membaca yang kondusif dan menentukan tujuan membaca. Tempat yang tenang,
+            pencahayaan yang cukup, serta tujuan yang jelas akan membantu pembaca lebih
+            fokus pada informasi utama yang ingin dipahami.
+        </p>
+
+        <p className="text-gray-700 leading-relaxed indent-8">
+            Selain itu, teknik membaca aktif seperti memberi catatan, menandai poin
+            penting, atau membuat ringkasan singkat dapat meningkatkan pemahaman.
+            Mengatur waktu membaca dengan jeda istirahat singkat juga membantu menjaga
+            fokus agar tidak mudah lelah.
+        </p>
+
+        <p className="text-gray-700 leading-relaxed indent-8">
+            Dengan menerapkan strategi membaca yang tepat dan konsisten, mahasiswa dan
+            guru dapat meningkatkan konsentrasi serta efektivitas belajar. Membaca
+            bukan hanya tentang menyelesaikan bacaan, tetapi memahami dan mengolah
+            informasi secara optimal.
+        </p>
+        </div>
+
+        {/* KOMENTAR */}
+        <div className="bg-white rounded-2xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold text-[#BE4139] mb-4">
+            Diskusi & Komentar
+          </h3>
+
+          {comments.map((c) => (
+            <div key={c.id} className="mb-4 border-b pb-3 last:border-none">
+              <p className="font-semibold">{c.name}</p>
+              <p className="text-xs text-gray-400">{c.date}</p>
+              <p className="mt-2">{c.message}</p>
+            </div>
           ))}
+
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            className="w-full border rounded-xl p-3 mt-4"
+            placeholder="Tulis komentar..."
+          />
+
+          <div className="flex justify-end mt-3">
+            <button
+              onClick={handleAddComment}
+              className="bg-[#BE4139] text-white px-5 py-2 rounded-xl"
+            >
+              Kirim Komentar
+            </button>
+          </div>
         </div>
       </main>
 

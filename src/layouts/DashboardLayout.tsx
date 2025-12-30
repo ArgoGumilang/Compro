@@ -14,10 +14,12 @@ import {
   PinjamanSaya,
   Kategori,
   Forum,
+  ArtikelAng,
 } from "../pages";
 
 import DashboardPage from "../pages/DashboardPage";
 import DetailBukuPage from "../pages/DetailBukuPage";
+import DetailBukuAng from "../pages/DetailBukuAng";
 import ProfilePage from "../pages/ProfilePage";
 import DashAnggota from "../pages/DashAnggota";
 
@@ -33,10 +35,12 @@ const pageTitles: { [key: string]: string } = {
   "/presensi/barcode": "Barcode",
   "/upload-artikel": "Upload Artikel",
   "/profile": "Profile",
+  "/detailbuku": "Detail Buku",
   "/dashanggota": "Dashboard Anggota",
   "/pinjamansaya": "Pinjaman Saya",
   "/kategori": "Kategori",
-  "/Forum": "Forum",
+  "/forum": "Forum",
+  "/artikelang": "Artikel Ang",
 };
 
 const DashboardLayout = () => {
@@ -67,9 +71,11 @@ const DashboardLayout = () => {
             <Route path="/upload-artikel" element={<ArtikelPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/dashanggota" element={<DashAnggota />} />
-            <Route path="/PinjamanSaya" element={<PinjamanSaya />} />
+            <Route path="/detailbuku" element={<DetailBukuAng />} />
+            <Route path="/pinjamansaya" element={<PinjamanSaya />} />
             <Route path="/kategori" element={<Kategori />} />
             <Route path="/Forum" element={<Forum />} />
+            <Route path="/artikelang" element={<ArtikelAng />} />
           </Routes>
         </div>
       </main>
