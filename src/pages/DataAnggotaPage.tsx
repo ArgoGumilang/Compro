@@ -1,23 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Plus, Filter, Eye, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ViewMemberModal } from "../components/modals/view-member-modal";
 import { AddMemberModal } from "../components/modals/add-member-modal";
 import { DeleteMemberModal } from "../components/modals/delete-member-modal";
-
-const ANGGOTA_DATA = [
-  { id: 1, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-  { id: 2, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-  { id: 3, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-  { id: 4, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-  { id: 5, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-  { id: 6, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-  { id: 7, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-  { id: 8, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-  { id: 9, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "-", role: "Guru" },
-  { id: 10, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa" },
-];
+import { getAllUsers } from "../lib/api";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -27,17 +15,41 @@ export function DataAnggotaPage() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedMember, setSelectedMember] =
-    useState<(typeof ANGGOTA_DATA)[0] | undefined>(undefined);
+  const [selectedMember, setSelectedMember] = useState<any>(undefined);
+  
+  // State untuk data dari backend
+  const [anggotaData, setAnggotaData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Fetch data users dari backend
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const response = await getAllUsers();
+        console.log("👥 Users data:", response);
+        setAnggotaData(response);
+      } catch (err: any) {
+        console.error("❌ Failed to fetch users:", err);
+        setError(err.message || "Gagal mengambil data users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredData = useMemo(() => {
-    return ANGGOTA_DATA.filter(
+    return anggotaData.filter(
       (item) =>
-        item.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.nisNip.includes(searchQuery)
+        item.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.email?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [searchQuery, anggotaData]);
 
   const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
   const paginatedData = useMemo(() => {
@@ -170,55 +182,68 @@ export function DataAnggotaPage() {
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-xl border-2 border-[#BE4139] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[#BE4139] border-b-2 border-[#BE4139]">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">No</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Nama</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">NIS/NIP</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Kelas</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Role</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {paginatedData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 transition-all duration-200">
-                  <td className="px-6 py-4 text-sm text-gray-700 font-medium">{item.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 font-medium">{item.nama}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{item.nisNip}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{item.email}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{item.kelas}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span
-                      className={`px-3 py-1 rounded-xl text-xs font-bold shadow-sm ${getRoleBadgeColor(item.role)}`}
-                    >
-                      {item.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleViewMember(item)}
-                        className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
-                      >
-                        <Eye size={16} className="text-[#BE4139]" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMember(item)}
-                        className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
-                      >
-                        <Trash2 size={16} className="text-red-500" />
-                      </button>
-                    </div>
-                  </td>
+        {loading ? (
+          <div className="p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE4139] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading data...</p>
+          </div>
+        ) : error ? (
+          <div className="p-12 text-center">
+            <p className="text-red-600 font-semibold">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-[#BE4139] text-white rounded-xl hover:bg-[#9e3530]"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-[#BE4139] border-b-2 border-[#BE4139]">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Username</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Nama Lengkap</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Email</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Role ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {paginatedData.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50 transition-all duration-200">
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{item.id}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{item.username}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{item.full_name || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{item.email || '-'}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className="px-3 py-1 rounded-xl text-xs font-bold shadow-sm bg-blue-100 text-blue-800">
+                        Role {item.role_id}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleViewMember(item)}
+                          className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                        >
+                          <Eye size={16} className="text-[#BE4139]" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMember(item)}
+                          className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                        >
+                          <Trash2 size={16} className="text-red-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination */}
         <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-1">

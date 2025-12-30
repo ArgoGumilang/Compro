@@ -39,30 +39,35 @@ const LoginPage: React.FC = () => {
 
     try {
       setLoading(true);
+      setError("");
 
-      const res = await fakeLoginApi(username, password);
+      // Import loginWithCookies
+      const { loginWithCookies } = await import("../services/auth");
+      const res = await loginWithCookies(username, password);
 
-      // 🔧 simpan token & role
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("role", res.role);
+      console.log("✅ Login response:", res);
 
-      // remember me
+      // DEVELOPMENT: Semua user jadi Administrator
+      const role = "Administrator";
+      
+      // Simpan user data & role
+      localStorage.setItem("token", "logged-in"); // Untuk ProtectedRoute
+      localStorage.setItem("user", JSON.stringify(res));
+      localStorage.setItem("role", role);
+      localStorage.setItem("userId", res.id);
+
+      // Remember me
       if (rememberMe) {
         localStorage.setItem("rememberUser", username);
       } else {
         localStorage.removeItem("rememberUser");
       }
 
-      // 🔧 redirect berdasarkan role
-      if (res.role === "Administrator") {
-        navigate("/");
-      } else if (res.role === "Anggota") {
-        navigate("/dashanggota");
-      } else {
-        navigate("/");
-      }
+      // Redirect berdasarkan role (sementara semua ke admin dashboard)
+      navigate("/");
 
     } catch (err: any) {
+      console.error("❌ Login error:", err);
       setError(err.message || "Login gagal");
     } finally {
       setLoading(false);
