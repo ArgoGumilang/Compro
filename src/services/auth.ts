@@ -22,11 +22,10 @@ export const loginWithCookies = async (
       );
     }
     
-    // Return user data dengan role admin
-    return {
-      ...response,
-      role: "Administrator"
-    };
+    // Return user data TANPA override role
+    console.log("🔍 Auth service - Raw response:", response);
+    console.log("🔍 Auth service - Role from backend:", response.role);
+    return response;
   } catch (error: any) {
     throw new Error(error.message || "Login gagal");
   }

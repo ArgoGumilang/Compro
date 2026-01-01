@@ -28,9 +28,37 @@ const ProfilePage: React.FC = () => {
   const loadUserProfile = async () => {
     try {
       setLoading(true);
-      // Try to get from localStorage first
+      console.log("📡 Fetching user profile from backend...");
+      
+      // Fetch langsung dari backend untuk data terbaru
+      const response = await getCurrentUser();
+      console.log("✅ Profile data received:", response);
+      
+      const [firstName = '', ...lastNameParts] = (response.full_name || response.username || '').split(' ');
+      const lastName = lastNameParts.join(' ');
+      
+      setProfileData({
+        namaDepan: firstName,
+        namaBelakang: lastName,
+        tanggalLahir: response.birth_date || '',
+        alamatEmail: response.email || '',
+        nomorTelepon: response.phone_number || '',
+        peran: response.role?.name || '',
+        username: response.username || '',
+        fullName: response.full_name || response.username || '',
+      });
+      
+      console.log("💾 Profile data set:", {
+        fullName: response.full_name,
+        role: response.role?.name
+      });
+    } catch (err) {
+      console.error('❌ Failed to load profile:', err);
+      
+      // Fallback ke localStorage jika backend gagal
       const userStr = localStorage.getItem('user');
       if (userStr) {
+        console.log("⚠️ Using fallback data from localStorage");
         const user = JSON.parse(userStr);
         const [firstName = '', ...lastNameParts] = (user.full_name || user.username || '').split(' ');
         const lastName = lastNameParts.join(' ');
@@ -45,25 +73,7 @@ const ProfilePage: React.FC = () => {
           username: user.username || '',
           fullName: user.full_name || user.username || '',
         });
-      } else {
-        // Fetch from backend if not in localStorage
-        const response = await getCurrentUser();
-        const [firstName = '', ...lastNameParts] = (response.full_name || response.username || '').split(' ');
-        const lastName = lastNameParts.join(' ');
-        
-        setProfileData({
-          namaDepan: firstName,
-          namaBelakang: lastName,
-          tanggalLahir: response.birth_date || '',
-          alamatEmail: response.email || '',
-          nomorTelepon: response.phone_number || '',
-          peran: response.role?.name || '',
-          username: response.username || '',
-          fullName: response.full_name || response.username || '',
-        });
       }
-    } catch (err) {
-      console.error('Failed to load profile:', err);
     } finally {
       setLoading(false);
     }

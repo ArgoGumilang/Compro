@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
+import { getCurrentUser } from "../lib/api";
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -198,6 +199,55 @@ const Footer = () => (
 /* ================= PROFILE PAGE ================= */
 export default function ProfileAng() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [profileData, setProfileData] = useState({
+    fullName: '',
+    username: '',
+    email: '',
+    role: '',
+    kelas: '',
+  });
+
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      setLoading(true);
+      console.log("📡 Fetching user profile from backend...");
+      
+      const response = await getCurrentUser();
+      console.log("✅ Profile data received:", response);
+      
+      setProfileData({
+        fullName: response.full_name || response.username || 'User',
+        username: response.username || '',
+        email: response.email || '',
+        role: response.role?.name || '',
+        kelas: response.class || response.kelas || '-',
+      });
+      
+    } catch (err) {
+      console.error('❌ Failed to load profile:', err);
+      
+      // Fallback ke localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        console.log("⚠️ Using fallback data from localStorage");
+        const user = JSON.parse(userStr);
+        setProfileData({
+          fullName: user.full_name || user.username || 'User',
+          username: user.username || '',
+          email: user.email || '',
+          role: user.role?.name || '',
+          kelas: user.class || user.kelas || '-',
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -217,26 +267,32 @@ export default function ProfileAng() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 text-sm">
-            <div>
-              <p className="text-gray-500">Nama</p>
-              <p className="font-semibold">Dinda Putri</p>
+          {loading ? (
+            <div className="text-center py-8 text-gray-600">Loading...</div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6 text-sm">
+              <div>
+                <p className="text-gray-500">Nama</p>
+                <p className="font-semibold">{profileData.fullName}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Username / NIS</p>
+                <p className="font-semibold">{profileData.username}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Kelas</p>
+                <p className="font-semibold">{profileData.kelas}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Email</p>
+                <p className="font-semibold">{profileData.email}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Role</p>
+                <p className="font-semibold capitalize">{profileData.role}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-gray-500">NIS</p>
-              <p className="font-semibold">123456789</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Kelas</p>
-              <p className="font-semibold">XII IPA 2</p>
-            </div>
-            <div>
-              <p className="text-gray-500">Email</p>
-              <p className="font-semibold">
-                dinda@siswa.smatelkom.sch.id
-              </p>
-            </div>
-          </div>
+          )}
             {/*
           <div className="mt-10">
             <button

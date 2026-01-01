@@ -47,6 +47,8 @@ const LoginPage: React.FC = () => {
       console.log("🔄 Calling loginWithCookies...");
       const res = await loginWithCookies(username, password);
       console.log("✅ Login response received:", res);
+      console.log("🔍 Role object:", res.role);
+      console.log("🔍 Role name:", res.role?.name);
 
       // Simpan ke localStorage
       localStorage.setItem("token", "logged-in");
@@ -54,6 +56,7 @@ const LoginPage: React.FC = () => {
       localStorage.setItem("role", res.role?.name || "Administrator");
       localStorage.setItem("userId", res.id?.toString() || "");
       console.log("💾 Data saved to localStorage");
+      console.log("💾 Saved role:", res.role?.name);
 
       // Remember me
       if (rememberMe) {
@@ -65,9 +68,13 @@ const LoginPage: React.FC = () => {
       console.log("🎉 Login success! Redirecting...");
       // Redirect berdasarkan role
       const userRole = res.role?.name?.toLowerCase() || '';
+      console.log("🔀 User role (lowercase):", userRole);
+      
       if (userRole === 'admin') {
+        console.log("➡️ Redirecting to ADMIN dashboard (/)");
         navigate("/"); // Admin dashboard
       } else {
+        console.log("➡️ Redirecting to USER dashboard (/dashanggota)");
         navigate("/dashanggota"); // Guru/Siswa dashboard
       }
 
