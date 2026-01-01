@@ -1,21 +1,73 @@
-import React, { useState } from 'react';
-import { ChevronRight, Edit, Save, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronRight, Edit, Save, X, User } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from '../lib/api';
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState({
-    namaDepan: 'Anu',
-    namaBelakang: 'Nama Lengkap',
-    tanggalLahir: '10-12-1998',
-    alamatEmail: 'emailanu@gmail.com',
-    nomorTelepon: '081378424178',
-    peran: 'Administrator',
+    namaDepan: '',
+    namaBelakang: '',
+    tanggalLahir: '',
+    alamatEmail: '',
+    nomorTelepon: '',
+    peran: '',
+    username: '',
+    fullName: '',
   });
   const [originalData, setOriginalData] = useState({ ...profileData });
 
   const [showQRCode, setShowQRCode] = useState(false);
+
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      setLoading(true);
+      // Try to get from localStorage first
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        const [firstName = '', ...lastNameParts] = (user.full_name || user.username || '').split(' ');
+        const lastName = lastNameParts.join(' ');
+        
+        setProfileData({
+          namaDepan: firstName,
+          namaBelakang: lastName,
+          tanggalLahir: user.birth_date || user.tanggalLahir || '',
+          alamatEmail: user.email || '',
+          nomorTelepon: user.phone_number || user.nomorTelepon || '',
+          peran: user.role?.name || user.role || '',
+          username: user.username || '',
+          fullName: user.full_name || user.username || '',
+        });
+      } else {
+        // Fetch from backend if not in localStorage
+        const response = await getCurrentUser();
+        const [firstName = '', ...lastNameParts] = (response.full_name || response.username || '').split(' ');
+        const lastName = lastNameParts.join(' ');
+        
+        setProfileData({
+          namaDepan: firstName,
+          namaBelakang: lastName,
+          tanggalLahir: response.birth_date || '',
+          alamatEmail: response.email || '',
+          nomorTelepon: response.phone_number || '',
+          peran: response.role?.name || '',
+          username: response.username || '',
+          fullName: response.full_name || response.username || '',
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load profile:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEdit = () => {
     setOriginalData({ ...profileData });
@@ -47,19 +99,19 @@ const ProfilePage: React.FC = () => {
     <div className="space-y-6 min-h-screen p-8">
       {/* Profile Card */}
       <div className="bg-white rounded-2xl shadow-xl border-2 border-[#BE4139] p-8 transform hover:scale-105 transition-all duration-300">
-        <div className="flex items-center gap-6">
-          <div className="w-24 h-24 bg-[#BE4139] rounded-full flex-shrink-0 overflow-hidden shadow-lg ring-4 ring-white">
-            <img 
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop" 
-              alt="Profile" 
-              className="w-full h-full object-cover"
-            />
+        {loading ? (
+          <div className="text-center text-gray-600">Loading...</div>
+        ) : (
+          <div className="flex items-center gap-6">
+            <div className="w-24 h-24 bg-gradient-to-br from-[#BE4139] to-[#d94d43] rounded-full flex-shrink-0 flex items-center justify-center shadow-lg ring-4 ring-white">
+              <User size={48} className="text-white" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-black text-[#BE4139]">{profileData.fullName || profileData.username || 'User'}</h2>
+              <p className="text-[#BE4139] text-sm font-semibold mt-1 capitalize">{profileData.peran || 'Member'}</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-3xl font-black text-[#BE4139]">Dinda Desfira</h2>
-            <p className="text-[#BE4139] text-sm font-semibold mt-1">Administrator</p>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Data Anggota Section */}
@@ -217,7 +269,7 @@ const ProfilePage: React.FC = () => {
 
       {/* QR CODE */}
       <img
-        src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=Dinda-Desfira"
+        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileData.username || 'User')}`}
         alt="QR Code"
         className="mx-auto"
       />

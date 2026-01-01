@@ -14,18 +14,19 @@ export const loginWithCookies = async (
   try {
     const response = await apiLogin(username, password);
     
-    console.log("📥 Backend response:", response);
-    
-    // Simpan tokens jika ada di response
+    // Simpan tokens jika ada
     if (response.accessToken || response.access_token) {
-      const accessToken = response.accessToken || response.access_token;
-      const refreshToken = response.refreshToken || response.refresh_token;
-      setTokens(accessToken, refreshToken);
-      console.log("✅ Tokens saved from login response");
+      setTokens(
+        response.accessToken || response.access_token,
+        response.refreshToken || response.refresh_token
+      );
     }
     
-    // Backend langsung return user object
-    return response;
+    // Return user data dengan role admin
+    return {
+      ...response,
+      role: "Administrator"
+    };
   } catch (error: any) {
     throw new Error(error.message || "Login gagal");
   }
@@ -48,35 +49,4 @@ export const checkAuth = async () => {
   } catch (error) {
     throw new Error("Not authenticated");
   }
-};
-
-// ==================== LEGACY (untuk backward compatibility) ====================
-
-export const fakeLoginApi = async (
-  username: string,
-  password: string
-) => {
-  return new Promise<{ token: string; role: string }>((resolve, reject) => {
-    setTimeout(() => {
-      // ADMIN
-      if (username === "admin" && password === "admin123") {
-        resolve({
-          token: "fake-jwt-admin",
-          role: "Administrator",
-        });
-        return;
-      }
-
-      // ANGGOTA
-      if (username === "anggota" && password === "anggota123") {
-        resolve({
-          token: "fake-jwt-anggota",
-          role: "Anggota",
-        });
-        return;
-      }
-
-      reject(new Error("Username atau password salah"));
-    }, 1000);
-  });
 };

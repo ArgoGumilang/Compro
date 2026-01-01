@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Plus, Download, Filter, Eye, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -6,19 +6,7 @@ import { Input } from "../components/ui/input";
 import { ViewBookModal } from "../components/modals/view-book-modal";
 import { AddBookModal } from "../components/modals/add-book-modal";
 import { DeleteBookModal } from "../components/modals/delete-book-modal";
-
-const BOOKS_DATA = [
-  { id: 1, title: "Matematika Wajib untuk SMA/MA Kelas XII", author: "B. K. Noormandiri", isbn: "10/26/2022", category: "Matematika", quantity: 12, place: "Pelajaran (5)" },
-  { id: 2, title: "Judul Buku", author: "Ahmad Abdullah", isbn: "08/26/2022", category: "Fisika", quantity: 23, place: "Novel dan Fiksi (1)" },
-  { id: 3, title: "Judul Buku", author: "Surya Firdaus", isbn: "10/26/2022", category: "Kimia", quantity: 31, place: "Pelajaran (5)" },
-  { id: 4, title: "Judul Buku", author: "Ismail Sulaiman", isbn: "10/26/2022", category: "Biologi", quantity: 40, place: "Pelajaran (6)" },
-  { id: 5, title: "Judul Buku", author: "Rahman Mansur", isbn: "10/26/2022", category: "Sejarah", quantity: 55, place: "Keagamaan (3)" },
-  { id: 6, title: "Judul Buku", author: "Buana Ahmad", isbn: "10/26/2022", category: "Geografi", quantity: 67, place: "Pelajaran (6)" },
-  { id: 7, title: "Judul Buku", author: "Putri Melati", isbn: "10/26/2022", category: "Ekonomi", quantity: 73, place: "Ensiklopedia (2)" },
-  { id: 8, title: "Judul Buku", author: "Wira Cahya", isbn: "10/26/2022", category: "Alkitab", quantity: 82, place: "Novel dan Fiksi (1)" },
-  { id: 9, title: "Judul Buku", author: "Mohamad Zakaria", isbn: "05/09/2022", category: "Ensiklopedia", quantity: 91, place: "Novel dan Fiksi (1)" },
-  { id: 10, title: "Judul Buku", author: "Putra Idris", isbn: "10/26/2022", category: "Seni Budaya", quantity: 10, place: "Pelajaran (5)" },
-];
+import { getAllBooks } from "../lib/api";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -29,15 +17,40 @@ export function ManajemenBukuPage() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedBook, setSelectedBook] = useState<(typeof BOOKS_DATA)[0] | undefined>();
+  const [selectedBook, setSelectedBook] = useState<any | undefined>();
+  
+  const [books, setBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  const loadBooks = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const data = await getAllBooks();
+      console.log("📚 Books response:", data);
+      // Backend return {books: [], page: 1, ...}
+      const booksArray = data.books || data;
+      setBooks(Array.isArray(booksArray) ? booksArray : []);
+    } catch (err: any) {
+      setError(err.message || "Gagal memuat data buku");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredBooks = useMemo(() => {
-    return BOOKS_DATA.filter(
+    return books.filter(
       (book) =>
-        book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.title.toLowerCase().includes(searchQuery.toLowerCase())
+        book.author_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.isbn?.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [searchQuery, books]);
 
   const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -208,62 +221,76 @@ export function ManajemenBukuPage() {
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-xl border-2 border-[#BE4139] overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-[#BE4139] border-b-2 border-[#BE4139]">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">No</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Judul</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Penulis</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">ISBN</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Kategori</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Jumlah</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Lokasi</th>
-                <th className="px-6 py-4 text-left text-sm font-black text-white">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {paginatedBooks.map((book) => (
-                <tr key={book.id} className="hover:bg-gray-50 transition-all duration-200">
-                  <td className="px-6 py-4 text-sm text-gray-700 font-medium">{book.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 font-medium">{book.title}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{book.author}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{book.isbn}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span
-                      className={`px-3 py-1 rounded-xl text-xs font-bold shadow-sm ${getCategoryBadgeColor(book.category)}`}
-                    >
-                      {book.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.quantity}</td>
-                  <td className="px-6 py-4 text-sm text-gray-700">{book.place}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => navigate('/manajemen-buku/detail')}
-                        className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
-                      >
-                        <Eye size={16} className="text-[#BE4139]" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteBook(book)}
-                        className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
-                      >
-                        <Trash2 size={16} className="text-red-500" />
-                      </button>
-                    </div>
-                  </td>
+        {loading && (
+          <div className="p-8 text-center text-gray-600">
+            Loading...
+          </div>
+        )}
+        
+        {error && (
+          <div className="p-8 text-center text-red-600">
+            {error}
+          </div>
+        )}
+        
+        {!loading && !error && books.length === 0 && (
+          <div className="p-8 text-center text-gray-600">
+            Tidak ada data buku
+          </div>
+        )}
+        
+        {!loading && !error && books.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-[#BE4139] border-b-2 border-[#BE4139]">
+                <tr>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">No</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Judul</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Penulis</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">ISBN</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Tahun</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Stok</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {paginatedBooks.map((book, index) => (
+                  <tr key={book.id} className="hover:bg-gray-50 transition-all duration-200">
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{startIndex + index + 1}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{book.title || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{book.author_name || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{book.isbn || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{book.year_of_publication || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.stock || 0}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigate(`/manajemen-buku/detail?id=${book.id}`)}
+                          className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                        >
+                          <Eye size={16} className="text-[#BE4139]" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBook(book)}
+                          className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                        >
+                          <Trash2 size={16} className="text-red-500" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination */}
-        <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-1">
-          {renderPagination()}
-        </div>
+        {!loading && !error && books.length > 0 && (
+          <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-1">
+            {renderPagination()}
+          </div>
+        )}
       </div>
 
       <ViewBookModal isOpen={viewModalOpen} book={selectedBook} onClose={() => setViewModalOpen(false)} />

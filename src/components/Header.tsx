@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Bell, ChevronDown, User, LogOut } from "lucide-react"
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar"
 
 const Header: React.FC = () => {
   const navigate = useNavigate()
@@ -165,13 +164,9 @@ const Header: React.FC = () => {
               }}
               className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/20 transform hover:scale-105"
             >
-              <Avatar className="w-8 h-8 ring-2 ring-white/50">
-                <AvatarImage
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop"
-                  alt="User"
-                />
-                <AvatarFallback>DD</AvatarFallback>
-              </Avatar>
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center ring-2 ring-white/50">
+                <User size={16} className="text-white" />
+              </div>
               <ChevronDown size={18} />
             </div>
 

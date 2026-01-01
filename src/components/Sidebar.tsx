@@ -1,7 +1,6 @@
-import { useState } from "react"
-import { LayoutGrid, Users, BookOpen, BookMarked, Upload, ChevronDown, ClipboardCheck } from "lucide-react"
+import { useState, useEffect } from "react"
+import { LayoutGrid, Users, BookOpen, BookMarked, ChevronDown, ClipboardCheck } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar"
 
 interface SubMenuItem {
   id: string;
@@ -23,6 +22,25 @@ const Sidebar: React.FC = () => {
     location.pathname.startsWith("/peminjaman") ? "peminjaman" : 
     location.pathname.startsWith("/presensi") ? "presensi" : null
   );
+  
+  const [userName, setUserName] = useState<string>('User');
+  const [userRole, setUserRole] = useState<string>('');
+
+  useEffect(() => {
+    // Get user data from localStorage
+    const userStr = localStorage.getItem('user');
+    const role = localStorage.getItem('role');
+    
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserName(user.full_name || user.username || 'User');
+        setUserRole(user.role?.name || role || '');
+      } catch (err) {
+        console.error('Failed to parse user data:', err);
+      }
+    }
+  }, []);
 
   const menuItems: MenuItem[] = [
     { id: "dashboard", label: "Dashboard", icon: LayoutGrid, path: "/" },
@@ -38,7 +56,6 @@ const Sidebar: React.FC = () => {
         { id: "jatuh-tempo", label: "Jatuh Tempo", path: "/peminjaman/jatuh-tempo" },
       ]
     },
-    { id: "upload-artikel", label: "Upload Artikel", icon: Upload, path: "/upload-artikel" },
     { 
       id: "presensi", 
       label: "Presensi", 
@@ -64,15 +81,8 @@ const Sidebar: React.FC = () => {
       {/* User Profile Section */}
       <div className="p-6 border-b-2 border-[#BE4139]/20 bg-gradient-to-br from-[#BE4139]/5 to-orange-100/30">
         <div className="flex flex-col items-center">
-          <Avatar className="w-16 h-16 mb-4 ring-4 ring-[#BE4139]/30 shadow-lg transform hover:scale-110 transition-all duration-300">
-            <AvatarImage
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop"
-              alt="Dinda Desfira"
-            />
-            <AvatarFallback>DD</AvatarFallback>
-          </Avatar>
-          <h3 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-[#BE4139] to-[#d94d43]">Dinda Desfira</h3>
-          <p className="text-xs text-[#BE4139] font-semibold mt-1">Administrator</p>
+          <h3 className="font-black text-transparent bg-clip-text bg-gradient-to-r from-[#BE4139] to-[#d94d43]">{userName}</h3>
+          {userRole && <p className="text-xs text-[#BE4139] font-semibold mt-1 capitalize">{userRole}</p>}
         </div>
       </div>
 

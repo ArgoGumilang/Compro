@@ -270,7 +270,7 @@ const books = [
   },
 ];
 
-const BookCard = ({ cover, title, author }) => {
+const BookCard = ({ cover, title, author }: { cover: string; title: string; author: string }) => {
   const navigate = useNavigate();
   return (
     <div className="group cursor-pointer" onClick={() => navigate("/detailbuku")}>
@@ -282,7 +282,7 @@ const BookCard = ({ cover, title, author }) => {
 };
 
 /* ================= FAQ ITEM ================= */
-const FAQItem = ({ q, a, open, onClick }) => (
+const FAQItem = ({ q, a, open, onClick }: { q: string; a: string; open: boolean; onClick: () => void }) => (
   <div className="bg-white rounded-xl border px-4 py-3">
     <button
       onClick={onClick}
@@ -295,55 +295,11 @@ const FAQItem = ({ q, a, open, onClick }) => (
   </div>
 );
 
-/* ================= ARTICLE CARD ================= */
-const articles = [
-  {
-    title: "Tips Membaca Efektif",
-    subtitle: "Cara meningkatkan konsentrasi saat membaca buku pelajaran",
-    image: "https://images.pexels.com/photos/590493/pexels-photo-590493.jpeg",
-  },
-  {
-    title: "Pemanfaatan E-Book",
-    subtitle: "Manfaat membaca buku digital untuk siswa",
-    image: "https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg",
-  },
-  {
-    title: "Forum Diskusi",
-    subtitle: "Bagaimana memaksimalkan penggunaan forum sekolah",
-    image: "https://images.pexels.com/photos/256514/pexels-photo-256514.jpeg",
-  },
-];
 
-const ArticleCard = ({ title, subtitle, image }) => {
-  const navigate = useNavigate();
-
-  return (
-    <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-      <img
-        src={image}
-        alt={title}
-        className="h-40 w-full object-cover"
-      />
-
-      <div className="p-4">
-        <p className="font-bold">{title}</p>
-        <p className="text-sm text-gray-500 mb-4">{subtitle}</p>
-
-        <button
-          onClick={() => navigate("/artikelang")}
-          className="text-[#BE4139] text-sm font-semibold 
-                     hover:underline hover:opacity-80 transition"
-        >
-          Baca Selengkapnya
-        </button>
-      </div>
-    </div>
-  );
-};
 
 /* ================= MAIN PAGE ================= */
 export default function DashAnggota() {
-  const [openFaq, setOpenFaq] = useState(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const faqs = [
     { q: "Bagaimana cara melihat daftar buku yang sedang saya pinjam?", a: "Buka menu 'Pinjaman Saya' untuk melihat semua buku yang sedang Anda pinjam dan tanggal pengembaliannya." },
@@ -385,19 +341,6 @@ export default function DashAnggota() {
                 open={openFaq === i}
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
               />
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-bold text-center">Artikel</h2>
-          <p className="text-sm text-center text-gray-500 mb-8">
-            Baca informasi terbaru dari perpustakaan.
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {articles.map((a, i) => (
-              <ArticleCard key={i} {...a} />
             ))}
           </div>
         </section>

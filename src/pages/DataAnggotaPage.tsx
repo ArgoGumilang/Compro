@@ -24,23 +24,39 @@ export function DataAnggotaPage() {
 
   // Fetch data users dari backend
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const response = await getAllUsers();
-        console.log("👥 Users data:", response);
-        setAnggotaData(response);
-      } catch (err: any) {
-        console.error("❌ Failed to fetch users:", err);
-        setError(err.message || "Gagal mengambil data users");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await getAllUsers();
+      console.log("👥 Users data:", response);
+      // Backend return {users: [], page: 1, ...}
+      const usersArray = response.users || response;
+      setAnggotaData(Array.isArray(usersArray) ? usersArray : []);
+    } catch (err: any) {
+      console.error("❌ Failed to fetch users:", err);
+      
+      // Jika 403, berarti butuh login
+      if (err.message.includes("403") || err.message.includes("Forbidden")) {
+        setError("Anda belum login. Silakan login terlebih dahulu untuk melihat data.");
+      } else {
+        setError(err.message || "Gagal mengambil data users.");
+      }
+      
+      // Gunakan data dummy untuk development
+      console.log("🔄 Using dummy data for development");
+      setAnggotaData([
+        { id: 1, username: "admin", full_name: "Administrator", email: "admin@example.com", role_id: 1 },
+        { id: 2, username: "user1", full_name: "User Satu", email: "user1@example.com", role_id: 2 },
+        { id: 3, username: "user2", full_name: "User Dua", email: "user2@example.com", role_id: 2 },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredData = useMemo(() => {
     return anggotaData.filter(
@@ -142,12 +158,12 @@ export function DataAnggotaPage() {
     return pages;
   };
 
-  const handleViewMember = (member: (typeof ANGGOTA_DATA)[0]) => {
+  const handleViewMember = (member: (typeof anggotaData)[0]) => {
     setSelectedMember(member);
     setViewModalOpen(true);
   };
 
-  const handleDeleteMember = (member: (typeof ANGGOTA_DATA)[0]) => {
+  const handleDeleteMember = (member: (typeof anggotaData)[0]) => {
     setSelectedMember(member);
     setDeleteModalOpen(true);
   };
@@ -189,9 +205,10 @@ export function DataAnggotaPage() {
           </div>
         ) : error ? (
           <div className="p-12 text-center">
-            <p className="text-red-600 font-semibold">{error}</p>
+            <p className="text-red-600 font-semibold mb-2">{error}</p>
+            <p className="text-gray-500 text-sm mb-4">Cek console (F12) untuk detail error</p>
             <button 
-              onClick={() => window.location.reload()} 
+              onClick={fetchUsers}
               className="mt-4 px-4 py-2 bg-[#BE4139] text-white rounded-xl hover:bg-[#9e3530]"
             >
               Retry
@@ -206,7 +223,7 @@ export function DataAnggotaPage() {
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Username</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Nama Lengkap</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Email</th>
-                  <th className="px-6 py-4 text-left text-sm font-black text-white">Role ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Role</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Aksi</th>
                 </tr>
               </thead>
@@ -218,8 +235,12 @@ export function DataAnggotaPage() {
                     <td className="px-6 py-4 text-sm text-gray-700">{item.full_name || '-'}</td>
                     <td className="px-6 py-4 text-sm text-gray-700">{item.email || '-'}</td>
                     <td className="px-6 py-4 text-sm">
-                      <span className="px-3 py-1 rounded-xl text-xs font-bold shadow-sm bg-blue-100 text-blue-800">
-                        Role {item.role_id}
+                      <span className={`px-3 py-1 rounded-xl text-xs font-bold shadow-sm ${
+                        item.role?.name === 'admin' ? 'bg-red-100 text-red-800' :
+                        item.role?.name === 'guru' ? 'bg-green-100 text-green-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {item.role?.name || item.role_id || '-'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm">

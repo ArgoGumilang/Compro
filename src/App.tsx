@@ -10,11 +10,9 @@ import PeminjamanAktifPage from "./pages/PeminjamanAktifPage";
 import PengembalianPage from "./pages/PengembalianPage";
 import JatuhTempoPage from "./pages/JatuhTempoPage";
 import { DataPresensiPage } from "./pages/DataPresensiPage";
-import ArtikelPage from "./pages/ArtikelPage";
 import BarcodePage from "./pages/BarcodePage";
 
 import DashAnggota from "./pages/DashAnggota";
-import ArtikelAng from "./pages/ArtikelAng";
 import DetailBukuAng from "./pages/DetailBukuAng";
 import PinjamanSaya from "./pages/PinjamanSaya";
 import Kategori from "./pages/Kategori";
@@ -33,20 +31,18 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
 
         {/* ================= DASH ANGGOTA (NO ADMIN LAYOUT) ================= */}
-        <Route path="/dashanggota" element={ <ProtectedRoute><DashAnggota /></ProtectedRoute>}/>
-        <Route path="/detailbuku" element={<DetailBukuAng />} />
-        <Route path="/artikelang" element={<ArtikelAng />} />
-        <Route path="/pinjamansaya" element={<PinjamanSaya />} />
-        <Route path="/pinjamansaya" element={<PinjamanSaya />} />
-        <Route path="/kategori" element={<Kategori />} />
-        <Route path="/forum" element={<Forum />} />
-        <Route path="/jelajahi" element={<Jelajahi />} />
-        <Route path="/profileang" element={<ProfileAng />} />
+        <Route path="/dashanggota" element={ <ProtectedRoute requiredRole="member"><DashAnggota /></ProtectedRoute>}/>
+        <Route path="/detailbuku" element={<ProtectedRoute requiredRole="member"><DetailBukuAng /></ProtectedRoute>} />
+        <Route path="/pinjamansaya" element={<ProtectedRoute requiredRole="member"><PinjamanSaya /></ProtectedRoute>} />
+        <Route path="/kategori" element={<ProtectedRoute requiredRole="member"><Kategori /></ProtectedRoute>} />
+        <Route path="/forum" element={<ProtectedRoute requiredRole="member"><Forum /></ProtectedRoute>} />
+        <Route path="/jelajahi" element={<ProtectedRoute requiredRole="member"><Jelajahi /></ProtectedRoute>} />
+        <Route path="/profileang" element={<ProtectedRoute requiredRole="member"><ProfileAng /></ProtectedRoute>} />
 
         {/* ================= ADMIN ================= */}
         <Route
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="admin">
               <MainLayout />
             </ProtectedRoute>
           }
@@ -61,7 +57,6 @@ function App() {
           <Route path="/peminjaman/jatuh-tempo" element={<JatuhTempoPage />} />
           <Route path="/presensi/data" element={<DataPresensiPage />} />
           <Route path="/presensi/scan-barcode" element={<BarcodePage />} />
-          <Route path="/upload-artikel" element={<ArtikelPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

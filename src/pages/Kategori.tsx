@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
+import { getAllCategories } from "../lib/api";
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -198,7 +199,7 @@ const Footer = () => (
 );
 
 /* ================= CATEGORY CARD ================= */
-const GenreCard = ({ genre, subtitle, image }) => {
+const GenreCard = ({ genre, subtitle, image }: { genre: string; subtitle: string; image: string }) => {
   const navigate = useNavigate();
 
   return (
@@ -227,6 +228,41 @@ const GenreCard = ({ genre, subtitle, image }) => {
 
 /* ================= KATEGORI PAGE ================= */
 export default function KategoriPage() {
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  const loadCategories = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await getAllCategories();
+      console.log("📚 Categories response:", response);
+      
+      // Extract array from pagination wrapper
+      const categoriesData = response.categories || response || [];
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      
+    } catch (err: any) {
+      console.error("❌ Failed to load categories:", err);
+      setError(err.message || "Gagal memuat kategori");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fallback dummy data
+  const dummyGenres = [
+    { genre: "Matematika", subtitle: "Buku & materi Matematika", image: "https://www.ubaya.ac.id/storage/sites/20/2022/12/225_20160913092013.jpeg" },
+    { genre: "Fisika", subtitle: "Buku & materi Fisika", image: "https://www.quipper.com/id/blog/wp-content/uploads/2019/09/Hakikat-Fisika-Fisika-Kelas-10-1.png" },
+    { genre: "Kimia", subtitle: "Buku & materi Kimia", image: "https://www.indochem.co.id/lib/images/news/bahan-kimia.png" },
+  ];
+
+  const displayCategories = categories.length > 0 ? categories : dummyGenres;
   const genres = [
     { genre: "Matematika", subtitle: "Buku & materi Matematika", image: "https://www.ubaya.ac.id/storage/sites/20/2022/12/225_20160913092013.jpeg" },
     { genre: "Fisika", subtitle: "Buku & materi Fisika", image: "https://www.quipper.com/id/blog/wp-content/uploads/2019/09/Hakikat-Fisika-Fisika-Kelas-10-1.png" },
@@ -260,11 +296,31 @@ export default function KategoriPage() {
       <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-12">
         <section>
           <h2 className="text-2xl font-bold text-center mb-6">Kategori Buku</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {genres.map((g, i) => (
-              <GenreCard key={i} {...g} />
-            ))}
-          </div>
+          
+          {loading ? (
+            <div className="text-center py-12 text-gray-600">Loading kategori...</div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button 
+                onClick={loadCategories}
+                className="px-4 py-2 bg-[#BE4139] text-white rounded-lg hover:bg-[#9e3530]"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {displayCategories.map((item: any, i: number) => (
+                <GenreCard 
+                  key={item.id || i} 
+                  genre={item.name || item.genre}
+                  subtitle={item.description || item.subtitle || `Koleksi ${item.name || item.genre}`}
+                  image={item.image_url || item.image || "https://via.placeholder.com/400x300?text=No+Image"}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </main>
 

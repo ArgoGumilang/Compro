@@ -1,30 +1,51 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Star } from "lucide-react";
+import { getBookById } from "../lib/api";
 
 const DetailBukuPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const bookId = searchParams.get("id");
 
   /* ======================
-     DATA
+     STATE
   ====================== */
-  const bookData = {
-    judul: "Matematika Wajib untuk SMA/MA Kelas XII",
-    kategori: "Matematika",
-    isbn: "9786020321231",
-    penulis: "B. K. Noormandiri",
-    jumlahBukuTersedia: "12",
-    ddc: "510 MAT",
-    publisher:
-      "Pusat Kurikulum dan Perbukuan, Kementerian Pendidikan dan Kebudayaan, Penerbit Erlangga",
-    asalKota: "Jakarta",
-    deskripsiFisikBuku: "Softcover, ukuran A4, cetakan ke-2",
-    totalHalaman: "280 halaman",
-    tahunTerbit: "2021",
-    deskripsiSingkatBuku:
-      "Buku ini disusun berdasarkan Kurikulum 2013 revisi, mencakup materi limit, turunan, integral, dan statistika. Dilengkapi latihan soal dan evaluasi akhir bab.",
-    denah: "Rak Koleksi Buku Pelajaran (5)",
-  };
+  const [bookData, setBookData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  /* ======================
+     FETCH DATA
+  ====================== */
+  useEffect(() => {
+    const fetchBookDetail = async () => {
+      if (!bookId) {
+        setError("Book ID not provided");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError("");
+        const response = await getBookById(bookId);
+        console.log("📚 Book detail:", response);
+        setBookData(response);
+      } catch (err: any) {
+        console.error("❌ Failed to fetch book:", err);
+        setError(err.message || "Gagal mengambil data buku");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookDetail();
+  }, [bookId]);
+
+  /* ======================
+     DUMMY RATING DATA (nanti bisa diganti dengan API)
+  ====================== */
 
   const ratingData = {
     averageRating: 4.5,
@@ -81,6 +102,41 @@ const DetailBukuPage: React.FC = () => {
   /* ======================
      UI
   ====================== */
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-8">
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE4139]"></div>
+          <p className="ml-4 text-gray-600">Loading book details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !bookData) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-8">
+        <button
+          onClick={() => navigate("/manajemen-buku")}
+          className="mb-6 flex items-center gap-2 bg-[#BE4139] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#9e3530]"
+        >
+          <ChevronLeft size={18} />
+          Kembali
+        </button>
+        <div className="bg-white rounded-xl border shadow p-8 text-center">
+          <p className="text-red-600 font-semibold mb-4">{error || "Book not found"}</p>
+          <button 
+            onClick={() => navigate("/manajemen-buku")} 
+            className="px-4 py-2 bg-[#BE4139] text-white rounded-xl hover:bg-[#9e3530]"
+          >
+            Back to Books
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       {/* BACK */}
@@ -97,9 +153,6 @@ const DetailBukuPage: React.FC = () => {
         <h1 className="text-3xl font-black text-[#BE4139]">
           Detail Data Buku
         </h1>
-        {/*<p className="text-sm text-gray-600 mt-2">
-          Informasi lengkap buku & ulasan pengguna
-        </p>*/}
       </div>
 
       {/* MAIN GRID */}
@@ -108,7 +161,7 @@ const DetailBukuPage: React.FC = () => {
         <div className="xl:col-span-1">
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src="https://cdn.eurekabookhouse.co.id/ebh/product/all/004510075020.jpg"
+              src={bookData.cover_url || "https://via.placeholder.com/300x400?text=No+Cover"}
               alt="Cover"
               className="rounded-lg object-cover w-full aspect-[3/4]"
             />
@@ -125,17 +178,16 @@ const DetailBukuPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               {[
-                ["Judul", bookData.judul],
-                ["Penulis", bookData.penulis],
-                ["Publisher", bookData.publisher],
-                ["Kategori", bookData.kategori],
-                ["ISBN", bookData.isbn],
-                ["DDC", bookData.ddc],
-                ["Total Halaman", bookData.totalHalaman],
-                ["Tahun Terbit", bookData.tahunTerbit],
-                ["Asal Kota", bookData.asalKota],
-                ["Jumlah Buku", bookData.jumlahBukuTersedia],
-                ["Deskripsi Fisik", bookData.deskripsiFisikBuku],
+                ["ID", bookData.id],
+                ["Judul", bookData.title || "-"],
+                ["ISBN", bookData.isbn || "-"],
+                ["Tahun Terbit", bookData.year_of_publication || "-"],
+                ["Total Halaman", bookData.number_of_pages || "-"],
+                ["Stok", bookData.stock || "0"],
+                ["Author ID", bookData.author_id || "-"],
+                ["Publisher ID", bookData.publisher_id || "-"],
+                ["Category ID", bookData.category_id || "-"],
+                ["Sub Category ID", bookData.sub_category_id || "-"],
               ].map(([label, value]) => (
                 <div key={label}>
                   <p className="font-semibold text-gray-500">{label}</p>
@@ -144,27 +196,12 @@ const DetailBukuPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="mt-6">
-              <p className="font-semibold text-gray-500">
-                Deskripsi Singkat
-              </p>
-              <p className="text-gray-700 mt-1">
-                {bookData.deskripsiSingkatBuku}
-              </p>
-            </div>
-          </div>
-
-          {/* LOCATION */}
-          <div className="bg-white rounded-xl border shadow p-6">
-            <h2 className="font-bold text-[#BE4139] mb-2">
-              Lokasi Buku
-            </h2>
-            <p className="text-gray-700 mb-4">{bookData.denah}</p>
-            <img
-              src="/images/denah.png"
-              alt="Denah"
-              className="rounded-lg mx-auto"
-            />
+            {bookData.description && (
+              <div className="mt-6">
+                <p className="font-semibold text-gray-500">Deskripsi</p>
+                <p className="text-gray-700 mt-1">{bookData.description}</p>
+              </div>
+            )}
           </div>
 
           {/* RATINGS */}

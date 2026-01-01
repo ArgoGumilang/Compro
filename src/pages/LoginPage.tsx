@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { fakeLoginApi } from "../services/auth";
+import { loginWithCookies } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage: React.FC = () => {
@@ -37,24 +37,23 @@ const LoginPage: React.FC = () => {
   const handleLogin = async () => {
     if (!validate()) return;
 
+    console.log("🔵 Login button clicked");
+    console.log("📝 Username:", username);
+
     try {
       setLoading(true);
       setError("");
 
-      // Import loginWithCookies
-      const { loginWithCookies } = await import("../services/auth");
+      console.log("🔄 Calling loginWithCookies...");
       const res = await loginWithCookies(username, password);
+      console.log("✅ Login response received:", res);
 
-      console.log("✅ Login response:", res);
-
-      // DEVELOPMENT: Semua user jadi Administrator
-      const role = "Administrator";
-      
-      // Simpan user data & role
-      localStorage.setItem("token", "logged-in"); // Untuk ProtectedRoute
+      // Simpan ke localStorage
+      localStorage.setItem("token", "logged-in");
       localStorage.setItem("user", JSON.stringify(res));
-      localStorage.setItem("role", role);
-      localStorage.setItem("userId", res.id);
+      localStorage.setItem("role", res.role?.name || "Administrator");
+      localStorage.setItem("userId", res.id?.toString() || "");
+      console.log("💾 Data saved to localStorage");
 
       // Remember me
       if (rememberMe) {
@@ -63,8 +62,14 @@ const LoginPage: React.FC = () => {
         localStorage.removeItem("rememberUser");
       }
 
-      // Redirect berdasarkan role (sementara semua ke admin dashboard)
-      navigate("/");
+      console.log("🎉 Login success! Redirecting...");
+      // Redirect berdasarkan role
+      const userRole = res.role?.name?.toLowerCase() || '';
+      if (userRole === 'admin') {
+        navigate("/"); // Admin dashboard
+      } else {
+        navigate("/dashanggota"); // Guru/Siswa dashboard
+      }
 
     } catch (err: any) {
       console.error("❌ Login error:", err);
