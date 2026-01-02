@@ -400,11 +400,20 @@ const DetailBukuPage: React.FC = () => {
             </div>
 
             <div className="bg-white rounded-xl border shadow p-6">
-              <h2 className="font-bold text-[#BE4139] mb-2">
-                Lokasi Buku
+              <h2 className="font-bold text-[#BE4139] mb-4">
+                Lokasi Buku di Perpustakaan
               </h2>
-              <p className="mb-4">{bookData.denah}</p>
-              <img src="/images/denah.png" className="mx-auto rounded-lg" />
+              <p className="text-sm text-gray-600 mb-4">
+                Buku ini berada di Lokasi #{bookData.location_id || "-"}
+              </p>
+              <img 
+                src="/images/denah.png" 
+                alt="Denah Perpustakaan" 
+                className="mx-auto rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.src = "https://via.placeholder.com/600x400?text=Denah+Tidak+Tersedia";
+                }}
+              />
             </div>
 
             <div className="bg-white rounded-xl border shadow p-6">

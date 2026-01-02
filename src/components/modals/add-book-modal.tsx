@@ -15,11 +15,19 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     title: '',
-    author: '',
+    author_id: '',
+    publisher_id: '',
     isbn: '',
-    category: '',
-    quantity: '',
-    place: '',
+    sub_category_id: '',
+    num_book_available: '',
+    num_page: '',
+    year_published: '',
+    city_origin: '',
+    ddc: '',
+    eksemplar_code: '',
+    location_id: '',
+    desc_fisik_buku: '',
+    desc_singkat_buku: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -30,7 +38,7 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.author || !formData.category) {
+    if (!formData.title || !formData.author_id || !formData.sub_category_id) {
       setError('Judul, penulis, dan kategori harus diisi');
       return;
     }
@@ -41,11 +49,21 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
 
       const bookData = {
         title: formData.title,
-        author: formData.author,
+        author_id: parseInt(formData.author_id) || 0,
+        publisher_id: parseInt(formData.publisher_id) || 0,
         isbn: formData.isbn || '',
-        category: formData.category,
-        quantity: parseInt(formData.quantity) || 1,
-        place: formData.place || '',
+        sub_category_id: parseInt(formData.sub_category_id) || 0,
+        num_book_available: parseInt(formData.num_book_available) || 1,
+        num_page: parseInt(formData.num_page) || 0,
+        year_published: formData.year_published ? new Date(formData.year_published).toISOString() : new Date().toISOString(),
+        city_origin: formData.city_origin || '',
+        ddc: formData.ddc || '',
+        eksemplar_code: formData.eksemplar_code || '',
+        location_id: parseInt(formData.location_id) || 0,
+        desc_fisik_buku: formData.desc_fisik_buku || '',
+        desc_singkat_buku: formData.desc_singkat_buku || '',
+        cover: '',
+        rating: 0,
       };
 
       console.log('📤 Creating book:', bookData);
@@ -55,7 +73,22 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
       alert('Buku berhasil ditambahkan!');
       
       // Reset form
-      setFormData({ title: '', author: '', isbn: '', category: '', quantity: '', place: '' });
+      setFormData({ 
+        title: '', 
+        author_id: '', 
+        publisher_id: '', 
+        isbn: '', 
+        sub_category_id: '', 
+        num_book_available: '', 
+        num_page: '', 
+        year_published: '', 
+        city_origin: '', 
+        ddc: '', 
+        eksemplar_code: '', 
+        location_id: '', 
+        desc_fisik_buku: '', 
+        desc_singkat_buku: '' 
+      });
       onClose();
       
       // Refresh parent data
@@ -74,110 +107,167 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Tambah Buku">
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
         {error && (
           <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
             {error}
           </div>
         )}
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Judul *</label>
+            <Input
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="Masukkan judul buku"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">ISBN *</label>
+            <Input
+              name="isbn"
+              value={formData.isbn}
+              onChange={handleChange}
+              placeholder="Masukkan ISBN"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Author ID *</label>
+            <Input
+              type="number"
+              name="author_id"
+              value={formData.author_id}
+              onChange={handleChange}
+              placeholder="ID Penulis"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Publisher ID</label>
+            <Input
+              type="number"
+              name="publisher_id"
+              value={formData.publisher_id}
+              onChange={handleChange}
+              placeholder="ID Penerbit"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sub Category ID *</label>
+            <Input
+              type="number"
+              name="sub_category_id"
+              value={formData.sub_category_id}
+              onChange={handleChange}
+              placeholder="ID Sub Kategori"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah Tersedia *</label>
+            <Input
+              type="number"
+              name="num_book_available"
+              value={formData.num_book_available}
+              onChange={handleChange}
+              placeholder="Jumlah buku"
+              min="1"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah Halaman</label>
+            <Input
+              type="number"
+              name="num_page"
+              value={formData.num_page}
+              onChange={handleChange}
+              placeholder="Jumlah halaman"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tahun Terbit</label>
+            <Input
+              type="date"
+              name="year_published"
+              value={formData.year_published}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Asal Kota</label>
+            <Input
+              name="city_origin"
+              value={formData.city_origin}
+              onChange={handleChange}
+              placeholder="Kota asal"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">DDC</label>
+            <Input
+              name="ddc"
+              value={formData.ddc}
+              onChange={handleChange}
+              placeholder="Dewey Decimal Classification"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Kode Eksemplar</label>
+            <Input
+              name="eksemplar_code"
+              value={formData.eksemplar_code}
+              onChange={handleChange}
+              placeholder="Kode eksemplar"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Lokasi ID</label>
+            <select
+              name="location_id"
+              value={formData.location_id}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent"
+            >
+              <option value="">Pilih Lokasi</option>
+              <option value="1">Lokasi 1</option>
+              <option value="2">Lokasi 2</option>
+              <option value="3">Lokasi 3</option>
+              <option value="4">Lokasi 4</option>
+              <option value="5">Lokasi 5</option>
+              <option value="6">Lokasi 6</option>
+              <option value="7">Lokasi 7</option>
+            </select>
+          </div>
+        </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Judul</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi Fisik Buku</label>
           <Input
-            name="title"
-            value={formData.title}
+            name="desc_fisik_buku"
+            value={formData.desc_fisik_buku}
             onChange={handleChange}
-            placeholder="Masukkan judul buku"
-            required
+            placeholder="Contoh: Softcover, ukuran A4"
           />
         </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Penulis</label>
-          <Input
-            name="author"
-            value={formData.author}
-            onChange={handleChange}
-            placeholder="Masukkan nama penulis"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">ISBN</label>
-          <Input
-            name="isbn"
-            value={formData.isbn}
-            onChange={handleChange}
-            placeholder="Masukkan ISBN"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
+          <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi Singkat</label>
+          <textarea
+            name="desc_singkat_buku"
+            value={formData.desc_singkat_buku}
+            onChange={handleChange as any}
+            placeholder="Deskripsi singkat buku..."
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent"
-            required
-          >
-            <option value="">Pilih Kategori</option>
-            <option value="mtk">Matematika</option>
-            <option value="fisika">Fisika</option>
-            <option value="kimia">Kimia</option>
-            <option value="biologi">Biologi</option>
-            <option value="ipa">Ilmu Pengetahuan Alam (IPA)</option>
-            <option value="ips">Ilmu Pengetahuan Sosial (IPS)</option>
-            <option value="sejarah">Sejarah</option>
-            <option value="geografi">Geografi</option>
-            <option value="ekonomi">Ekonomi</option>
-            <option value="sosio">Sosiologi</option>
-            <option value="bindo">Bahasa Indonesia</option>
-            <option value="beng">Bahasa Inggris</option>
-            <option value="basing">Bahasa Asing Lainnya</option>
-            <option value="ppkn">Pendidikan Pancasila dan Kewarganegaraan (PPKn)</option>
-            <option value="tik">Informatika / TIK</option>
-            <option value="senbud">Seni Budaya</option>
-            <option value="penjas">Pendidikan Jasmani dan Kesehatan</option>
-            <option value="novfik">Novel dan Fiksi</option>
-            <option value="cerpuis">Cerpen dan Puisi</option>
-            <option value="ensik">Ensiklopedia</option>
-            <option value="alquran">Al-Qur'an</option>
-            <option value="juzamma">Juz Amma</option>
-            <option value="alkitab">Alkitab</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Lokasi</label>
-          <select
-            name="place"
-            value={formData.place}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent"
-            required
-          >
-            <option value="">Pilih Lokasi Buku</option>
-            <option value="Posisi 1">Rak Koleksi Novel dan Fiksi (1)</option>
-            <option value="Posisi 2">Rak Koleksi Ensiklopedia (2)</option>
-            <option value="Posisi 3">Rak Koleksi Keagamaan (3)</option>
-            <option value="Posisi 4">Area Tamu (4)</option>
-            <option value="Posisi 5">Rak Koleksi Buku Pelajaran (5)</option>
-            <option value="Posisi 6">Rak Koleksi Buku Pelajaran (6)</option>
-            <option value="Posisi 7">Meja Baca (7)</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah</label>
-          <Input
-            type="number"
-            name="quantity"
-            value={formData.quantity}
-            onChange={handleChange}
-            placeholder="Masukkan jumlah"
-            min="1"
-            required
+            rows={3}
           />
         </div>
-        <div className="flex gap-3 pt-4">
+
+        <div className="flex gap-3 pt-4 sticky bottom-0 bg-white">
           <Button type="button" variant="outline" onClick={onClose} className="flex-1">
             Batal
           </Button>

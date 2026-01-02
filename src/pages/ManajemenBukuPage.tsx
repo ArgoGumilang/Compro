@@ -46,7 +46,7 @@ export function ManajemenBukuPage() {
   const filteredBooks = useMemo(() => {
     return books.filter(
       (book) =>
-        book.author_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.author?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         book.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         book.isbn?.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -209,10 +209,6 @@ export function ManajemenBukuPage() {
             Tambah Buku
           </Button>
           <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530] transition-all duration-300 font-semibold">
-            <Download size={18} />
-            Import
-          </Button>
-          <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530] transition-all duration-300 font-semibold">
             <Filter size={18} />
             Filter
           </Button>
@@ -258,10 +254,10 @@ export function ManajemenBukuPage() {
                   <tr key={book.id} className="hover:bg-gray-50 transition-all duration-200">
                     <td className="px-6 py-4 text-sm text-gray-700 font-medium">{startIndex + index + 1}</td>
                     <td className="px-6 py-4 text-sm text-gray-700 font-medium">{book.title || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{book.author_name || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{book.author?.name || "-"}</td>
                     <td className="px-6 py-4 text-sm text-gray-700">{book.isbn || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{book.year_of_publication || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.stock || 0}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{book.year_published ? new Date(book.year_published).getFullYear() : "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.num_book_available ?? 0}</td>
                     <td className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-2">
                         <button
