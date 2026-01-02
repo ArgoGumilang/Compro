@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, Trash2 } from 'lucide-react';
+import { Search, Filter, Eye, Trash2, Plus } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import DetailPeminjamanModal from '../components/modals/DetailPeminjamanModal';
 import { DeleteBorrowModal } from "../components/modals/delete-pinjam-modal";
-import { getAllBookingHistories } from '../lib/api';
+import { AddPeminjamanModal } from "../components/modals/add-peminjaman-modal";
+import { getAllBookingHistories, getAllUsers, getAllBooks } from '../lib/api';
 
 const PeminjamanAktifPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -12,6 +13,7 @@ const PeminjamanAktifPage: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [selectedPeminjaman, setSelectedPeminjaman] = useState<any | undefined>(undefined);
   const [deleteBorrowOpen, setDeleteModalOpen] = useState<boolean>(false);
+  const [addPeminjamanOpen, setAddPeminjamanOpen] = useState<boolean>(false);
   const itemsPerPage = 10;
 
   const [bookingHistories, setBookingHistories] = useState<any[]>([]);
@@ -26,11 +28,40 @@ const PeminjamanAktifPage: React.FC = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await getAllBookingHistories();
-      console.log("📚 Booking histories:", data);
-      // Backend return {booking_histories: [], page: 1, ...}
-      const historiesArray = data.booking_histories || data.bookingHistories || data;
-      setBookingHistories(Array.isArray(historiesArray) ? historiesArray : []);
+      
+      // Fetch booking histories, users, and books in parallel
+      const [bookingsData, usersData, booksData] = await Promise.all([
+        getAllBookingHistories().catch(() => []),
+        getAllUsers().catch(() => ({ users: [] })),
+        getAllBooks().catch(() => ({ books: [] })),
+      ]);
+      
+      console.log("📚 Booking histories raw response:", bookingsData);
+      console.log("👥 Users data:", usersData);
+      console.log("📖 Books data:", booksData);
+      
+      // Extract arrays
+      const historiesArray = bookingsData.booking_histories || bookingsData.bookingHistories || bookingsData;
+      const usersArray = usersData.users || usersData || [];
+      const booksArray = booksData.books || booksData || [];
+      
+      console.log("📚 Histories array after extraction:", historiesArray);
+      console.log("📚 Array length:", Array.isArray(historiesArray) ? historiesArray.length : 'not array');
+      
+      // Join data: add user_name and book_title to each booking
+      const enrichedHistories = (Array.isArray(historiesArray) ? historiesArray : []).map((booking: any) => {
+        const user = usersArray.find((u: any) => u.id === booking.user_id);
+        const book = booksArray.find((b: any) => b.id === booking.book_id);
+        
+        return {
+          ...booking,
+          user_name: user?.full_name || user?.username || `User ID ${booking.user_id}`,
+          book_title: book?.title || `Book ID ${booking.book_id}`,
+        };
+      });
+      
+      console.log("✨ Enriched histories with names:", enrichedHistories);
+      setBookingHistories(enrichedHistories);
     } catch (err: any) {
       console.error("❌ Failed to fetch booking histories:", err);
       if (err.message.includes("403") || err.message.includes("Forbidden")) {
@@ -40,7 +71,7 @@ const PeminjamanAktifPage: React.FC = () => {
       }
       // Dummy data untuk development
       setBookingHistories([
-        { id: 1, user_name: 'User Test', book_title: 'Buku Test', borrowed_date: '2024-01-01', return_date: '2024-01-15', status: 'active' },
+        { id: 1, user_name: 'User Test', book_title: 'Buku Test', booking_date: '2024-01-01', return_date: '2024-01-15', status: 'active' },
       ]);
     } finally {
       setLoading(false);
@@ -115,6 +146,13 @@ const PeminjamanAktifPage: React.FC = () => {
               className="pl-10 bg-white border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
             />
           </div>
+          <Button 
+            onClick={() => setAddPeminjamanOpen(true)}
+            className="gap-2 bg-[#BE4139] text-white rounded-xl hover:bg-[#9e3530] transition-all duration-300 font-semibold"
+          >
+            <Plus size={18} />
+            Tambah Peminjaman
+          </Button>
           <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530] transition-all duration-300 font-semibold">
             <Filter size={18} />
             Filter
@@ -160,7 +198,7 @@ const PeminjamanAktifPage: React.FC = () => {
                     <td className="px-6 py-4 text-sm text-gray-700 font-medium">{startIndex + index + 1}</td>
                     <td className="px-6 py-4 text-sm text-gray-700 font-medium">{item.user_name || '-'}</td>
                     <td className="px-6 py-4 text-sm text-gray-700">{item.book_title || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{item.borrowed_date ? new Date(item.borrowed_date).toLocaleDateString() : '-'}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">{item.booking_date ? new Date(item.booking_date).toLocaleDateString() : '-'}</td>
                     <td className="px-6 py-4 text-sm text-gray-700">{item.return_date ? new Date(item.return_date).toLocaleDateString() : '-'}</td>
                     <td className="px-6 py-4 text-sm">
                       <span
@@ -208,16 +246,23 @@ const PeminjamanAktifPage: React.FC = () => {
         <DetailPeminjamanModal
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          data={{
-            nama: selectedPeminjaman.nama,
-            judul: selectedPeminjaman.judul,
-            tanggalPinjam: selectedPeminjaman.tanggalPinjam,
-            tanggalKembali: selectedPeminjaman.tanggalKembali,
-            tanggalPengembalian: selectedPeminjaman.tanggalKembali,
-          }}
+          bookingId={selectedPeminjaman.id}
         />
       )}
-      <DeleteBorrowModal isOpen={deleteBorrowOpen} borrow={selectedPeminjaman} onClose={() => setDeleteModalOpen(false)}/>
+      <DeleteBorrowModal 
+        isOpen={deleteBorrowOpen} 
+        borrow={selectedPeminjaman} 
+        onClose={() => setDeleteModalOpen(false)}
+      />
+      <AddPeminjamanModal
+        isOpen={addPeminjamanOpen}
+        onClose={() => setAddPeminjamanOpen(false)}
+        onSuccess={async () => {
+          console.log('🔄 Refreshing booking histories...');
+          await loadBookingHistories();
+          console.log('✅ Booking histories refreshed');
+        }}
+      />
     </div>
   );
 };

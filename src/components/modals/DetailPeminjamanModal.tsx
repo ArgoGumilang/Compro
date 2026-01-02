@@ -1,21 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
+import { getBookingHistoryById, getUserById, getBookById } from '../../lib/api';
 
 interface DetailPeminjamanModalProps {
   isOpen: boolean;
   onClose: () => void;
-  data: {
-    nama: string;
-    judul: string;
-    tanggalPinjam: string;
-    tanggalKembali: string;
-    tanggalPengembalian: string;
+  bookingId?: number;
+  data?: {
+    nama?: string;
+    judul?: string;
+    tanggalPinjam?: string;
+    tanggalKembali?: string;
+    tanggalPengembalian?: string;
   };
 }
 
-const DetailPeminjamanModal: React.FC<DetailPeminjamanModalProps> = ({ isOpen, onClose, data }) => {
-  const [selectedDate, setSelectedDate] = useState<string>(data.tanggalPengembalian);
+const DetailPeminjamanModal: React.FC<DetailPeminjamanModalProps> = ({ isOpen, onClose, bookingId, data: propData }) => {
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState(propData || {
+    nama: '',
+    judul: '',
+    tanggalPinjam: '',
+    tanggalKembali: '',
+    tanggalPengembalian: '',
+  });
+  
+  useEffect(() => {
+    if (isOpen && bookingId) {
+      loadBookingDetail();
+    } else if (isOpen && propData) {
+      setData(propData);
+    }
+  }, [isOpen, bookingId]);
+
+  const loadBookingDetail = async () => {
+    if (!bookingId) return;
+    
+    try {
+      setLoading(true);
+      const booking = await getBookingHistoryById(bookingId);
+      console.log('📚 Booking detail:', booking);
+      
+      // Fetch user and book details
+      const [user, book] = await Promise.all([
+        getUserById(booking.user_id).catch(() => null),
+        getBookById(booking.book_id).catch(() => null),
+      ]);
+      
+      setData({
+        nama: user?.full_name || user?.username || 'Unknown User',
+        judul: book?.title || 'Unknown Book',
+        tanggalPinjam: booking.borrowed_date || booking.booking_date || '',
+        tanggalKembali: booking.return_date || '',
+        tanggalPengembalian: booking.return_date || '',
+      });
+    } catch (err) {
+      console.error('Failed to load booking detail:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const [selectedDate, setSelectedDate] = useState<string>(data.tanggalPengembalian || '');
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const [currentMonth, setCurrentMonth] = useState<number>(8); // September (0-indexed)
   const [currentYear, setCurrentYear] = useState<number>(2025);
@@ -89,7 +136,13 @@ const DetailPeminjamanModal: React.FC<DetailPeminjamanModalProps> = ({ isOpen, o
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Detail Peminjaman">
-      <div className="space-y-4">
+      {loading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE4139] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading detail...</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
         {/* Nama */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Nama</label>
@@ -135,16 +188,7 @@ const DetailPeminjamanModal: React.FC<DetailPeminjamanModalProps> = ({ isOpen, o
         </div>
 
         {/* Tanggal Pengembalian with Calendar */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Pengembalian</label>
-          <input
-            type="text"
-            value={selectedDate}
-            readOnly
-            onClick={() => setShowCalendar(!showCalendar)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 cursor-pointer"
-          />
-        </div>
+
 
         {/* Footer */}
         <div className="flex justify-end pt-4 border-t border-gray-200">
@@ -155,7 +199,8 @@ const DetailPeminjamanModal: React.FC<DetailPeminjamanModalProps> = ({ isOpen, o
             Simpan
           </Button>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Calendar Popup */}
       {showCalendar && (

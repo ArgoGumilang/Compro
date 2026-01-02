@@ -31,6 +31,61 @@ export function clearTokens() {
   console.log("🗑️ Tokens cleared from localStorage");
 }
 
+// Refresh Token Function
+let isRefreshing = false;
+let refreshPromise: Promise<any> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (isRefreshing && refreshPromise) {
+    console.log("⏳ Token refresh already in progress, waiting...");
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    try {
+      console.log("🔄 Refreshing access token...");
+      const response = await fetch(`${API_BASE_URL}/refresh_token`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        console.error("❌ Token refresh failed:", response.status);
+        clearTokens();
+        window.location.href = "/login";
+        return null;
+      }
+
+      const data = await response.json();
+      
+      if (data.access_token) {
+        setTokens(data.access_token, data.refresh_token);
+        console.log("✅ Token refreshed successfully");
+        return data.access_token;
+      }
+
+      console.error("❌ No access token in refresh response");
+      clearTokens();
+      window.location.href = "/login";
+      return null;
+    } catch (error) {
+      console.error("❌ Token refresh error:", error);
+      clearTokens();
+      window.location.href = "/login";
+      return null;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 // Helper function untuk fetch dengan credentials
 async function fetchWithCredentials(url: string, options: RequestInit = {}) {
   const fullUrl = `${API_BASE_URL}${url}`;
@@ -63,10 +118,69 @@ async function fetchWithCredentials(url: string, options: RequestInit = {}) {
 
     console.log("✅ Response status:", response.status);
 
+    // Handle 401 Unauthorized - token expired
+    if (response.status === 401) {
+      console.log("🔄 Token expired (401), attempting refresh...");
+      const newToken = await refreshAccessToken();
+      
+      if (newToken) {
+        // Retry request with new token
+        headers["Authorization"] = `Bearer ${newToken}`;
+        console.log("🔁 Retrying request with new token...");
+        
+        const retryResponse = await fetch(fullUrl, {
+          ...options,
+          credentials: "include",
+          headers,
+        });
+
+        if (!retryResponse.ok) {
+          const contentType = retryResponse.headers.get("content-type");
+          let error: any = { message: `HTTP ${retryResponse.status}` };
+          
+          if (contentType && contentType.includes("application/json")) {
+            try {
+              error = await retryResponse.json();
+            } catch (e) {
+              console.error("Failed to parse error JSON:", e);
+            }
+          } else {
+            const text = await retryResponse.text();
+            error = { message: text || `HTTP ${retryResponse.status}` };
+          }
+          
+          console.error("❌ Response error after retry:", error);
+          throw new Error(error.message || error.error || JSON.stringify(error) || `HTTP ${retryResponse.status}`);
+        }
+
+        const data = await retryResponse.json();
+        console.log("📦 Response data (after retry):", data);
+        return data;
+      }
+      
+      // If refresh failed, will redirect to login (handled in refreshAccessToken)
+      throw new Error("Session expired");
+    }
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: "Request failed" }));
+      const contentType = response.headers.get("content-type");
+      let error: any = { message: `HTTP ${response.status}` };
+      
+      if (contentType && contentType.includes("application/json")) {
+        try {
+          error = await response.json();
+        } catch (e) {
+          console.error("Failed to parse error JSON:", e);
+        }
+      } else {
+        const text = await response.text();
+        error = { message: text || `HTTP ${response.status}` };
+      }
+      
       console.error("❌ Response error:", error);
-      throw new Error(error.message || `HTTP ${response.status}`);
+      console.error("❌ Full response headers:", Object.fromEntries(response.headers.entries()));
+      
+      throw new Error(error.message || error.error || JSON.stringify(error) || `HTTP ${response.status}`);
     }
 
     const data = await response.json();
@@ -472,7 +586,7 @@ export async function getUserByBarcode(barcode: string) {
 
 export async function getMyProjects() {
   return [
-    { id: 1, name: "Guru", role: "Guru" },
-    { id: 2, name: "Siswa", role: "Siswa" }
+    { id: 2, name: "Guru", role: "Guru" },
+    { id: 1, name: "Siswa", role: "Siswa" }
   ];
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getAllBooks, getAllUsers, getAllBookingHistories } from '../lib/api';
+import { getAllBooks, getAllUsers, getAllBookingHistories, getAllVisitHists } from '../lib/api';
 
 const DashboardPage: React.FC = () => {
   const [kunjunganFilter, setKunjunganFilter] = useState<'perhari' | 'perbulan' | 'pertahun'>('perhari');
@@ -11,7 +11,10 @@ const DashboardPage: React.FC = () => {
   const [totalMembers, setTotalMembers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [peminjamanChartData, setPeminjamanChartData] = useState<any[]>([]);
+  const [kunjunganChartData, setKunjunganChartData] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [allHistories, setAllHistories] = useState<any[]>([]);
+  const [allVisits, setAllVisits] = useState<any[]>([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -22,43 +25,58 @@ const DashboardPage: React.FC = () => {
       setLoading(true);
       
       // Fetch all data in parallel
-      const [booksRes, usersRes, borrowRes] = await Promise.all([
+      const [booksRes, usersRes, borrowRes, visitsRes] = await Promise.all([
         getAllBooks().catch(() => ({ books: [] })),
         getAllUsers().catch(() => ({ users: [] })),
-        getAllBookingHistories().catch(() => ({ booking_histories: [] }))
+        getAllBookingHistories().catch(() => ({ booking_histories: [] })),
+        getAllVisitHists().catch(() => ({ visit_hists: [] }))
       ]);
 
       // Extract arrays
-      const books = booksRes.books || booksRes || [];
-      const users = usersRes.users || usersRes || [];
-      const histories = borrowRes.booking_histories || borrowRes.bookingHistories || borrowRes || [];
+      const booksArray = booksRes.books || booksRes || [];
+      const usersArray = usersRes.users || usersRes || [];
+      const historiesArray = borrowRes.booking_histories || borrowRes.bookingHistories || borrowRes || [];
+      const visitsArray = visitsRes.visit_hists || visitsRes || [];
 
       // Count totals
-      setTotalBooks(Array.isArray(books) ? books.length : 0);
-      setTotalMembers(Array.isArray(users) ? users.length : 0);
+      setTotalBooks(Array.isArray(booksArray) ? booksArray.length : 0);
+      setTotalMembers(Array.isArray(usersArray) ? usersArray.length : 0);
       
-      // Count active borrows
-      const activeBorrows = Array.isArray(histories) 
-        ? histories.filter((h: any) => h.status === 'active' || h.status === 'borrowed').length 
+      // Count active borrows (status = true)
+      const activeBorrows = Array.isArray(historiesArray) 
+        ? historiesArray.filter((h: any) => h.status === true).length 
         : 0;
       setTotalBorrowed(activeBorrows);
 
-      // Generate chart data from histories
-      if (Array.isArray(histories) && histories.length > 0) {
-        const chartData = generatePeminjamanChartData(histories);
-        setPeminjamanChartData(chartData);
+      // Join data: add user_name and book_title
+      const enrichedHistories = (Array.isArray(historiesArray) ? historiesArray : []).map((booking: any) => {
+        const user = usersArray.find((u: any) => u.id === booking.user_id);
+        const book = booksArray.find((b: any) => b.id === booking.book_id);
         
-        // Get recent 5 activities sorted by date
-        const sortedHistories = [...histories].sort((a, b) => {
-          const dateA = new Date(a.borrowed_date || 0).getTime();
-          const dateB = new Date(b.borrowed_date || 0).getTime();
+        return {
+          ...booking,
+          user_name: user?.full_name || user?.username || `User ID ${booking.user_id}`,
+          book_title: book?.title || `Book ID ${booking.book_id}`,
+        };
+      });
+
+      // Store all data for filtering
+      setAllHistories(enrichedHistories);
+      setAllVisits(Array.isArray(visitsArray) ? visitsArray : []);
+
+      // Get recent 5 activities sorted by date
+      if (enrichedHistories.length > 0) {
+        const sortedHistories = [...enrichedHistories].sort((a, b) => {
+          const dateA = new Date(a.date || a.booking_date || 0).getTime();
+          const dateB = new Date(b.date || b.booking_date || 0).getTime();
           return dateB - dateA; // newest first
         }).slice(0, 5);
         
+        console.log("🔍 Recent activities sample:", sortedHistories[0]);
         setRecentActivities(sortedHistories);
       }
 
-      console.log("📊 Dashboard data loaded:", { books: books.length, users: users.length, borrowed: activeBorrows });
+      console.log("📊 Dashboard data loaded:", { books: booksArray.length, users: usersArray.length, borrowed: activeBorrows, visits: visitsArray.length });
     } catch (err) {
       console.error("❌ Failed to load dashboard:", err);
     } finally {
@@ -66,39 +84,117 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const generatePeminjamanChartData = (histories: any[]) => {
-    // Group by day of week (last 7 days)
-    const daysOfWeek = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const counts: any = {};
-    
-    daysOfWeek.forEach(day => {
-      counts[day] = 0;
-    });
+  // Update charts when filter or data changes
+  useEffect(() => {
+    if (allHistories.length > 0) {
+      const chartData = generatePeminjamanChartData(allHistories, peminjamanFilter);
+      setPeminjamanChartData(chartData);
+    }
+  }, [peminjamanFilter, allHistories]);
 
-    histories.forEach((h: any) => {
-      if (h.borrowed_date) {
-        const date = new Date(h.borrowed_date);
-        const dayName = daysOfWeek[date.getDay()];
-        counts[dayName] = (counts[dayName] || 0) + 1;
-      }
-    });
+  useEffect(() => {
+    if (allVisits.length > 0) {
+      const chartData = generateKunjunganChartData(allVisits, kunjunganFilter);
+      setKunjunganChartData(chartData);
+    }
+  }, [kunjunganFilter, allVisits]);
 
-    return Object.entries(counts).map(([name, value]) => ({
-      name,
-      Peminjaman: value
-    }));
+  const generatePeminjamanChartData = (histories: any[], filter: string) => {
+    if (filter === 'perhari') {
+      // Last 7 days by day name
+      const daysOfWeek = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const counts: any = {};
+      daysOfWeek.forEach(day => { counts[day] = 0; });
+
+      histories.forEach((h: any) => {
+        if (h.date || h.booking_date) {
+          const date = new Date(h.date || h.booking_date);
+          const dayName = daysOfWeek[date.getDay()];
+          counts[dayName] = (counts[dayName] || 0) + 1;
+        }
+      });
+
+      return daysOfWeek.map(name => ({ name, Peminjaman: counts[name] }));
+    } else if (filter === 'perbulan') {
+      // Last 12 months
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+      const counts: any = {};
+      months.forEach(month => { counts[month] = 0; });
+
+      histories.forEach((h: any) => {
+        if (h.date || h.booking_date) {
+          const date = new Date(h.date || h.booking_date);
+          const monthName = months[date.getMonth()];
+          counts[monthName] = (counts[monthName] || 0) + 1;
+        }
+      });
+
+      return months.map(name => ({ name, Peminjaman: counts[name] }));
+    } else {
+      // Per tahun - group by year
+      const counts: any = {};
+      histories.forEach((h: any) => {
+        if (h.date || h.booking_date) {
+          const year = new Date(h.date || h.booking_date).getFullYear();
+          counts[year] = (counts[year] || 0) + 1;
+        }
+      });
+
+      return Object.entries(counts)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([name, value]) => ({ name, Peminjaman: value }));
+    }
   };
 
-  // Data untuk Grafik Kunjungan (dummy - backend belum ada endpoint)
-  const kunjunganData = [
-    { name: 'Senin', Siswa: 35, Guru: 22 },
-    { name: 'Selasa', Siswa: 42, Guru: 35 },
-    { name: 'Rabu', Siswa: 28, Guru: 15 },
-    { name: 'Kamis', Siswa: 68, Guru: 30 },
-    { name: 'Jumat', Siswa: 52, Guru: 28 },
-  ];
+  const generateKunjunganChartData = (visits: any[], filter: string) => {
+    if (filter === 'perhari') {
+      const daysOfWeek = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const counts: any = {};
+      daysOfWeek.forEach(day => { counts[day] = 0; });
 
-  // Data untuk Grafik Peminjaman dari backend
+      visits.forEach((v: any) => {
+        if (v.visit_date) {
+          const date = new Date(v.visit_date);
+          const dayName = daysOfWeek[date.getDay()];
+          counts[dayName] = (counts[dayName] || 0) + 1;
+        }
+      });
+
+      return daysOfWeek.map(name => ({ name, Kunjungan: counts[name] }));
+    } else if (filter === 'perbulan') {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+      const counts: any = {};
+      months.forEach(month => { counts[month] = 0; });
+
+      visits.forEach((v: any) => {
+        if (v.visit_date) {
+          const date = new Date(v.visit_date);
+          const monthName = months[date.getMonth()];
+          counts[monthName] = (counts[monthName] || 0) + 1;
+        }
+      });
+
+      return months.map(name => ({ name, Kunjungan: counts[name] }));
+    } else {
+      const counts: any = {};
+      visits.forEach((v: any) => {
+        if (v.visit_date) {
+          const year = new Date(v.visit_date).getFullYear();
+          counts[year] = (counts[year] || 0) + 1;
+        }
+      });
+
+      return Object.entries(counts)
+        .sort(([a], [b]) => Number(a) - Number(b))
+        .map(([name, value]) => ({ name, Kunjungan: value }));
+    }
+  };
+
+  // Data untuk charts
+  const kunjunganData = kunjunganChartData.length > 0 
+    ? kunjunganChartData 
+    : [{ name: 'Tidak ada data', Kunjungan: 0 }];
+
   const peminjamanData = peminjamanChartData.length > 0 
     ? peminjamanChartData 
     : [{ name: 'Tidak ada data', Peminjaman: 0 }];
@@ -175,8 +271,7 @@ const DashboardPage: React.FC = () => {
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
               <Legend wrapperStyle={{ fontSize: '12px' }} />
-              <Bar dataKey="Siswa" fill="#8B7FFF" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Guru" fill="#FFA6A6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Kunjungan" fill="#8B7FFF" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -251,7 +346,7 @@ const DashboardPage: React.FC = () => {
                   </p>
                 </div>
                 <span className="text-xs text-[#BE4139] font-semibold bg-red-100 px-3 py-1 rounded-full">
-                  {item.borrowed_date ? new Date(item.borrowed_date).toLocaleDateString('id-ID') : '-'}
+                  {(item.date || item.booking_date) ? new Date(item.date || item.booking_date).toLocaleDateString('id-ID') : '-'}
                 </span>
               </div>
             ))}

@@ -1,21 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Plus, Filter } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { AddAbsenceModal } from "../components/modals/add-presensi-modal";
-
-const PRESENSI_DATA = [
-  { id: 1, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
-  { id: 2, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "08/26/2022" },
-  { id: 3, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
-  { id: 4, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
-  { id: 5, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
-  { id: 6, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
-  { id: 7, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
-  { id: 8, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
-  { id: 9, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "-", role: "Guru", tanggal: "05/09/2022" },
-  { id: 10, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
-];
+import { getAllVisitHists, getAllUsers } from "../lib/api";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -23,18 +11,74 @@ export function DataPresensiPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [presensiData, setPresensiData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    loadPresensiData();
+  }, []);
+
+  const loadPresensiData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      
+      const [visitsData, usersData] = await Promise.all([
+        getAllVisitHists().catch(() => ({ visit_hists: [] })),
+        getAllUsers().catch(() => ({ users: [] })),
+      ]);
+      
+      console.log("📚 Visit hists response:", visitsData);
+      console.log("👥 Users data:", usersData);
+      
+      const visitsArray = visitsData.visit_hists || visitsData || [];
+      const usersArray = usersData.users || usersData || [];
+      
+      // Join data: add user info to each visit
+      const enrichedVisits = (Array.isArray(visitsArray) ? visitsArray : []).map((visit: any) => {
+        const user = usersArray.find((u: any) => u.id === visit.user_id);
+        
+        return {
+          id: visit.id,
+          nama: user?.full_name || user?.username || `User ID ${visit.user_id}`,
+          nisNip: user?.nis_nip || user?.username || '-',
+          email: user?.email || '-',
+          kelas: user?.kelas || '-',
+          role: user?.role?.name || 'Siswa',
+          tanggal: visit.visit_date || visit.created_at || '-',
+          user_id: visit.user_id,
+        };
+      });
+      
+      console.log("✨ Enriched visits:", enrichedVisits);
+      setPresensiData(enrichedVisits);
+    } catch (err: any) {
+      console.error("❌ Failed to fetch presensi:", err);
+      setError(err.message || "Gagal memuat data presensi");
+      // Dummy fallback
+      setPresensiData([
+        { id: 1, nama: "Nama Lengkap", nisNip: "11040", email: "email@gmail.com", kelas: "kelas", role: "Siswa", tanggal: "10/26/2022" },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredData = useMemo(() => {
-    return PRESENSI_DATA.filter(
+    return presensiData.filter(
       (item) =>
-        item.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.nisNip.includes(searchQuery)
+        item.nama?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.nisNip?.includes(searchQuery)
     );
-  }, [searchQuery]);
+  }, [searchQuery, presensiData]);
 
-  const totalPages = 68; // Sesuai gambar
-  const paginatedData = filteredData.slice(0, ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -150,6 +194,23 @@ export function DataPresensiPage() {
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-xl border-2 border-[#BE4139] overflow-hidden">
+        {loading ? (
+          <div className="p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE4139] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading data...</p>
+          </div>
+        ) : error ? (
+          <div className="p-12 text-center">
+            <p className="text-red-600 font-semibold mb-2">{error}</p>
+            <button 
+              onClick={loadPresensiData}
+              className="mt-4 px-4 py-2 bg-[#BE4139] text-white rounded-xl hover:bg-[#9e3530]"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#BE4139] border-b-2 border-[#BE4139]">
@@ -186,11 +247,22 @@ export function DataPresensiPage() {
         </div>
 
         {/* Pagination */}
-        <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-1">
-          {renderPagination()}
-        </div>
+        {presensiData.length > 0 && (
+          <div className="bg-white px-6 py-4 border-t-2 border-[#BE4139] flex items-center justify-center gap-1">
+            {renderPagination()}
+          </div>
+        )}
+        </>
+        )}
       </div>
-      <AddAbsenceModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} />
+      <AddAbsenceModal 
+        isOpen={addModalOpen} 
+        onClose={() => setAddModalOpen(false)}
+        onSuccess={() => {
+          loadPresensiData();
+          setAddModalOpen(false);
+        }}
+      />
     </div>
   );
 }

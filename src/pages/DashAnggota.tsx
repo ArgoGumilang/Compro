@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, User, ChevronDown } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
+import { getAllBooks } from "../lib/api";
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -232,51 +233,20 @@ const Hero: React.FC = () => {
 };
 
 /* ================= BOOK CARD ================= */
-const books = [
-  {
-    cover: "https://cdn.eurekabookhouse.co.id/ebh/product/all/004510075020.jpg",
-    title: "Matematika Wajib SMA/MA XII",
-    author: "B. K. Noormandiri",
-  },
-  {
-    cover: "https://grafindo.co.id/wp-content/uploads/2023/03/02.-IPA-Fisika-X.jpg",
-    title: "Fisika Dasar SMA/MA X",
-    author: "Ganis Sanhaji & Rani Nopriyanti",
-  },
-  {
-    cover: "https://ebook.erlanggaonline.co.id/cover/C0075470020.png",
-    title: "Kimia Organik Volume 1",
-    author: "Riswiyanto",
-  },
-  {
-    cover: "https://ebooks.gramedia.com/ebook-covers/65525/image_highres/BLK_BS2021729578.jpg",
-    title: "Biologi Sel",
-    author: "Prof. Subowo, dr., M.Sc., Ph.D.",
-  },
-  {
-    cover: "https://ebooks.gramedia.com/ebook-covers/64249/image_highres/BLK_BSSISK12021771122.jpg",
-    title: "Sejarah Indonesia SMA/MA X",
-    author: "Windriati, S.Pd.",
-  },
-  {
-    cover: "https://cdn.gramedia.com/uploads/picture_meta/2023/10/3/tgtdyqyw93edhjtonruupw.jpg",
-    title: "Pengantar Ekonomi Mikro",
-    author: "Prof. Asosiat Dr. Suhardi, S.E., M.M.",
-  },
-  {
-    cover: "https://grafindo.co.id/wp-content/uploads/2022/11/B-INGGRIS-SMA-X-Kumerka.jpg",
-    title: "Bahasa Inggris SMA/MA X",
-    author: "Windi Asariastika & Priscilia Evalita Meliala",
-  },
-];
-
-const BookCard = ({ cover, title, author }: { cover: string; title: string; author: string }) => {
+const BookCard = ({ book }: { book: any }) => {
   const navigate = useNavigate();
   return (
-    <div className="group cursor-pointer" onClick={() => navigate("/detailbuku")}>
-      <img src={cover} alt={title} className="h-52 w-full object-cover rounded-xl mb-3 group-hover:shadow-md transition" />
-      <p className="font-semibold text-sm">{title}</p>
-      <p className="text-xs text-gray-500">{author}</p>
+    <div 
+      className="group cursor-pointer" 
+      onClick={() => navigate(`/detailbuku?id=${book.id}`)}
+    >
+      <img 
+        src={book.cover_url || book.cover || 'https://via.placeholder.com/150x200?text=No+Cover'} 
+        alt={book.title} 
+        className="h-52 w-full object-cover rounded-xl mb-3 group-hover:shadow-md transition" 
+      />
+      <p className="font-semibold text-sm">{book.title}</p>
+      <p className="text-xs text-gray-500">{book.author}</p>
     </div>
   );
 };
@@ -300,6 +270,29 @@ const FAQItem = ({ q, a, open, onClick }: { q: string; a: string; open: boolean;
 /* ================= MAIN PAGE ================= */
 export default function DashAnggota() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [books, setBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  const loadBooks = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllBooks();
+      const booksArray = response.books || response || [];
+      // Limit to 5 books for recommendations
+      const limitedBooks = Array.isArray(booksArray) ? booksArray.slice(0, 5) : [];
+      setBooks(limitedBooks);
+      console.log("📚 Loaded books for recommendations:", limitedBooks.length);
+    } catch (err) {
+      console.error("❌ Failed to load books:", err);
+      setBooks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const faqs = [
     { q: "Bagaimana cara melihat daftar buku yang sedang saya pinjam?", a: "Buka menu 'Pinjaman Saya' untuk melihat semua buku yang sedang Anda pinjam dan tanggal pengembaliannya." },
@@ -320,11 +313,22 @@ export default function DashAnggota() {
             Kami menyarankan buku ini karena aktivitas membacamu!
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
-            {books.map((book, idx) => (
-              <BookCard key={idx} {...book} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE4139] mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading...</p>
+            </div>
+          ) : books.length === 0 ? (
+            <div className="text-center py-8 text-gray-600">
+              Belum ada buku untuk direkomendasikan
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              {books.map((book) => (
+                <BookCard key={book.id} book={book} />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="max-w-3xl mx-auto">
