@@ -294,7 +294,11 @@ export function ManajemenBukuPage() {
       </div>
 
       <ViewBookModal isOpen={viewModalOpen} book={selectedBook} onClose={() => setViewModalOpen(false)} />
-      <AddBookModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} />
+      <AddBookModal 
+        isOpen={addModalOpen} 
+        onClose={() => setAddModalOpen(false)} 
+        onSuccess={loadBooks}
+      />
       <DeleteBookModal isOpen={deleteModalOpen} book={selectedBook} onClose={() => setDeleteModalOpen(false)} />
     </div>
   );

@@ -82,7 +82,7 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ isOpen, member, onClo
           </label>
           <input
             type="text"
-            value={member.role}
+            value={member.role?.name || member.role || '-'}
             readOnly
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
           />

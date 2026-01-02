@@ -272,7 +272,11 @@ export function DataAnggotaPage() {
         </div>
       </div>
       <ViewMemberModal isOpen={viewModalOpen} member={selectedMember ?? undefined} onClose={() => setViewModalOpen(false)}/>
-      <AddMemberModal isOpen={addModalOpen} onClose={() => setAddModalOpen(false)} />
+      <AddMemberModal 
+        isOpen={addModalOpen} 
+        onClose={() => setAddModalOpen(false)} 
+        onSuccess={fetchUsers}
+      />
       <DeleteMemberModal isOpen={deleteModalOpen} member={selectedMember} onClose={() => setDeleteModalOpen(false)} />
     </div>
   );

@@ -183,11 +183,23 @@ async function fetchWithCredentials(url: string, options: RequestInit = {}) {
       throw new Error(error.message || error.error || JSON.stringify(error) || `HTTP ${response.status}`);
     }
 
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await response.text();
+      console.error("❌ Response is not JSON:", text.substring(0, 200));
+      throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+    }
+
     const data = await response.json();
     console.log("📦 Response data:", data);
     return data;
   } catch (error: any) {
     console.error("🔴 Fetch error:", error);
+    // If JSON parse error, show more helpful message
+    if (error.message && error.message.includes("JSON")) {
+      throw new Error("Server mengembalikan response yang tidak valid. Silakan coba lagi atau hubungi admin.");
+    }
     throw error;
   }
 }

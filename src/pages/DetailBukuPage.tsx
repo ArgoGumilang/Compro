@@ -15,6 +15,10 @@ const DetailBukuPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Determine if user is admin or regular user based on current path or role
+  const isAdminView = window.location.pathname.includes('manajemen') || false;
+  const backUrl = isAdminView ? "/manajemen-buku" : "/dashanggota";
+
   /* ======================
      FETCH DATA
   ====================== */
@@ -118,7 +122,7 @@ const DetailBukuPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gray-100 p-8">
         <button
-          onClick={() => navigate("/manajemen-buku")}
+          onClick={() => navigate(backUrl)}
           className="mb-6 flex items-center gap-2 bg-[#BE4139] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#9e3530]"
         >
           <ChevronLeft size={18} />
@@ -127,7 +131,7 @@ const DetailBukuPage: React.FC = () => {
         <div className="bg-white rounded-xl border shadow p-8 text-center">
           <p className="text-red-600 font-semibold mb-4">{error || "Book not found"}</p>
           <button 
-            onClick={() => navigate("/manajemen-buku")} 
+            onClick={() => navigate(backUrl)} 
             className="px-4 py-2 bg-[#BE4139] text-white rounded-xl hover:bg-[#9e3530]"
           >
             Back to Books
@@ -141,7 +145,7 @@ const DetailBukuPage: React.FC = () => {
     <div className="min-h-screen bg-gray-100 p-8">
       {/* BACK */}
       <button
-        onClick={() => navigate("/manajemen-buku")}
+        onClick={() => navigate(backUrl)}
         className="mb-6 flex items-center gap-2 bg-[#BE4139] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#9e3530]"
       >
         <ChevronLeft size={18} />
@@ -161,9 +165,12 @@ const DetailBukuPage: React.FC = () => {
         <div className="xl:col-span-1">
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src={bookData.cover_url || "https://via.placeholder.com/300x400?text=No+Cover"}
+              src={bookData.cover || "https://via.placeholder.com/300x400?text=No+Cover"}
               alt="Cover"
               className="rounded-lg object-cover w-full aspect-[3/4]"
+              onError={(e) => {
+                e.currentTarget.src = "https://via.placeholder.com/300x400?text=No+Cover";
+              }}
             />
           </div>
         </div>
@@ -180,14 +187,19 @@ const DetailBukuPage: React.FC = () => {
               {[
                 ["ID", bookData.id],
                 ["Judul", bookData.title || "-"],
+                ["Penulis", bookData.author?.name || "-"],
+                ["Publisher", bookData.publisher?.name || "-"],
+                ["Kategori", bookData.sub_category?.category?.name || "-"],
+                ["Sub Kategori", bookData.sub_category?.name || "-"],
                 ["ISBN", bookData.isbn || "-"],
-                ["Tahun Terbit", bookData.year_of_publication || "-"],
-                ["Total Halaman", bookData.number_of_pages || "-"],
-                ["Stok", bookData.stock || "0"],
-                ["Author ID", bookData.author_id || "-"],
-                ["Publisher ID", bookData.publisher_id || "-"],
-                ["Category ID", bookData.category_id || "-"],
-                ["Sub Category ID", bookData.sub_category_id || "-"],
+                ["DDC", bookData.ddc || "-"],
+                ["Kode Eksemplar", bookData.eksemplar_code || "-"],
+                ["Total Halaman", bookData.num_page ? `${bookData.num_page} halaman` : "-"],
+                ["Tahun Terbit", bookData.year_published ? new Date(bookData.year_published).getFullYear() : "-"],
+                ["Asal Kota", bookData.city_origin || "-"],
+                ["Jumlah Buku Tersedia", bookData.num_book_available?.toString() || "-"],
+                ["Rating", bookData.rating ? `${bookData.rating} ⭐` : "Belum ada rating"],
+                ["Lokasi ID", bookData.location_id || "-"],
               ].map(([label, value]) => (
                 <div key={label}>
                   <p className="font-semibold text-gray-500">{label}</p>
@@ -196,12 +208,17 @@ const DetailBukuPage: React.FC = () => {
               ))}
             </div>
 
-            {bookData.description && (
+            {bookData.desc_fisik_buku && (
               <div className="mt-6">
-                <p className="font-semibold text-gray-500">Deskripsi</p>
-                <p className="text-gray-700 mt-1">{bookData.description}</p>
+                <p className="font-semibold text-gray-500">Deskripsi Fisik Buku</p>
+                <p className="text-gray-700 mt-1">{bookData.desc_fisik_buku}</p>
               </div>
             )}
+
+            <div className="mt-6">
+              <p className="font-semibold text-gray-500">Deskripsi Singkat</p>
+              <p className="text-gray-700 mt-1">{bookData.desc_singkat_buku || "Tidak ada deskripsi tersedia."}</p>
+            </div>
           </div>
 
           {/* RATINGS */}

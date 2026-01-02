@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { createBook } from '../../lib/api';
 
 interface AddBookModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose }) => {
+const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     author: '',
@@ -23,17 +27,60 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log('Form submitted:', formData);
-    onClose();
-    setFormData({ title: '', author: '', isbn: '', category: '', quantity: '', place: '' });
+    
+    if (!formData.title || !formData.author || !formData.category) {
+      setError('Judul, penulis, dan kategori harus diisi');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      const bookData = {
+        title: formData.title,
+        author: formData.author,
+        isbn: formData.isbn || '',
+        category: formData.category,
+        quantity: parseInt(formData.quantity) || 1,
+        place: formData.place || '',
+      };
+
+      console.log('📤 Creating book:', bookData);
+      await createBook(bookData);
+      console.log('✅ Book created successfully');
+      
+      alert('Buku berhasil ditambahkan!');
+      
+      // Reset form
+      setFormData({ title: '', author: '', isbn: '', category: '', quantity: '', place: '' });
+      onClose();
+      
+      // Refresh parent data
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 500);
+      }
+    } catch (err: any) {
+      console.error('❌ Failed to create book:', err);
+      setError(`Gagal menambahkan buku: ${err.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Tambah Buku">
       <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Judul</label>
           <Input
@@ -134,8 +181,8 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose }) => {
           <Button type="button" variant="outline" onClick={onClose} className="flex-1">
             Batal
           </Button>
-          <Button type="submit" className="flex-1">
-            Simpan
+          <Button type="submit" disabled={loading} className="flex-1">
+            {loading ? 'Menyimpan...' : 'Simpan'}
           </Button>
         </div>
       </form>

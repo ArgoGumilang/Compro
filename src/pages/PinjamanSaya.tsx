@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
+import { getCurrentUser, getBookingHistoriesByUser, getBookById, getUserById } from "../lib/api";
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -198,48 +199,131 @@ const Footer = () => (
 );
 
 /* ================= BOOK ITEM CARD ================= */
-const BorrowedBookCard = ({ cover, title, author, borrowedAt, dueDate }) => (
-  <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-    <img src={cover} alt={title} className="h-44 w-full object-cover" />
-    <div className="p-4">
-      <p className="font-bold text-lg">{title}</p>
-      <p className="text-sm text-gray-500 mb-1">{author}</p>
-      <p className="text-xs text-gray-400 mt-2 mb-2">Dipinjam: {borrowedAt}</p>
-      <p className="text-xs text-red-600">Harus kembali: {dueDate}</p>
-      {/*<button className="mt-2 w-full bg-[#BE4139] text-white py-1 rounded text-sm hover:opacity-90 transition">
-        Kembalikan Buku
-      </button>*/}
+const BorrowedBookCard = ({ book }: { book: any }) => {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+      <img 
+        src={book.cover_url || book.cover || 'https://via.placeholder.com/150x200?text=No+Cover'} 
+        alt={book.book_title || book.title} 
+        className="h-44 w-full object-cover" 
+      />
+      <div className="p-4">
+        <p className="font-bold text-lg">{book.book_title || book.title}</p>
+        <p className="text-sm text-gray-500 mb-1">{book.author_name || 'Unknown Author'}</p>
+        <p className="text-xs text-gray-400 mt-2 mb-2">Dipinjam: {formatDate(book.booking_date || book.date)}</p>
+        <p className="text-xs text-red-600">Harus kembali: {formatDate(book.return_date)}</p>
+        <div className="mt-2">
+          <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+            book.status ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+          }`}>
+            {book.status ? 'Dipinjam' : 'Dikembalikan'}
+          </span>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 /* ================= PINJAMAN SAYA PAGE ================= */
 export default function PinjamanSaya() {
   const navigate = useNavigate();
+  const [borrowedBooks, setBorrowedBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const borrowedBooks = [
-    {
-      cover: "https://ebooks.gramedia.com/ebook-covers/63652/image_highres/BLK_FUSKX2021670148.jpg",
-      title: "Fisika SMA/MA X",
-      author: "Sunardi, Paramitha Retno P. & Andreas B. Darmawan",
-      borrowedAt: "01/12/2025",
-      dueDate: "15/12/2025",
-    },
-    {
-      cover: "https://ebooks.gramedia.com/ebook-covers/63647/image_highres/BLK_BUSKX20218227.jpg",
-      title: "Biologi SMA/MA X",
-      author: "Nunung Nurhayati & Resty Wijayanti",
-      borrowedAt: "28/11/2025",
-      dueDate: "12/12/2025",
-    },
-    {
-      cover: "https://static.mizanstore.com/d/img/book/cover/kimia-sma-klsxk13n.jpg",
-      title: "Kimia SMA/MA X",
-      author: "Unggul Sudarmo",
-      borrowedAt: "30/11/2025",
-      dueDate: "14/12/2025",
-    },
-  ];
+  useEffect(() => {
+    loadUserBookings();
+  }, []);
+
+  const loadUserBookings = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Get current user
+      const userData = await getCurrentUser();
+      console.log('👤 Current user:', userData);
+      
+      if (!userData || !userData.id) {
+        setError('User tidak ditemukan. Silakan login terlebih dahulu.');
+        setTimeout(() => navigate('/login'), 2000);
+        return;
+      }
+
+      let bookingsArray = [];
+      
+      try {
+        // Try to get user's booking histories
+        const bookingsResponse = await getBookingHistoriesByUser(userData.id);
+        console.log('📚 Bookings response:', bookingsResponse);
+        bookingsArray = bookingsResponse.booking_histories || bookingsResponse || [];
+      } catch (bookingErr: any) {
+        console.warn('⚠️ Failed to fetch user bookings, trying alternative method:', bookingErr);
+        
+        // If endpoint not available, check if user data contains bookings
+        if (userData.booking_histories) {
+          bookingsArray = userData.booking_histories;
+        } else {
+          // If no bookings found anywhere, just show empty state
+          console.log('ℹ️ No bookings found for user');
+          bookingsArray = [];
+        }
+      }
+      
+      // Filter only active bookings (status = true)
+      const activeBookings = (Array.isArray(bookingsArray) ? bookingsArray : [])
+        .filter((b: any) => b.status === true);
+
+      if (activeBookings.length === 0) {
+        setBorrowedBooks([]);
+        setLoading(false);
+        return;
+      }
+
+      // Enrich with book details
+      const enrichedBookings = await Promise.all(
+        activeBookings.map(async (booking: any) => {
+          try {
+            const bookData = await getBookById(booking.book_id);
+            return {
+              ...booking,
+              book_title: bookData.title,
+              author_name: bookData.author_name || bookData.author?.name || bookData.author,
+              cover_url: bookData.cover_url || bookData.cover,
+            };
+          } catch (err) {
+            console.error(`❌ Failed to fetch book ${booking.book_id}:`, err);
+            return {
+              ...booking,
+              book_title: `Book ID ${booking.book_id}`,
+              author_name: 'Unknown Author',
+            };
+          }
+        })
+      );
+
+      console.log('✨ Enriched bookings:', enrichedBookings);
+      setBorrowedBooks(enrichedBookings);
+    } catch (err: any) {
+      console.error('❌ Failed to load bookings:', err);
+      
+      // Check if authentication error
+      if (err.message && (err.message.includes('401') || err.message.includes('403') || err.message.includes('Unauthorized') || err.message.includes('non-JSON'))) {
+        setError('Session anda telah berakhir. Silakan login kembali.');
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setError(err.message || 'Gagal memuat data peminjaman');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 ">
@@ -248,11 +332,51 @@ export default function PinjamanSaya() {
       <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-8">
         <h2 className="text-2xl font-bold text-center mt-6">Buku yang Sedang Dipinjam</h2>
 
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {borrowedBooks.map((book, i) => (
-            <BorrowedBookCard key={i} {...book} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#BE4139] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading peminjaman...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg max-w-md mx-auto">
+              <p className="font-semibold mb-2">Gagal memuat data</p>
+              <p className="text-sm">{error}</p>
+              <button 
+                onClick={loadUserBookings}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          </div>
+        ) : borrowedBooks.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md mx-auto">
+              <div className="mb-4">
+                <svg className="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Belum Ada Peminjaman</h3>
+              <p className="text-gray-600 mb-6">
+                Anda belum meminjam buku apapun saat ini. Mulai jelajahi koleksi perpustakaan kami!
+              </p>
+              <button
+                onClick={() => navigate('/dashanggota')}
+                className="px-6 py-3 bg-[#BE4139] text-white rounded-xl hover:bg-[#9e3530] transition font-semibold"
+              >
+                Jelajahi Buku
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {borrowedBooks.map((book) => (
+              <BorrowedBookCard key={book.id} book={book} />
+            ))}
+          </div>
+        )}
       </main>
 
       <Footer />

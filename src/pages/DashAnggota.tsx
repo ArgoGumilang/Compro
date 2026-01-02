@@ -246,7 +246,7 @@ const BookCard = ({ book }: { book: any }) => {
         className="h-52 w-full object-cover rounded-xl mb-3 group-hover:shadow-md transition" 
       />
       <p className="font-semibold text-sm">{book.title}</p>
-      <p className="text-xs text-gray-500">{book.author}</p>
+      <p className="text-xs text-gray-500">{book.author_name || book.author?.name || book.author || 'Unknown Author'}</p>
     </div>
   );
 };

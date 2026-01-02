@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Star, Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
+import { getBookById } from "../lib/api";
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -194,24 +195,42 @@ const Footer = () => (
 /* ================= PAGE ================= */
 const DetailBukuPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const bookId = searchParams.get("id");
 
-  const bookData = {
-    judul: "Matematika Wajib untuk SMA/MA Kelas XII",
-    kategori: "Matematika",
-    isbn: "9786020321231",
-    penulis: "B. K. Noormandiri",
-    jumlahBukuTersedia: "12",
-    ddc: "510 MAT",
-    publisher:
-      "Pusat Kurikulum dan Perbukuan, Kementerian Pendidikan dan Kebudayaan, Penerbit Erlangga",
-    asalKota: "Jakarta",
-    deskripsiFisikBuku: "Softcover, ukuran A4, cetakan ke-2",
-    totalHalaman: "280 halaman",
-    tahunTerbit: "2021",
-    deskripsiSingkatBuku:
-      "Buku ini disusun berdasarkan Kurikulum 2013 revisi, mencakup materi limit, turunan, integral, dan statistika. Dilengkapi latihan soal dan evaluasi akhir bab.",
-    denah: "Rak Koleksi Buku Pelajaran (5)",
-  };
+  const [bookData, setBookData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Determine if this is admin or user view
+  const isAdminView = window.location.pathname.includes('manajemen');
+  const backUrl = isAdminView ? "/manajemen-buku" : "/dashanggota";
+
+  useEffect(() => {
+    const fetchBookDetail = async () => {
+      if (!bookId) {
+        setError("ID buku tidak ditemukan");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        console.log("📚 Fetching book detail for ID:", bookId);
+        const data = await getBookById(bookId);
+        console.log("✅ Book data received:", data);
+        setBookData(data);
+        setError(null);
+      } catch (err: any) {
+        console.error("❌ Error fetching book:", err);
+        setError(err.message || "Gagal memuat detail buku");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookDetail();
+  }, [bookId]);
 
   const ratingData = {
     averageRating: 4.5,
@@ -265,13 +284,52 @@ const DetailBukuPage: React.FC = () => {
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <main className="max-w-7xl mx-auto px-6 py-10">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE4139] mx-auto mb-4"></div>
+              <p className="text-gray-600">Memuat detail buku...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !bookData) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <main className="max-w-7xl mx-auto px-6 py-10">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error || "Buku tidak ditemukan"}</p>
+              <button
+                onClick={() => navigate(backUrl)}
+                className="px-4 py-2 bg-[#BE4139] text-white rounded-lg hover:bg-[#9e342e]"
+              >
+                Kembali
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
 
       <main className="max-w-7xl mx-auto px-6 py-10">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(backUrl)}
           className="flex items-center gap-2 text-sm text-gray-600 mb-6"
         >
           <ChevronLeft size={16} /> Kembali
@@ -281,8 +339,12 @@ const DetailBukuPage: React.FC = () => {
           {/* COVER */}
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src="https://cdn.eurekabookhouse.co.id/ebh/product/all/004510075020.jpg"
+              src={bookData.cover || "https://cdn.eurekabookhouse.co.id/ebh/product/all/004510075020.jpg"}
+              alt={bookData.title}
               className="rounded-lg w-full aspect-[3/4] object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "https://via.placeholder.com/300x400?text=No+Cover";
+              }}
             />
           </div>
 
@@ -295,17 +357,19 @@ const DetailBukuPage: React.FC = () => {
 
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 {[
-                  ["Judul", bookData.judul],
-                  ["Penulis", bookData.penulis],
-                  ["Publisher", bookData.publisher],
-                  ["Kategori", bookData.kategori],
-                  ["ISBN", bookData.isbn],
-                  ["DDC", bookData.ddc],
-                  ["Total Halaman", bookData.totalHalaman],
-                  ["Tahun Terbit", bookData.tahunTerbit],
-                  ["Asal Kota", bookData.asalKota],
-                  ["Jumlah Buku", bookData.jumlahBukuTersedia],
-                  ["Deskripsi Fisik", bookData.deskripsiFisikBuku],
+                  ["Judul", bookData.title || "-"],
+                  ["Penulis", bookData.author?.name || "-"],
+                  ["Publisher", bookData.publisher?.name || "-"],
+                  ["Kategori", bookData.sub_category?.category?.name || "-"],
+                  ["Sub Kategori", bookData.sub_category?.name || "-"],
+                  ["ISBN", bookData.isbn || "-"],
+                  ["DDC", bookData.ddc || "-"],
+                  ["Kode Eksemplar", bookData.eksemplar_code || "-"],
+                  ["Total Halaman", bookData.num_page ? `${bookData.num_page} halaman` : "-"],
+                  ["Tahun Terbit", bookData.year_published ? new Date(bookData.year_published).getFullYear() : "-"],
+                  ["Asal Kota", bookData.city_origin || "-"],
+                  ["Jumlah Buku Tersedia", bookData.num_book_available?.toString() || "-"],
+                  ["Rating", bookData.rating ? `${bookData.rating} ⭐` : "Belum ada rating"],
                 ].map(([label, value]) => (
                   <div key={label}>
                     <p className="font-semibold text-gray-500">{label}</p>
@@ -314,12 +378,23 @@ const DetailBukuPage: React.FC = () => {
                 ))}
               </div>
 
+              {bookData.desc_fisik_buku && (
+                <div className="mt-6">
+                  <p className="font-semibold text-gray-500">
+                    Deskripsi Fisik Buku
+                  </p>
+                  <p className="text-gray-700 mt-1">
+                    {bookData.desc_fisik_buku}
+                  </p>
+                </div>
+              )}
+
               <div className="mt-6">
                 <p className="font-semibold text-gray-500">
                   Deskripsi Singkat
                 </p>
                 <p className="text-gray-700 mt-1">
-                  {bookData.deskripsiSingkatBuku}
+                  {bookData.desc_singkat_buku || "Tidak ada deskripsi tersedia."}
                 </p>
               </div>
             </div>
