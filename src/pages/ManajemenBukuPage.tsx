@@ -249,6 +249,7 @@ export function ManajemenBukuPage() {
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Penulis</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">ISBN</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Tahun</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Kategori</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Stok</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Action</th>
                 </tr>
@@ -261,6 +262,7 @@ export function ManajemenBukuPage() {
                     <td className="px-6 py-4 text-sm text-gray-700">{book.author_name || "-"}</td>
                     <td className="px-6 py-4 text-sm text-gray-700">{book.isbn || "-"}</td>
                     <td className="px-6 py-4 text-sm text-gray-700">{book.year_of_publication || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{book.category || "-"}</td>
                     <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.stock || 0}</td>
                     <td className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-2">
