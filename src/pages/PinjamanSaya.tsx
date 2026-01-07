@@ -247,28 +247,51 @@ export default function PinjamanSaya() {
       setLoading(true);
       setError('');
 
-      // Only use dummy data - no API calls
-      console.log('📚 Using dummy data (no API fetch)');
+      // Get user_id from localStorage
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('User ID tidak ditemukan. Silakan login kembali.');
+      }
+
+      console.log('📚 Fetching booking histories for user:', userId);
       
-      // Filter active bookings (status = true) for user ID 1
-      const activeBookings = DUMMY_BOOKING_HISTORIES.filter(b => b.status === true && b.user_id === 1);
+      // Fetch booking histories for user
+      const bookingHistories = await getBookingHistoriesByUser(userId);
+      console.log('📖 Booking histories response:', bookingHistories);
+
+      // Filter active bookings (status = true)
+      const activeBookings = Array.isArray(bookingHistories) 
+        ? bookingHistories.filter(b => b.status === true)
+        : [];
       
-      // Enrich with book details from dummy books
-      const enrichedBookings = activeBookings.map(booking => {
-        const book = DUMMY_BOOKS.find(b => b.id === booking.book_id);
-        return {
-          ...booking,
-          book_title: book?.title || booking.book_title,
-          author_name: book?.author_name || 'Unknown Author',
-          cover_url: book?.cover_url,
-        };
-      });
+      // Enrich with book details
+      const enrichedBookings = await Promise.all(
+        activeBookings.map(async (booking) => {
+          try {
+            const bookDetails = await getBookById(booking.book_id);
+            return {
+              ...booking,
+              book_title: bookDetails.title || 'Unknown Title',
+              author_name: bookDetails.author?.name || 'Unknown Author',
+              cover_url: bookDetails.cover || '',
+            };
+          } catch (err) {
+            console.error(`Error fetching book ${booking.book_id}:`, err);
+            return {
+              ...booking,
+              book_title: 'Unknown Title',
+              author_name: 'Unknown Author',
+              cover_url: '',
+            };
+          }
+        })
+      );
       
-      console.log('✨ Dummy enriched bookings:', enrichedBookings);
+      console.log('✨ Enriched bookings:', enrichedBookings);
       setBorrowedBooks(enrichedBookings);
     } catch (err: any) {
       console.error('❌ Error:', err);
-      setError('Gagal memuat data');
+      setError(err.message || 'Gagal memuat data');
       setBorrowedBooks([]);
     } finally {
       setLoading(false);
