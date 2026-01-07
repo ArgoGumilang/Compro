@@ -208,10 +208,6 @@ export function ManajemenBukuPage() {
             <Plus size={18} />
             Tambah Buku
           </Button>
-          <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530] transition-all duration-300 font-semibold">
-            <Filter size={18} />
-            Filter
-          </Button>
         </div>
       </div>
 
@@ -295,7 +291,12 @@ export function ManajemenBukuPage() {
         onClose={() => setAddModalOpen(false)} 
         onSuccess={loadBooks}
       />
-      <DeleteBookModal isOpen={deleteModalOpen} book={selectedBook} onClose={() => setDeleteModalOpen(false)} />
+      <DeleteBookModal 
+        isOpen={deleteModalOpen} 
+        book={selectedBook} 
+        onClose={() => setDeleteModalOpen(false)} 
+        onSuccess={loadBooks}
+      />
     </div>
   );
 }

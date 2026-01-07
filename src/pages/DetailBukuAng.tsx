@@ -339,7 +339,7 @@ const DetailBukuPage: React.FC = () => {
           {/* COVER */}
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src={bookData.cover || "https://cdn.eurekabookhouse.co.id/ebh/product/all/004510075020.jpg"}
+              src={bookData.cover_url || bookData.cover || "https://via.placeholder.com/300x400?text=No+Cover"}
               alt={bookData.title}
               className="rounded-lg w-full aspect-[3/4] object-cover"
               onError={(e) => {

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getCurrentUser, getBookingHistoriesByUser, getBookById, getUserById } from "../lib/api";
+import { USE_DUMMY_DATA, DUMMY_BOOKING_HISTORIES, DUMMY_BOOKS } from "../lib/dummyData";
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -245,6 +246,30 @@ export default function PinjamanSaya() {
     try {
       setLoading(true);
       setError('');
+
+      // Use dummy data if enabled
+      if (USE_DUMMY_DATA) {
+        console.log('🎭 Using dummy data for Pinjaman Saya');
+        
+        // Filter active bookings (status = true) for user ID 1 (Andi Prasetya)
+        const activeBookings = DUMMY_BOOKING_HISTORIES.filter(b => b.status === true && b.user_id === 1);
+        
+        // Enrich with book details from dummy books
+        const enrichedBookings = activeBookings.map(booking => {
+          const book = DUMMY_BOOKS.find(b => b.id === booking.book_id);
+          return {
+            ...booking,
+            book_title: book?.title || booking.book_title,
+            author_name: book?.author_name || 'Unknown Author',
+            cover_url: book?.cover_url,
+          };
+        });
+        
+        console.log('✨ Dummy enriched bookings:', enrichedBookings);
+        setBorrowedBooks(enrichedBookings);
+        setLoading(false);
+        return;
+      }
 
       // Get current user
       const userData = await getCurrentUser();

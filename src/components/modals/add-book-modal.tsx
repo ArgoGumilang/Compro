@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { createBook } from '../../lib/api';
+import { createBook, getAllAuthors, getAllPublishers, getAllCategories, getAllSubCategories } from '../../lib/api';
 
 interface AddBookModalProps {
   isOpen: boolean;
@@ -13,11 +13,19 @@ interface AddBookModalProps {
 const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [authors, setAuthors] = useState<any[]>([]);
+  const [publishers, setPublishers] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [subCategories, setSubCategories] = useState<any[]>([]);
+  const [filteredSubCategories, setFilteredSubCategories] = useState<any[]>([]);
+  const [loadingData, setLoadingData] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '',
     author_id: '',
     publisher_id: '',
     isbn: '',
+    category_id: '',
     sub_category_id: '',
     num_book_available: '',
     num_page: '',
@@ -30,6 +38,56 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
     desc_singkat_buku: '',
   });
 
+  useEffect(() => {
+    if (isOpen) {
+      loadDropdownData();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    // Filter sub_categories based on selected category
+    if (formData.category_id) {
+      console.log('🔍 Filtering sub_categories for category_id:', formData.category_id);
+      console.log('📋 All sub_categories:', subCategories);
+      const filtered = subCategories.filter(
+        (sub) => {
+          console.log(`Checking sub: ${sub.name}, sub.category_id: ${sub.category_id}, sub.category?.id: ${sub.category?.id}`);
+          return sub.category_id === parseInt(formData.category_id) || sub.category?.id === parseInt(formData.category_id);
+        }
+      );
+      console.log('✅ Filtered sub_categories:', filtered);
+      setFilteredSubCategories(filtered);
+    } else {
+      console.log('📋 No category selected, showing all sub_categories');
+      setFilteredSubCategories(subCategories);
+    }
+  }, [formData.category_id, subCategories]);
+
+  const loadDropdownData = async () => {
+    try {
+      setLoadingData(true);
+      const [authorsData, publishersData, categoriesData, subCategoriesData] = await Promise.all([
+        getAllAuthors(),
+        getAllPublishers(),
+        getAllCategories(),
+        getAllSubCategories(),
+      ]);
+      console.log('📚 Authors:', authorsData);
+      console.log('📚 Publishers:', publishersData);
+      console.log('📚 Categories:', categoriesData);
+      console.log('📚 SubCategories:', subCategoriesData);
+      
+      setAuthors(Array.isArray(authorsData) ? authorsData : authorsData.authors || []);
+      setPublishers(Array.isArray(publishersData) ? publishersData : publishersData.publishers || []);
+      setCategories(Array.isArray(categoriesData) ? categoriesData : categoriesData.categories || []);
+      setSubCategories(Array.isArray(subCategoriesData) ? subCategoriesData : subCategoriesData.sub_categories || []);
+    } catch (err) {
+      console.error('❌ Failed to load dropdown data:', err);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -39,7 +97,7 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
     e.preventDefault();
     
     if (!formData.title || !formData.author_id || !formData.sub_category_id) {
-      setError('Judul, penulis, dan kategori harus diisi');
+      setError('Judul, penulis, dan sub kategori harus diisi');
       return;
     }
 
@@ -47,26 +105,79 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
       setLoading(true);
       setError('');
 
-      const bookData = {
+      console.log('📋 Form data before conversion:', formData);
+
+      const authorId = parseInt(formData.author_id);
+      const publisherId = formData.publisher_id ? parseInt(formData.publisher_id) : undefined;
+      const subCategoryId = parseInt(formData.sub_category_id);
+      const locationId = formData.location_id ? parseInt(formData.location_id) : undefined;
+      const categoryId = formData.category_id ? parseInt(formData.category_id) : undefined;
+
+      // Validate IDs
+      if (isNaN(authorId) || authorId === 0) {
+        setError('Penulis harus dipilih');
+        setLoading(false);
+        return;
+      }
+
+      if (isNaN(subCategoryId) || subCategoryId === 0) {
+        setError('Sub kategori harus dipilih');
+        setLoading(false);
+        return;
+      }
+
+      // Format year_published - backend expects just the year as string
+      let yearPublished = '';
+      if (formData.year_published) {
+        const date = new Date(formData.year_published);
+        yearPublished = date.getFullYear().toString();
+      } else {
+        // Default to current year
+        yearPublished = new Date().getFullYear().toString();
+      }
+
+      // Build book data matching API structure
+      const bookData: any = {
         title: formData.title,
-        author_id: parseInt(formData.author_id) || 0,
-        publisher_id: parseInt(formData.publisher_id) || 0,
+        author: {
+          id: authorId
+        },
         isbn: formData.isbn || '',
-        sub_category_id: parseInt(formData.sub_category_id) || 0,
+        sub_category: {
+          id: subCategoryId
+        },
         num_book_available: parseInt(formData.num_book_available) || 1,
         num_page: parseInt(formData.num_page) || 0,
-        year_published: formData.year_published ? new Date(formData.year_published).toISOString() : new Date().toISOString(),
+        year_published: yearPublished,
         city_origin: formData.city_origin || '',
         ddc: formData.ddc || '',
         eksemplar_code: formData.eksemplar_code || '',
-        location_id: parseInt(formData.location_id) || 0,
         desc_fisik_buku: formData.desc_fisik_buku || '',
         desc_singkat_buku: formData.desc_singkat_buku || '',
         cover: '',
         rating: 0,
       };
 
-      console.log('📤 Creating book:', bookData);
+      // Add optional fields only if they have values
+      if (publisherId && !isNaN(publisherId)) {
+        bookData.publisher = {
+          id: publisherId
+        };
+      }
+      
+      if (locationId && !isNaN(locationId)) {
+        bookData.location_id = locationId;
+      }
+
+      // Add category to sub_category if provided
+      if (categoryId && !isNaN(categoryId)) {
+        bookData.sub_category.category = {
+          id: categoryId
+        };
+      }
+
+      console.log('📤 Creating book with data:', JSON.stringify(bookData, null, 2));
+      
       await createBook(bookData);
       console.log('✅ Book created successfully');
       
@@ -78,6 +189,7 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
         author_id: '', 
         publisher_id: '', 
         isbn: '', 
+        category_id: '',
         sub_category_id: '', 
         num_book_available: '', 
         num_page: '', 
@@ -136,36 +248,78 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Author ID *</label>
-            <Input
-              type="number"
+            <label className="block text-sm font-medium text-gray-700 mb-1">Penulis *</label>
+            <select
               name="author_id"
               value={formData.author_id}
               onChange={handleChange}
-              placeholder="ID Penulis"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent"
               required
-            />
+              disabled={loadingData}
+            >
+              <option value="">Pilih Penulis</option>
+              {authors.map((author) => (
+                <option key={author.id} value={author.id}>
+                  {author.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Publisher ID</label>
-            <Input
-              type="number"
+            <label className="block text-sm font-medium text-gray-700 mb-1">Penerbit</label>
+            <select
               name="publisher_id"
               value={formData.publisher_id}
               onChange={handleChange}
-              placeholder="ID Penerbit"
-            />
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent"
+              disabled={loadingData}
+            >
+              <option value="">Pilih Penerbit</option>
+              {publishers.map((publisher) => (
+                <option key={publisher.id} value={publisher.id}>
+                  {publisher.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sub Category ID *</label>
-            <Input
-              type="number"
+            <label className="block text-sm font-medium text-gray-700 mb-1">Kategori *</label>
+            <select
+              name="category_id"
+              value={formData.category_id}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent"
+              required
+              disabled={loadingData}
+            >
+              <option value="">Pilih Kategori</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sub Kategori *</label>
+            <select
               name="sub_category_id"
               value={formData.sub_category_id}
               onChange={handleChange}
-              placeholder="ID Sub Kategori"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent"
               required
-            />
+              disabled={loadingData || !formData.category_id}
+            >
+              <option value="">Pilih Sub Kategori</option>
+              {filteredSubCategories.map((subCategory) => (
+                <option key={subCategory.id} value={subCategory.id}>
+                  {subCategory.name}
+                </option>
+              ))}
+            </select>
+            {!formData.category_id && (
+              <p className="text-xs text-gray-500 mt-1">Pilih kategori terlebih dahulu</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Jumlah Tersedia *</label>

@@ -39,6 +39,23 @@ export function DataPresensiPage() {
       const enrichedVisits = (Array.isArray(visitsArray) ? visitsArray : []).map((visit: any) => {
         const user = usersArray.find((u: any) => u.id === visit.user_id);
         
+        // Format date from ISO string to readable format
+        let formattedDate = '-';
+        const dateString = visit.date || visit.visit_date || visit.created_at;
+        if (dateString) {
+          try {
+            const date = new Date(dateString);
+            formattedDate = date.toLocaleDateString('id-ID', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            });
+          } catch (e) {
+            console.error('Error formatting date:', dateString, e);
+            formattedDate = dateString;
+          }
+        }
+        
         return {
           id: visit.id,
           nama: user?.full_name || user?.username || `User ID ${visit.user_id}`,
@@ -46,7 +63,7 @@ export function DataPresensiPage() {
           email: user?.email || '-',
           kelas: user?.kelas || '-',
           role: user?.role?.name || 'Siswa',
-          tanggal: visit.visit_date || visit.created_at || '-',
+          tanggal: formattedDate,
           user_id: visit.user_id,
         };
       });

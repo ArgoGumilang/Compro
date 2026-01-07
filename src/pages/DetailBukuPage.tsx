@@ -165,7 +165,7 @@ const DetailBukuPage: React.FC = () => {
         <div className="xl:col-span-1">
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src={bookData.cover || "https://via.placeholder.com/300x400?text=No+Cover"}
+              src={bookData.cover_url || bookData.cover || "https://via.placeholder.com/300x400?text=No+Cover"}
               alt="Cover"
               className="rounded-lg object-cover w-full aspect-[3/4]"
               onError={(e) => {

@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, User, ChevronLeft } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
+import { getAllBooks } from "../lib/api";
 /* ================= HEADER ================= */
 const Header = () => {
   const navigate = useNavigate();
@@ -198,41 +199,70 @@ const Footer = () => (
 
 /* ================= BOOK ================= */
 interface Book {
+  id: number;
   cover: string;
+  cover_url?: string;
   title: string;
   author: string;
+  author_name?: string;
 }
 
-const books: Book[] = Array.from({ length: 42 }).map((_, i) => ({
-  cover: `https://picsum.photos/200/300?random=${i + 1}`,
-  title: `Judul Buku ${i + 1}`,
-  author: `Penulis ${i + 1}`,
-}));
-
-const BookCard: React.FC<Book> = ({ cover, title, author }) => {
+const BookCard: React.FC<Book> = ({ id, cover, cover_url, title, author, author_name }) => {
   const navigate = useNavigate();
 
   return (
     <div
-      className="cursor-pointer"
-      onClick={() => navigate("/detailbuku")}
+      className="cursor-pointer group"
+      onClick={() => navigate(`/detailbuku?id=${id}`)}
     >
       <img
-        src={cover}
+        src={cover_url || cover || "https://via.placeholder.com/200x300?text=No+Cover"}
         alt={title}
-        className="h-52 w-full object-cover rounded-xl mb-2"
+        className="h-52 w-full object-cover rounded-xl mb-2 group-hover:shadow-lg transition"
       />
       <p className="font-semibold text-sm">{title}</p>
-      <p className="text-xs text-gray-500">{author}</p>
+      <p className="text-xs text-gray-500">{author_name || author}</p>
     </div>
   );
 };
 
 /* ================= PAGE ================= */
 export default function Jelajahi() {
-  const navigate = useNavigate(); // ⬅️ TAMBAHKAN INI
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 14;
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  const loadBooks = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllBooks();
+      const booksArray = response.books || response || [];
+      
+      // Convert to Book interface format
+      const formattedBooks = (Array.isArray(booksArray) ? booksArray : []).map((book: any) => ({
+        id: book.id,
+        cover: book.cover,
+        cover_url: book.cover_url,
+        title: book.title,
+        author: book.author?.name || book.author_name || book.author || 'Unknown',
+        author_name: book.author?.name || book.author_name
+      }));
+      
+      setBooks(formattedBooks);
+      console.log("📚 Loaded books for Jelajahi:", formattedBooks.length);
+    } catch (err) {
+      console.error("❌ Failed to load books:", err);
+      setBooks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalPages = Math.ceil(books.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -258,44 +288,65 @@ export default function Jelajahi() {
           Jelajahi Koleksi Buku
         </h1>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
-          {currentBooks.map((book, idx) => (
-            <BookCard key={idx} {...book} />
-          ))}
-        </div>
-
-        {/* ================= PAGINATION ================= */}
-        <div className="flex justify-center items-center gap-2 mt-10">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-200 transition"
-          >
-            Prev
-          </button>
-
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-2 rounded-lg text-sm font-semibold transition ${
-                currentPage === i + 1
-                  ? "bg-[#BE4139] text-white"
-                  : "border hover:bg-gray-200"
-              }`}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE4139] mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading buku...</p>
+          </div>
+        ) : books.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">Belum ada buku tersedia</p>
+            <button 
+              onClick={loadBooks}
+              className="px-4 py-2 bg-[#BE4139] text-white rounded-lg hover:bg-[#9e3530]"
             >
-              {i + 1}
+              Muat Ulang
             </button>
-          ))}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-4">
+              {currentBooks.map((book) => (
+                <BookCard key={book.id} {...book} />
+              ))}
+            </div>
 
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-            className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-200 transition"
-          >
-            Next
-          </button>
-        </div>
+            {/* ================= PAGINATION ================= */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-10">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => p - 1)}
+                  className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-200 transition"
+                >
+                  Prev
+                </button>
+
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                      currentPage === i + 1
+                        ? "bg-[#BE4139] text-white"
+                        : "border hover:bg-gray-200"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => p + 1)}
+                  className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40 hover:bg-gray-200 transition"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </main>
 
       <Footer />

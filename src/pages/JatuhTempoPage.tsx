@@ -24,18 +24,98 @@ const JatuhTempoPage: React.FC = () => {
   const [selectedTempo, setSelectedTempo] = useState<JatuhTempoData | undefined>(undefined);
   
 
-  // Sample data
+  // Sample data - Data yang jatuh tempo atau terlambat
   const jatuhTempoData: JatuhTempoData[] = [
-    { id: 1, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 2, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '08/26/2022', tanggalKembali: '08/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 3, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', denda: '-', status: 'Dikembalikan' },
-    { id: 4, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 5, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', denda: '-', status: 'Dikembalikan' },
-    { id: 6, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 7, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 8, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', denda: 'Rp10.000', status: 'Terlambat' },
-    { id: 9, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '05/09/2022', tanggalKembali: '05/09/2022', denda: '-', status: 'Dipinjam' },
-    { id: 10, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', denda: '-', status: 'Dipinjam' },
+    {
+      id: 1,
+      nama: 'Andi Prasetya',
+      judul: 'Matematika untuk SMA Kelas XI',
+      tanggalPinjam: '2026-01-01',
+      tanggalKembali: '2026-01-08',
+      denda: 'Rp 0',
+      status: 'Dipinjam'
+    },
+    {
+      id: 2,
+      nama: 'Budi Santoso',
+      judul: 'Sejarah Indonesia Modern',
+      tanggalPinjam: '2025-12-30',
+      tanggalKembali: '2026-01-06',
+      denda: 'Rp 0',
+      status: 'Dipinjam'
+    },
+    {
+      id: 3,
+      nama: 'Rizki Aditya',
+      judul: 'Informatika dan Pemrograman',
+      tanggalPinjam: '2026-01-02',
+      tanggalKembali: '2026-01-09',
+      denda: 'Rp 0',
+      status: 'Dipinjam'
+    },
+    {
+      id: 4,
+      nama: 'Maya Anggraini',
+      judul: 'Fisika Modern untuk Pemula',
+      tanggalPinjam: '2025-12-29',
+      tanggalKembali: '2026-01-05',
+      denda: 'Rp 0',
+      status: 'Dipinjam'
+    },
+    {
+      id: 5,
+      nama: 'Rizki Aditya',
+      judul: 'Geografi dan Lingkungan',
+      tanggalPinjam: '2025-12-26',
+      tanggalKembali: '2026-01-02',
+      denda: 'Rp 5000',
+      status: 'Terlambat'
+    },
+    {
+      id: 6,
+      nama: 'Budi Santoso',
+      judul: 'Bumi Manusia',
+      tanggalPinjam: '2025-12-27',
+      tanggalKembali: '2026-01-03',
+      denda: 'Rp 0',
+      status: 'Dipinjam'
+    },
+    {
+      id: 7,
+      nama: 'Dewi Lestari',
+      judul: 'Bahasa Inggris Advanced',
+      tanggalPinjam: '2025-12-25',
+      tanggalKembali: '2026-01-01',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 8,
+      nama: 'Siti Rahmawati',
+      judul: 'Ekonomi Makro & Mikro',
+      tanggalPinjam: '2025-12-22',
+      tanggalKembali: '2025-12-29',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 9,
+      nama: 'Dewi Lestari',
+      judul: 'Biologi Molekuler',
+      tanggalPinjam: '2025-12-24',
+      tanggalKembali: '2025-12-31',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 10,
+      nama: 'Maya Anggraini',
+      judul: 'Pendidikan Kewarganegaraan',
+      tanggalPinjam: '2025-12-23',
+      tanggalKembali: '2025-12-30',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    }
   ];
 
   // Filter data based on search
