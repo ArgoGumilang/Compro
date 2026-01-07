@@ -26,7 +26,7 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
     book_id: '',
     booking_date: new Date().toISOString().split('T')[0],
     return_date: '',
-    status: true, // true = active/dipinjam, false = returned/selesai
+    status: true,
   });
 
   useEffect(() => {
@@ -58,43 +58,33 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🔵 Form submitted!');
     
     if (!formData.user_id || !formData.book_id || !formData.return_date) {
       setError('Semua field harus diisi');
-      console.log('❌ Validation failed - missing fields');
       return;
     }
 
     try {
       setLoading(true);
       setError('');
-      console.log('🔵 Loading set to true');
 
+      const bookingDate = new Date(formData.booking_date);
+      const returnDate = new Date(formData.return_date);
+      
       const data = {
         user_id: parseInt(formData.user_id),
         book_id: parseInt(formData.book_id),
-        booking_date: formData.booking_date,
-        return_date: formData.return_date,
-        status: formData.status, // boolean: true or false
+        booking_date: bookingDate.toISOString(),
+        return_date: returnDate.toISOString(),
+        status: formData.status, // Keep as boolean: true = active, false = returned
       };
 
-      console.log('📤 Creating booking history with data:', data);
-      console.log('📤 Data types:', {
-        user_id: typeof data.user_id,
-        book_id: typeof data.book_id,
-        booking_date: typeof data.booking_date,
-        return_date: typeof data.return_date,
-        status: typeof data.status,
-      });
+      console.log('📤 Creating booking history:', data);
       
-      console.log('🔵 About to call createBookingHistory...');
-      const result = await createBookingHistory(data);
-      console.log('✅ Booking history response:', result);
+      await createBookingHistory(data);
       
-      alert('Peminjaman telah diproses. Silakan refresh halaman untuk melihat data terbaru.');
+      alert('Peminjaman berhasil ditambahkan!');
       
-      // Reset form
       setFormData({
         user_id: '',
         book_id: '',
@@ -103,22 +93,13 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
         status: true,
       });
       
-      // Close modal first
       onClose();
       
-      // Wait 1 second for backend to commit to database
-      console.log('⏳ Waiting 1 second for backend to commit...');
       setTimeout(() => {
-        console.log('🔄 Now refreshing data...');
         onSuccess();
-      }, 1000);
+      }, 500);
     } catch (err: any) {
       console.error('❌ Failed to create booking:', err);
-      console.error('❌ Error details:', {
-        message: err.message,
-        stack: err.stack,
-        fullError: err,
-      });
       setError(`Gagal menambahkan peminjaman: ${err.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
@@ -151,7 +132,6 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
               </div>
             )}
 
-            {/* User Selection */}
             <div>
               <label className="block text-sm font-bold text-[#BE4139] mb-2">
                 Pilih Anggota
@@ -171,7 +151,6 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
               </select>
             </div>
 
-            {/* Book Selection */}
             <div>
               <label className="block text-sm font-bold text-[#BE4139] mb-2">
                 Pilih Buku
@@ -185,13 +164,12 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
                 <option value="">-- Pilih Buku --</option>
                 {books.map((book) => (
                   <option key={book.id} value={book.id}>
-                    {book.title} - {book.author_name}
+                    {book.title}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Booking Date */}
             <div>
               <label className="block text-sm font-bold text-[#BE4139] mb-2">
                 Tanggal Pinjam
@@ -204,7 +182,6 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
               />
             </div>
 
-            {/* Return Date */}
             <div>
               <label className="block text-sm font-bold text-[#BE4139] mb-2">
                 Tanggal Kembali
@@ -217,7 +194,6 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
               />
             </div>
 
-            {/* Buttons */}
             <div className="flex gap-3 mt-6">
               <Button
                 type="button"

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
-import { getCurrentUser, getBookingHistoriesByUser, getBookById, getUserById } from "../lib/api";
+import { getCurrentUser, getBookingHistoriesByUser, getBookById } from "../lib/api";
 import { USE_DUMMY_DATA, DUMMY_BOOKING_HISTORIES, DUMMY_BOOKS } from "../lib/dummyData";
 
 /* ================= HEADER ================= */
@@ -247,104 +247,29 @@ export default function PinjamanSaya() {
       setLoading(true);
       setError('');
 
-      // Use dummy data if enabled
-      if (USE_DUMMY_DATA) {
-        console.log('🎭 Using dummy data for Pinjaman Saya');
-        
-        // Filter active bookings (status = true) for user ID 1 (Andi Prasetya)
-        const activeBookings = DUMMY_BOOKING_HISTORIES.filter(b => b.status === true && b.user_id === 1);
-        
-        // Enrich with book details from dummy books
-        const enrichedBookings = activeBookings.map(booking => {
-          const book = DUMMY_BOOKS.find(b => b.id === booking.book_id);
-          return {
-            ...booking,
-            book_title: book?.title || booking.book_title,
-            author_name: book?.author_name || 'Unknown Author',
-            cover_url: book?.cover_url,
-          };
-        });
-        
-        console.log('✨ Dummy enriched bookings:', enrichedBookings);
-        setBorrowedBooks(enrichedBookings);
-        setLoading(false);
-        return;
-      }
-
-      // Get current user
-      const userData = await getCurrentUser();
-      console.log('👤 Current user:', userData);
+      // Only use dummy data - no API calls
+      console.log('📚 Using dummy data (no API fetch)');
       
-      if (!userData || !userData.id) {
-        setError('User tidak ditemukan. Silakan login terlebih dahulu.');
-        setTimeout(() => navigate('/login'), 2000);
-        return;
-      }
-
-      let bookingsArray = [];
+      // Filter active bookings (status = true) for user ID 1
+      const activeBookings = DUMMY_BOOKING_HISTORIES.filter(b => b.status === true && b.user_id === 1);
       
-      try {
-        // Try to get user's booking histories
-        const bookingsResponse = await getBookingHistoriesByUser(userData.id);
-        console.log('📚 Bookings response:', bookingsResponse);
-        bookingsArray = bookingsResponse.booking_histories || bookingsResponse || [];
-      } catch (bookingErr: any) {
-        console.warn('⚠️ Failed to fetch user bookings, trying alternative method:', bookingErr);
-        
-        // If endpoint not available, check if user data contains bookings
-        if (userData.booking_histories) {
-          bookingsArray = userData.booking_histories;
-        } else {
-          // If no bookings found anywhere, just show empty state
-          console.log('ℹ️ No bookings found for user');
-          bookingsArray = [];
-        }
-      }
+      // Enrich with book details from dummy books
+      const enrichedBookings = activeBookings.map(booking => {
+        const book = DUMMY_BOOKS.find(b => b.id === booking.book_id);
+        return {
+          ...booking,
+          book_title: book?.title || booking.book_title,
+          author_name: book?.author_name || 'Unknown Author',
+          cover_url: book?.cover_url,
+        };
+      });
       
-      // Filter only active bookings (status = true)
-      const activeBookings = (Array.isArray(bookingsArray) ? bookingsArray : [])
-        .filter((b: any) => b.status === true);
-
-      if (activeBookings.length === 0) {
-        setBorrowedBooks([]);
-        setLoading(false);
-        return;
-      }
-
-      // Enrich with book details
-      const enrichedBookings = await Promise.all(
-        activeBookings.map(async (booking: any) => {
-          try {
-            const bookData = await getBookById(booking.book_id);
-            return {
-              ...booking,
-              book_title: bookData.title,
-              author_name: bookData.author_name || bookData.author?.name || bookData.author,
-              cover_url: bookData.cover_url || bookData.cover,
-            };
-          } catch (err) {
-            console.error(`❌ Failed to fetch book ${booking.book_id}:`, err);
-            return {
-              ...booking,
-              book_title: `Book ID ${booking.book_id}`,
-              author_name: 'Unknown Author',
-            };
-          }
-        })
-      );
-
-      console.log('✨ Enriched bookings:', enrichedBookings);
+      console.log('✨ Dummy enriched bookings:', enrichedBookings);
       setBorrowedBooks(enrichedBookings);
     } catch (err: any) {
-      console.error('❌ Failed to load bookings:', err);
-      
-      // Check if authentication error
-      if (err.message && (err.message.includes('401') || err.message.includes('403') || err.message.includes('Unauthorized') || err.message.includes('non-JSON'))) {
-        setError('Session anda telah berakhir. Silakan login kembali.');
-        setTimeout(() => navigate('/login'), 2000);
-      } else {
-        setError(err.message || 'Gagal memuat data peminjaman');
-      }
+      console.error('❌ Error:', err);
+      setError('Gagal memuat data');
+      setBorrowedBooks([]);
     } finally {
       setLoading(false);
     }

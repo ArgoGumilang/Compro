@@ -17,9 +17,9 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
     fullName: "",
     username: "",
     password: "",
-    nisNip: "",
+    identityNumber: "",
     email: "",
-    kelas: "",
+    dob: "",
     roleId: "",
   });
 
@@ -42,14 +42,23 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
       setLoading(true);
       setError('');
 
+      // Format date of birth to ISO string
+      let dobFormatted = '';
+      if (formData.dob) {
+        const date = new Date(formData.dob);
+        dobFormatted = date.toISOString();
+      }
+
       const userData = {
         full_name: formData.fullName,
         username: formData.username,
         password: formData.password,
-        nis_nip: formData.nisNip || '',
+        identity_number: formData.identityNumber || '',
         email: formData.email || '',
-        kelas: formData.kelas || '',
-        role_id: parseInt(formData.roleId),
+        dob: dobFormatted,
+        role: {
+          id: parseInt(formData.roleId)
+        },
       };
 
       console.log('📤 Creating user:', userData);
@@ -63,9 +72,9 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
         fullName: "",
         username: "",
         password: "",
-        nisNip: "",
+        identityNumber: "",
         email: "",
-        kelas: "",
+        dob: "",
         roleId: "",
       });
       
@@ -97,7 +106,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
         {/* Nama */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nama Lengkap
+            Nama Lengkap *
           </label>
           <Input
             name="fullName"
@@ -111,7 +120,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
         {/* Username */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Username
+            Username *
           </label>
           <Input
             name="username"
@@ -125,7 +134,7 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
         {/* Password */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
+            Password *
           </label>
           <Input
             type="password"
@@ -137,23 +146,23 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
           />
         </div>
 
-        {/* NIS / NIP */}
+        {/* Identity Number */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            NIS / NIP
+            Identity Number (Opsional)
           </label>
           <Input
-            name="nisNip"
-            value={formData.nisNip}
+            name="identityNumber"
+            value={formData.identityNumber}
             onChange={handleChange}
-            placeholder="Masukkan NIS / NIP"
+            placeholder="Masukkan identity number"
           />
         </div>
 
         {/* Email */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
+            Email *
           </label>
           <Input
             type="email"
@@ -165,24 +174,23 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
           />
         </div>
 
-        {/* Kelas */}
+        {/* Date of Birth */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Kelas
+            Tanggal Lahir
           </label>
           <Input
-            name="kelas"
-            value={formData.kelas}
+            type="date"
+            name="dob"
+            value={formData.dob}
             onChange={handleChange}
-            placeholder="Contoh: X IPA 1 / -"
-            required
           />
         </div>
 
         {/* Role */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Role
+            Role *
           </label>
           <select
             name="roleId"
@@ -192,9 +200,9 @@ const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose, onSucc
             required
           >
             <option value="">Pilih Role</option>
-            <option value="3">Siswa</option>
+            <option value="1">Siswa</option>
             <option value="2">Guru</option>
-            <option value="1">Admin</option>
+            <option value="3">Admin</option>
           </select>
         </div>
 
