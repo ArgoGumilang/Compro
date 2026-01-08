@@ -3,6 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Search, User, ChevronDown } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getAllBooks } from "../lib/api";
+import sadCover from "../assets/covers/sad.jpg";
+import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
+import cobaCover from "../assets/covers/coba.jpg";
+import leviathanCover from "../assets/covers/leviathan.jpg";
+import laskarCover from "../assets/covers/laskar pelangi.jpg";
+
+// Cover mapping berdasarkan title buku (lowercase untuk matching)
+const coverMapping: { [key: string]: string } = {
+  'sad': sadCover,
+  'ayahku bukan pembohong': ayahkuCover,
+  'ayahkubukanpembohong': ayahkuCover,
+  'ayah ku bukan pembohong': ayahkuCover,
+  'coba': cobaCover,
+  'leviathan': leviathanCover,
+  'laskar pelangi': laskarCover,
+};
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -56,9 +72,7 @@ const Header = () => {
           <button onClick={() => navigate("/kategori")}>
             Kategori
           </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
-          </button>
+
         </nav>
 
         {/* RIGHT */}
@@ -241,7 +255,7 @@ const BookCard = ({ book }: { book: any }) => {
       onClick={() => navigate(`/detailbuku?id=${book.id}`)}
     >
       <img 
-        src={book.cover_url || book.cover || 'https://via.placeholder.com/150x200?text=No+Cover'} 
+        src={book.cover || book.cover_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E'} 
         alt={book.title} 
         className="h-52 w-full object-cover rounded-xl mb-3 group-hover:shadow-md transition" 
       />
@@ -282,8 +296,30 @@ export default function DashAnggota() {
       setLoading(true);
       const response = await getAllBooks();
       const booksArray = response.books || response || [];
-      // Limit to 5 books for recommendations
-      const limitedBooks = Array.isArray(booksArray) ? booksArray.slice(0, 5) : [];
+      // Limit to 5 books for recommendations and add cover mapping
+      const limitedBooks = Array.isArray(booksArray) 
+        ? booksArray.slice(0, 5).map(book => {
+            // Use cover mapping based on book title
+            const titleLower = book.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
+            console.log('📖 Matching book title:', book.title, '-> normalized:', titleLower);
+            let coverUrl = coverMapping[titleLower];
+            console.log('🖼️ Found cover in mapping:', !!coverUrl);
+            
+            // Fallback to API cover if no local cover found
+            if (!coverUrl) {
+              if (book.cover) {
+                coverUrl = book.cover;
+              } else {
+                coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+              }
+            }
+            return {
+              ...book,
+              cover: coverUrl,
+              cover_url: coverUrl
+            };
+          })
+        : [];
       setBooks(limitedBooks);
       console.log("📚 Loaded books for recommendations:", limitedBooks.length);
     } catch (err) {
@@ -297,7 +333,6 @@ export default function DashAnggota() {
   const faqs = [
     { q: "Bagaimana cara melihat daftar buku yang sedang saya pinjam?", a: "Buka menu 'Pinjaman Saya' untuk melihat semua buku yang sedang Anda pinjam dan tanggal pengembaliannya." },
     { q: "Bagaimana cara menjelajahi kategori buku dan melihat isinya?", a: "Pilih menu 'Kategori' untuk melihat semua kategori dan klik kategori tertentu untuk melihat daftar bukunya." },
-    { q: "Apakah saya bisa berdiskusi di forum dan bagaimana caranya?", a: "Ya, buka menu 'Forum', pilih topik yang menarik, dan Anda bisa membuat postingan atau memberikan komentar." },
   ];
 
   return (

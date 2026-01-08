@@ -3,6 +3,22 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Star, Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getBookById } from "../lib/api";
+import sadCover from "../assets/covers/sad.jpg";
+import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
+import cobaCover from "../assets/covers/coba.jpg";
+import leviathanCover from "../assets/covers/leviathan.jpg";
+import laskarCover from "../assets/covers/laskar pelangi.jpg";
+
+// Cover mapping berdasarkan title buku (lowercase untuk matching)
+const coverMapping: { [key: string]: string } = {
+  'sad': sadCover,
+  'ayahku bukan pembohong': ayahkuCover,
+  'ayahkubukanpembohong': ayahkuCover,
+  'ayah ku bukan pembohong': ayahkuCover,
+  'coba': cobaCover,
+  'leviathan': leviathanCover,
+  'laskar pelangi': laskarCover,
+};
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -55,9 +71,6 @@ const Header = () => {
           </button>
           <button onClick={() => navigate("/kategori")}>
             Kategori
-          </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
           </button>
         </nav>
 
@@ -219,7 +232,26 @@ const DetailBukuPage: React.FC = () => {
         console.log("📚 Fetching book detail for ID:", bookId);
         const data = await getBookById(bookId);
         console.log("✅ Book data received:", data);
-        setBookData(data);
+        
+        // Apply cover mapping
+        const titleLower = data.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
+        console.log('📖 Matching book title:', data.title, '-> normalized:', titleLower);
+        let coverUrl = coverMapping[titleLower];
+        console.log('🖼️ Found cover in mapping:', !!coverUrl);
+        
+        if (!coverUrl) {
+          if (data.cover) {
+            coverUrl = data.cover;
+          } else {
+            coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+          }
+        }
+        
+        setBookData({
+          ...data,
+          cover: coverUrl,
+          cover_url: coverUrl
+        });
         setError(null);
       } catch (err: any) {
         console.error("❌ Error fetching book:", err);
@@ -339,7 +371,7 @@ const DetailBukuPage: React.FC = () => {
           {/* COVER */}
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src={bookData.cover_url || bookData.cover || "https://via.placeholder.com/300x400?text=No+Cover"}
+              src={bookData.cover || bookData.cover_url || "https://via.placeholder.com/300x400?text=Book+Cover"}
               alt={bookData.title}
               className="rounded-lg w-full aspect-[3/4] object-cover"
               onError={(e) => {

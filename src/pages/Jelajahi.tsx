@@ -56,9 +56,7 @@ const Header = () => {
           onClick={() => navigate("/kategori")}>
             Kategori
           </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
-          </button>
+
         </nav>
 
         {/* RIGHT */}
@@ -216,7 +214,7 @@ const BookCard: React.FC<Book> = ({ id, cover, cover_url, title, author, author_
       onClick={() => navigate(`/detailbuku?id=${id}`)}
     >
       <img
-        src={cover_url || cover || "https://via.placeholder.com/200x300?text=No+Cover"}
+        src={cover || cover_url || "https://via.placeholder.com/200x300?text=Book+Cover"}
         alt={title}
         className="h-52 w-full object-cover rounded-xl mb-2 group-hover:shadow-lg transition"
       />

@@ -3,7 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getCurrentUser, getBookingHistoriesByUser, getBookById } from "../lib/api";
+import sadCover from "../assets/covers/sad.jpg";
+import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
+import cobaCover from "../assets/covers/coba.jpg";
+import leviathanCover from "../assets/covers/leviathan.jpg";
+import laskarCover from "../assets/covers/laskar pelangi.jpg";
 import { USE_DUMMY_DATA, DUMMY_BOOKING_HISTORIES, DUMMY_BOOKS } from "../lib/dummyData";
+
+// Cover mapping berdasarkan title buku (lowercase untuk matching)
+const coverMapping: { [key: string]: string } = {
+  'sad': sadCover,
+  'ayahku bukan pembohong': ayahkuCover,
+  'ayahkubukanpembohong': ayahkuCover,
+  'ayah ku bukan pembohong': ayahkuCover,
+  'coba': cobaCover,
+  'leviathan': leviathanCover,
+  'laskar pelangi': laskarCover,
+};
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -57,9 +73,6 @@ const Header = () => {
           </button>
           <button onClick={() => navigate("/kategori")}>
             Kategori
-          </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
           </button>
         </nav>
 
@@ -210,7 +223,7 @@ const BorrowedBookCard = ({ book }: { book: any }) => {
   return (
     <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
       <img 
-        src={book.cover_url || book.cover || 'https://via.placeholder.com/150x200?text=No+Cover'} 
+        src={book.cover || book.cover_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E'} 
         alt={book.book_title || book.title} 
         className="h-44 w-full object-cover" 
       />
@@ -269,11 +282,30 @@ export default function PinjamanSaya() {
         activeBookings.map(async (booking) => {
           try {
             const bookDetails = await getBookById(booking.book_id);
+            console.log('📚 Book details for ID', booking.book_id, ':', bookDetails);
+            
+            // Use cover mapping based on book title
+            const titleLower = bookDetails.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
+            console.log('📖 Matching book title:', bookDetails.title, '-> normalized:', titleLower);
+            let coverUrl = coverMapping[titleLower];
+            console.log('🖼️ Found cover in mapping:', !!coverUrl);
+            
+            // Fallback to API cover if no local cover found
+            if (!coverUrl) {
+              if (bookDetails.cover) {
+                coverUrl = bookDetails.cover;
+              } else {
+                coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+              }
+            }
+            console.log('🖼️ Title:', bookDetails.title, '| Using cover:', coverUrl);
+            
             return {
               ...booking,
               book_title: bookDetails.title || 'Unknown Title',
               author_name: bookDetails.author?.name || 'Unknown Author',
-              cover_url: bookDetails.cover || '',
+              cover: coverUrl,
+              cover_url: coverUrl,
             };
           } catch (err) {
             console.error(`Error fetching book ${booking.book_id}:`, err);
@@ -281,7 +313,8 @@ export default function PinjamanSaya() {
               ...booking,
               book_title: 'Unknown Title',
               author_name: 'Unknown Author',
-              cover_url: '',
+              cover: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E',
+              cover_url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E',
             };
           }
         })
