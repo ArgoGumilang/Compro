@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { createBook, getAllAuthors, getAllPublishers, getAllCategories, getAllSubCategories } from '../../lib/api';
+import { createBook, uploadBookCover, getAllAuthors, getAllPublishers, getAllCategories, getAllSubCategories } from '../../lib/api';
 
 interface AddBookModalProps {
   isOpen: boolean;
@@ -19,6 +19,8 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
   const [subCategories, setSubCategories] = useState<any[]>([]);
   const [filteredSubCategories, setFilteredSubCategories] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(false);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -91,6 +93,34 @@ const AddBookModal: React.FC<AddBookModalProps> = ({ isOpen, onClose, onSuccess 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('File harus berupa gambar');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Ukuran file maksimal 5MB');
+        return;
+      }
+      
+      setCoverFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      
+      console.log('📎 Cover file selected:', file.name);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -192,10 +222,24 @@ Does author ID ${formData.author_id} exist in the list above?
       console.log('📤 Creating book with data:', bookData);
       console.log('🔍 Type check - author_id:', typeof bookData.author_id, bookData.author_id);
       
-      await createBook(bookData);
-      console.log('✅ Book created successfully');
+      const response = await createBook(bookData);
+      console.log('✅ Book created successfully:', response);
       
-      alert('Buku berhasil ditambahkan!');
+      // Upload cover if file is selected
+      const bookId = response.id || response.book?.id;
+      if (coverFile && bookId) {
+        try {
+          console.log('📤 Uploading cover for book ID:', bookId);
+          await uploadBookCover(bookId, coverFile);
+          console.log('✅ Cover uploaded successfully');
+          alert('Buku dan cover berhasil ditambahkan!');
+        } catch (coverErr: any) {
+          console.error('⚠️ Failed to upload cover:', coverErr);
+          alert(`Buku berhasil ditambahkan, tetapi gagal upload cover: ${coverErr.message}`);
+        }
+      } else {
+        alert('Buku berhasil ditambahkan!');
+      }
       
       // Reset form
       setFormData({ 
@@ -215,6 +259,8 @@ Does author ID ${formData.author_id} exist in the list above?
         desc_fisik_buku: '', 
         desc_singkat_buku: '' 
       });
+      setCoverFile(null);
+      setCoverPreview(null);
       onClose();
       
       // Refresh parent data
@@ -433,6 +479,46 @@ Does author ID ${formData.author_id} exist in the list above?
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent"
             rows={3}
           />
+        </div>
+
+        {/* Cover Image Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Cover Buku (Opsional)</label>
+          <div className="space-y-3">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139] focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#BE4139] file:text-white hover:file:bg-[#9e3530]"
+            />
+            <p className="text-xs text-gray-500">Format: JPG, PNG, GIF. Maksimal 5MB</p>
+            
+            {/* Preview */}
+            {coverPreview && (
+              <div className="mt-3">
+                <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+                <div className="relative w-32 h-44 border-2 border-gray-300 rounded-lg overflow-hidden">
+                  <img 
+                    src={coverPreview} 
+                    alt="Cover preview" 
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCoverFile(null);
+                      setCoverPreview(null);
+                    }}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex gap-3 pt-4 sticky bottom-0 bg-white">

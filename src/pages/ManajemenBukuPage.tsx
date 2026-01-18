@@ -7,6 +7,7 @@ import { ViewBookModal } from "../components/modals/view-book-modal";
 import { AddBookModal } from "../components/modals/add-book-modal";
 import { DeleteBookModal } from "../components/modals/delete-book-modal";
 import { getAllBooks } from "../lib/api";
+import { enrichBooksWithCovers } from "../lib/bookCoverHelper";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -35,7 +36,8 @@ export function ManajemenBukuPage() {
       console.log("📚 Books response:", data);
       // Backend return {books: [], page: 1, ...}
       const booksArray = data.books || data;
-      setBooks(Array.isArray(booksArray) ? booksArray : []);
+      const booksWithCovers = await enrichBooksWithCovers(Array.isArray(booksArray) ? booksArray : []);
+      setBooks(booksWithCovers);
     } catch (err: any) {
       setError(err.message || "Gagal memuat data buku");
     } finally {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Star } from "lucide-react";
-import { getBookById } from "../lib/api";
+import { getBookById, getBookCover, API_BASE_URL } from "../lib/api";
 import sadCover from "../assets/covers/sad.jpg";
 import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
 import cobaCover from "../assets/covers/coba.jpg";
@@ -52,18 +52,31 @@ const DetailBukuPage: React.FC = () => {
         const response = await getBookById(bookId);
         console.log("📚 Book detail:", response);
         
-        // Apply cover mapping
-        const titleLower = response.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
-        console.log('📖 Matching book title:', response.title, '-> normalized:', titleLower);
-        let coverUrl = coverMapping[titleLower];
-        console.log('🖼️ Found cover in mapping:', !!coverUrl);
-        
-        if (!coverUrl) {
-          if (response.cover) {
-            coverUrl = response.cover;
-          } else {
-            coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+        // Fetch cover dari backend
+        let coverUrl = '';
+        try {
+          const coverResponse = await getBookCover(bookId);
+          console.log("🖼️ Cover response:", coverResponse);
+          
+          if (coverResponse.cover_path) {
+            // Jika cover_path ada, gunakan full URL dari backend
+            coverUrl = `${API_BASE_URL}${coverResponse.cover_path}`;
+            console.log("✅ Using backend cover:", coverUrl);
           }
+        } catch (coverErr) {
+          console.log("⚠️ Failed to fetch cover from backend, using fallback");
+        }
+        
+        // Fallback: coba cari di cover mapping lokal
+        if (!coverUrl) {
+          const titleLower = response.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
+          coverUrl = coverMapping[titleLower] || '';
+          console.log('🖼️ Using local cover mapping:', !!coverUrl);
+        }
+        
+        // Fallback terakhir: placeholder
+        if (!coverUrl) {
+          coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
         }
         
         setBookData({
