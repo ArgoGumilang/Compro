@@ -4,11 +4,12 @@ import { Button } from '../ui/button';
 
 interface Member {
   id: number;
-  nama: string;
-  nisNip: string;
-  email: string;
-  kelas: string;
-  role: string;
+  username: string;
+  full_name?: string;
+  email?: string;
+  role_id?: number;
+  role?: { id: number; name: string };
+  created_at?: string;
 }
 
 interface ViewMemberModalProps {
@@ -20,30 +21,52 @@ interface ViewMemberModalProps {
 const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ isOpen, member, onClose }) => {
   if (!member) return null;
 
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Detail Anggota">
       <div className="space-y-4">
-        {/* Nama */}
+        {/* ID User */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            ID User
+          </label>
+          <input
+            type="text"
+            value={member.id}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
+        </div>
+
+        {/* Username */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Username
+          </label>
+          <input
+            type="text"
+            value={member.username}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
+        </div>
+
+        {/* Nama Lengkap */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Nama Lengkap
           </label>
           <input
             type="text"
-            value={member.nama}
-            readOnly
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
-          />
-        </div>
-
-        {/* NIS / NIP */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            NIS / NIP
-          </label>
-          <input
-            type="text"
-            value={member.nisNip}
+            value={member.full_name || '-'}
             readOnly
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
           />
@@ -56,20 +79,7 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ isOpen, member, onClo
           </label>
           <input
             type="text"
-            value={member.email}
-            readOnly
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
-          />
-        </div>
-
-        {/* Kelas */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Kelas
-          </label>
-          <input
-            type="text"
-            value={member.kelas}
+            value={member.email || '-'}
             readOnly
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
           />
@@ -82,7 +92,20 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ isOpen, member, onClo
           </label>
           <input
             type="text"
-            value={member.role?.name || member.role || '-'}
+            value={member.role?.name || `Role ID: ${member.role_id}` || '-'}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
+        </div>
+
+        {/* Tanggal Daftar */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Tanggal Terdaftar
+          </label>
+          <input
+            type="text"
+            value={formatDate(member.created_at)}
             readOnly
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
           />

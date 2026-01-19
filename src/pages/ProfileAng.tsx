@@ -55,9 +55,6 @@ const Header = () => {
           <button onClick={() => navigate("/kategori")}>
             Kategori
           </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
-          </button>
         </nav>
 
         {/* RIGHT */}

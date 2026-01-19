@@ -2,6 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Star } from "lucide-react";
 import { getBookById } from "../lib/api";
+import sadCover from "../assets/covers/sad.jpg";
+import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
+import cobaCover from "../assets/covers/coba.jpg";
+import leviathanCover from "../assets/covers/leviathan.jpg";
+import laskarCover from "../assets/covers/laskar pelangi.jpg";
+
+// Cover mapping berdasarkan title buku (lowercase untuk matching)
+const coverMapping: { [key: string]: string } = {
+  'sad': sadCover,
+  'ayahku bukan pembohong': ayahkuCover,
+  'ayahkubukanpembohong': ayahkuCover,
+  'ayah ku bukan pembohong': ayahkuCover,
+  'coba': cobaCover,
+  'leviathan': leviathanCover,
+  'laskar pelangi': laskarCover,
+};
 
 const DetailBukuPage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,7 +51,26 @@ const DetailBukuPage: React.FC = () => {
         setError("");
         const response = await getBookById(bookId);
         console.log("📚 Book detail:", response);
-        setBookData(response);
+        
+        // Apply cover mapping
+        const titleLower = response.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
+        console.log('📖 Matching book title:', response.title, '-> normalized:', titleLower);
+        let coverUrl = coverMapping[titleLower];
+        console.log('🖼️ Found cover in mapping:', !!coverUrl);
+        
+        if (!coverUrl) {
+          if (response.cover) {
+            coverUrl = response.cover;
+          } else {
+            coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+          }
+        }
+        
+        setBookData({
+          ...response,
+          cover: coverUrl,
+          cover_url: coverUrl
+        });
       } catch (err: any) {
         console.error("❌ Failed to fetch book:", err);
         setError(err.message || "Gagal mengambil data buku");
@@ -165,7 +200,7 @@ const DetailBukuPage: React.FC = () => {
         <div className="xl:col-span-1">
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src={bookData.cover || "https://via.placeholder.com/300x400?text=No+Cover"}
+              src={bookData.cover || bookData.cover_url || "https://via.placeholder.com/300x400?text=Book+Cover"}
               alt="Cover"
               className="rounded-lg object-cover w-full aspect-[3/4]"
               onError={(e) => {
@@ -220,6 +255,72 @@ const DetailBukuPage: React.FC = () => {
               <p className="text-gray-700 mt-1">{bookData.desc_singkat_buku || "Tidak ada deskripsi tersedia."}</p>
             </div>
           </div>
+
+          {/* LOCATION MAP */}
+          {bookData.location_id && (
+            <div className="bg-white rounded-xl border shadow p-6">
+              <h2 className="font-bold text-[#BE4139] mb-4">
+                Lokasi Buku di Perpustakaan
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Buku ini berada di Lokasi #{bookData.location_id}
+              </p>
+              
+              <div className="relative inline-block max-w-full">
+                <img 
+                  src="/images/denah.png" 
+                  alt="Denah Perpustakaan" 
+                  className="rounded-lg border"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://via.placeholder.com/600x400?text=Denah+Tidak+Tersedia";
+                  }}
+                />
+                
+                {/* Location Highlights */}
+                <div className="absolute inset-0">
+                  {/* Location 1 - Left side */}
+                  {bookData.location_id === 1 && (
+                    <div className="absolute left-[3%] top-[15%] w-[10%] h-[70%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                  )}
+                  
+                  {/* Location 2 - Top left */}
+                  {bookData.location_id === 2 && (
+                    <div className="absolute left-[15%] top-[3%] w-[23%] h-[12%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                  )}
+                  
+                  {/* Location 3 - Top center */}
+                  {bookData.location_id === 3 && (
+                    <div className="absolute left-[40%] top-[3%] w-[23%] h-[12%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                  )}
+                  
+                  {/* Location 4 - Top right circles */}
+                  {bookData.location_id === 4 && (
+                    <div className="absolute left-[66%] top-[8%] w-[15%] h-[30%] bg-[#BE4139] opacity-30 rounded-full animate-pulse border-4 border-[#BE4139]"></div>
+                  )}
+                  
+                  {/* Location 5 - Right side */}
+                  {bookData.location_id === 5 && (
+                    <div className="absolute right-[3%] top-[15%] w-[10%] h-[70%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                  )}
+                  
+                  {/* Location 6 - Bottom right */}
+                  {bookData.location_id === 6 && (
+                    <div className="absolute right-[3%] bottom-[15%] w-[10%] h-[30%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                  )}
+                  
+                  {/* Location 7 - Bottom center */}
+                  {bookData.location_id === 7 && (
+                    <div className="absolute left-[25%] bottom-[8%] w-[50%] h-[12%] bg-[#BE4139] opacity-30 rounded-full animate-pulse border-4 border-[#BE4139]"></div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-4 h-4 bg-[#BE4139] opacity-30 border-2 border-[#BE4139] rounded"></div>
+                <span>Lokasi buku saat ini</span>
+              </div>
+            </div>
+          )}
 
           {/* RATINGS */}
           <div className="bg-white rounded-xl border shadow p-6">

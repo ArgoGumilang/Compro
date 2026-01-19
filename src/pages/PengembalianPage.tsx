@@ -24,18 +24,88 @@ const PengembalianPage: React.FC = () => {
   const [deleteReturnOpen, setDeleteReturnOpen] = useState(false);
   const [selectedReturn, setSelectedReturn] = useState<PengembalianData | undefined>(undefined);
 
-  // Sample data
+  // Sample data - Data pengembalian buku
   const pengembalianData: PengembalianData[] = [
-    { id: 1, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', pengembalian: '10/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 2, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '08/26/2022', tanggalKembali: '08/26/2022', pengembalian: '08/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 3, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', pengembalian: '10/26/2022', denda: '-', status: 'Dikembalikan' },
-    { id: 4, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', pengembalian: '10/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 5, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', pengembalian: '10/26/2022', denda: '-', status: 'Dikembalikan' },
-    { id: 6, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', pengembalian: '10/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 7, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', pengembalian: '10/26/2022', denda: '-', status: 'Dipinjam' },
-    { id: 8, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', pengembalian: '10/26/2022', denda: 'Rp10.000', status: 'Terlambat' },
-    { id: 9, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '05/09/2022', tanggalKembali: '05/09/2022', pengembalian: '05/09/2022', denda: '-', status: 'Dipinjam' },
-    { id: 10, nama: 'Nama Lengkap', judul: 'Judul Buku', tanggalPinjam: '10/26/2022', tanggalKembali: '10/26/2022', pengembalian: '10/26/2022', denda: '-', status: 'Dipinjam' },
+    {
+      id: 1,
+      nama: 'Siti Rahmawati',
+      judul: 'Kimia Organik Dasar',
+      tanggalPinjam: '2025-12-28',
+      tanggalKembali: '2026-01-04',
+      pengembalian: '2026-01-03',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 2,
+      nama: 'Dewi Lestari',
+      judul: 'Bahasa Inggris Advanced',
+      tanggalPinjam: '2025-12-25',
+      tanggalKembali: '2026-01-01',
+      pengembalian: '2025-12-31',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 3,
+      nama: 'Siti Rahmawati',
+      judul: 'Ekonomi Makro & Mikro',
+      tanggalPinjam: '2025-12-22',
+      tanggalKembali: '2025-12-29',
+      pengembalian: '2025-12-28',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 4,
+      nama: 'Andi Prasetya',
+      judul: 'Laskar Pelangi',
+      tanggalPinjam: '2025-12-20',
+      tanggalKembali: '2025-12-27',
+      pengembalian: '2025-12-26',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 5,
+      nama: 'Dewi Lestari',
+      judul: 'Biologi Molekuler',
+      tanggalPinjam: '2025-12-24',
+      tanggalKembali: '2025-12-31',
+      pengembalian: '2025-12-30',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 6,
+      nama: 'Maya Anggraini',
+      judul: 'Pendidikan Kewarganegaraan',
+      tanggalPinjam: '2025-12-23',
+      tanggalKembali: '2025-12-30',
+      pengembalian: '2025-12-29',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    },
+    {
+      id: 7,
+      nama: 'Budi Santoso',
+      judul: 'Fisika Dasar',
+      tanggalPinjam: '2025-12-18',
+      tanggalKembali: '2025-12-25',
+      pengembalian: '2025-12-27',
+      denda: 'Rp 4000',
+      status: 'Terlambat'
+    },
+    {
+      id: 8,
+      nama: 'Rizki Aditya',
+      judul: 'Pemrograman Python',
+      tanggalPinjam: '2025-12-15',
+      tanggalKembali: '2025-12-22',
+      pengembalian: '2025-12-21',
+      denda: 'Rp 0',
+      status: 'Dikembalikan'
+    }
   ];
 
   // Filter data based on search

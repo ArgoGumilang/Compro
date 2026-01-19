@@ -189,10 +189,6 @@ export function DataAnggotaPage() {
             <Plus size={18} />
             Tambah Pengguna
           </Button>
-          <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530] transition-all duration-300 font-semibold">
-            <Filter size={18} />
-            Filter
-          </Button>
         </div>
       </div>
 
@@ -277,7 +273,12 @@ export function DataAnggotaPage() {
         onClose={() => setAddModalOpen(false)} 
         onSuccess={fetchUsers}
       />
-      <DeleteMemberModal isOpen={deleteModalOpen} member={selectedMember} onClose={() => setDeleteModalOpen(false)} />
+      <DeleteMemberModal 
+        isOpen={deleteModalOpen} 
+        member={selectedMember} 
+        onClose={() => setDeleteModalOpen(false)} 
+        onSuccess={fetchUsers}
+      />
     </div>
   );
 }

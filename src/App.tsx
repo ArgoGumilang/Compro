@@ -16,7 +16,6 @@ import DashAnggota from "./pages/DashAnggota";
 import DetailBukuAng from "./pages/DetailBukuAng";
 import PinjamanSaya from "./pages/PinjamanSaya";
 import Kategori from "./pages/Kategori";
-import Forum from "./pages/Forum";
 import Jelajahi from "./pages/Jelajahi";
 import ProfileAng from "./pages/ProfileAng";
 
@@ -35,7 +34,6 @@ function App() {
         <Route path="/detailbuku" element={<ProtectedRoute requiredRole="member"><DetailBukuAng /></ProtectedRoute>} />
         <Route path="/pinjamansaya" element={<ProtectedRoute requiredRole="member"><PinjamanSaya /></ProtectedRoute>} />
         <Route path="/kategori" element={<ProtectedRoute requiredRole="member"><Kategori /></ProtectedRoute>} />
-        <Route path="/forum" element={<ProtectedRoute requiredRole="member"><Forum /></ProtectedRoute>} />
         <Route path="/jelajahi" element={<ProtectedRoute requiredRole="member"><Jelajahi /></ProtectedRoute>} />
         <Route path="/profileang" element={<ProtectedRoute requiredRole="member"><ProfileAng /></ProtectedRoute>} />
 

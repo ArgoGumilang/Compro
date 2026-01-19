@@ -2,7 +2,24 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
-import { getCurrentUser, getBookingHistoriesByUser, getBookById, getUserById } from "../lib/api";
+import { getCurrentUser, getBookingHistoriesByUser, getBookById } from "../lib/api";
+import sadCover from "../assets/covers/sad.jpg";
+import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
+import cobaCover from "../assets/covers/coba.jpg";
+import leviathanCover from "../assets/covers/leviathan.jpg";
+import laskarCover from "../assets/covers/laskar pelangi.jpg";
+import { USE_DUMMY_DATA, DUMMY_BOOKING_HISTORIES, DUMMY_BOOKS } from "../lib/dummyData";
+
+// Cover mapping berdasarkan title buku (lowercase untuk matching)
+const coverMapping: { [key: string]: string } = {
+  'sad': sadCover,
+  'ayahku bukan pembohong': ayahkuCover,
+  'ayahkubukanpembohong': ayahkuCover,
+  'ayah ku bukan pembohong': ayahkuCover,
+  'coba': cobaCover,
+  'leviathan': leviathanCover,
+  'laskar pelangi': laskarCover,
+};
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -56,9 +73,6 @@ const Header = () => {
           </button>
           <button onClick={() => navigate("/kategori")}>
             Kategori
-          </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
           </button>
         </nav>
 
@@ -209,7 +223,7 @@ const BorrowedBookCard = ({ book }: { book: any }) => {
   return (
     <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
       <img 
-        src={book.cover_url || book.cover || 'https://via.placeholder.com/150x200?text=No+Cover'} 
+        src={book.cover || book.cover_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E'} 
         alt={book.book_title || book.title} 
         className="h-44 w-full object-cover" 
       />
@@ -246,80 +260,72 @@ export default function PinjamanSaya() {
       setLoading(true);
       setError('');
 
-      // Get current user
-      const userData = await getCurrentUser();
-      console.log('👤 Current user:', userData);
-      
-      if (!userData || !userData.id) {
-        setError('User tidak ditemukan. Silakan login terlebih dahulu.');
-        setTimeout(() => navigate('/login'), 2000);
-        return;
+      // Get user_id from localStorage
+      const userId = localStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('User ID tidak ditemukan. Silakan login kembali.');
       }
 
-      let bookingsArray = [];
+      console.log('📚 Fetching booking histories for user:', userId);
       
-      try {
-        // Try to get user's booking histories
-        const bookingsResponse = await getBookingHistoriesByUser(userData.id);
-        console.log('📚 Bookings response:', bookingsResponse);
-        bookingsArray = bookingsResponse.booking_histories || bookingsResponse || [];
-      } catch (bookingErr: any) {
-        console.warn('⚠️ Failed to fetch user bookings, trying alternative method:', bookingErr);
-        
-        // If endpoint not available, check if user data contains bookings
-        if (userData.booking_histories) {
-          bookingsArray = userData.booking_histories;
-        } else {
-          // If no bookings found anywhere, just show empty state
-          console.log('ℹ️ No bookings found for user');
-          bookingsArray = [];
-        }
-      }
+      // Fetch booking histories for user
+      const bookingHistories = await getBookingHistoriesByUser(userId);
+      console.log('📖 Booking histories response:', bookingHistories);
+
+      // Filter active bookings (status = true)
+      const activeBookings = Array.isArray(bookingHistories) 
+        ? bookingHistories.filter(b => b.status === true)
+        : [];
       
-      // Filter only active bookings (status = true)
-      const activeBookings = (Array.isArray(bookingsArray) ? bookingsArray : [])
-        .filter((b: any) => b.status === true);
-
-      if (activeBookings.length === 0) {
-        setBorrowedBooks([]);
-        setLoading(false);
-        return;
-      }
-
       // Enrich with book details
       const enrichedBookings = await Promise.all(
-        activeBookings.map(async (booking: any) => {
+        activeBookings.map(async (booking) => {
           try {
-            const bookData = await getBookById(booking.book_id);
+            const bookDetails = await getBookById(booking.book_id);
+            console.log('📚 Book details for ID', booking.book_id, ':', bookDetails);
+            
+            // Use cover mapping based on book title
+            const titleLower = bookDetails.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
+            console.log('📖 Matching book title:', bookDetails.title, '-> normalized:', titleLower);
+            let coverUrl = coverMapping[titleLower];
+            console.log('🖼️ Found cover in mapping:', !!coverUrl);
+            
+            // Fallback to API cover if no local cover found
+            if (!coverUrl) {
+              if (bookDetails.cover) {
+                coverUrl = bookDetails.cover;
+              } else {
+                coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+              }
+            }
+            console.log('🖼️ Title:', bookDetails.title, '| Using cover:', coverUrl);
+            
             return {
               ...booking,
-              book_title: bookData.title,
-              author_name: bookData.author_name || bookData.author?.name || bookData.author,
-              cover_url: bookData.cover_url || bookData.cover,
+              book_title: bookDetails.title || 'Unknown Title',
+              author_name: bookDetails.author?.name || 'Unknown Author',
+              cover: coverUrl,
+              cover_url: coverUrl,
             };
           } catch (err) {
-            console.error(`❌ Failed to fetch book ${booking.book_id}:`, err);
+            console.error(`Error fetching book ${booking.book_id}:`, err);
             return {
               ...booking,
-              book_title: `Book ID ${booking.book_id}`,
+              book_title: 'Unknown Title',
               author_name: 'Unknown Author',
+              cover: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E',
+              cover_url: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E',
             };
           }
         })
       );
-
+      
       console.log('✨ Enriched bookings:', enrichedBookings);
       setBorrowedBooks(enrichedBookings);
     } catch (err: any) {
-      console.error('❌ Failed to load bookings:', err);
-      
-      // Check if authentication error
-      if (err.message && (err.message.includes('401') || err.message.includes('403') || err.message.includes('Unauthorized') || err.message.includes('non-JSON'))) {
-        setError('Session anda telah berakhir. Silakan login kembali.');
-        setTimeout(() => navigate('/login'), 2000);
-      } else {
-        setError(err.message || 'Gagal memuat data peminjaman');
-      }
+      console.error('❌ Error:', err);
+      setError(err.message || 'Gagal memuat data');
+      setBorrowedBooks([]);
     } finally {
       setLoading(false);
     }
