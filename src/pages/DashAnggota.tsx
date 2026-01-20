@@ -293,17 +293,6 @@ export default function DashAnggota() {
       setLoading(false);
     }
   };
-          })
-        : [];
-      setBooks(limitedBooks);
-      console.log("📚 Loaded books for recommendations:", limitedBooks.length);
-    } catch (err) {
-      console.error("❌ Failed to load books:", err);
-      setBooks([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const faqs = [
     { q: "Bagaimana cara melihat daftar buku yang sedang saya pinjam?", a: "Buka menu 'Pinjaman Saya' untuk melihat semua buku yang sedang Anda pinjam dan tanggal pengembaliannya." },
