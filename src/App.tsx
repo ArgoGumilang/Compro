@@ -22,12 +22,15 @@ import ProfileAng from "./pages/ProfileAng";
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
+import NotFoundPage from "./pages/NotFoundPage";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* ================= PUBLIC ================= */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="*" element={<NotFoundPage />} />
 
         {/* ================= DASH ANGGOTA (NO ADMIN LAYOUT) ================= */}
         <Route path="/dashanggota" element={ <ProtectedRoute requiredRole="member"><DashAnggota /></ProtectedRoute>}/>

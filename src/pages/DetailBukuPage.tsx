@@ -293,37 +293,37 @@ const DetailBukuPage: React.FC = () => {
                 <div className="absolute inset-0">
                   {/* Location 1 - Left side */}
                   {bookData.location_id === 1 && (
-                    <div className="absolute left-[3%] top-[15%] w-[10%] h-[70%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                    <div className="absolute left-[3%] top-[6.5%] w-[5%] h-[63%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 2 - Top left */}
                   {bookData.location_id === 2 && (
-                    <div className="absolute left-[15%] top-[3%] w-[23%] h-[12%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                    <div className="absolute left-[8%] top-[6.5%] w-[19.5%] h-[9.5%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 3 - Top center */}
                   {bookData.location_id === 3 && (
-                    <div className="absolute left-[40%] top-[3%] w-[23%] h-[12%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                    <div className="absolute left-[27.5%] top-[6.5%] w-[12%] h-[9.5%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 4 - Top right circles */}
                   {bookData.location_id === 4 && (
-                    <div className="absolute left-[66%] top-[8%] w-[15%] h-[30%] bg-[#BE4139] opacity-30 rounded-full animate-pulse border-4 border-[#BE4139]"></div>
+                    <div className="absolute left-[44.4%] top-[18.5%] w-[4.9%] h-[15%] bg-[#BE4139] opacity-30 rounded-full animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 5 - Right side */}
                   {bookData.location_id === 5 && (
-                    <div className="absolute right-[3%] top-[15%] w-[10%] h-[70%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                    <div className="absolute right-[38.7%] top-[6.5%] w-[5%] h-[39%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 6 - Bottom right */}
                   {bookData.location_id === 6 && (
-                    <div className="absolute right-[3%] bottom-[15%] w-[10%] h-[30%] bg-[#BE4139] opacity-30 rounded animate-pulse border-4 border-[#BE4139]"></div>
+                    <div className="absolute right-[38.7%] bottom-[5.5%] w-[5%] h-[39%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 7 - Bottom center */}
                   {bookData.location_id === 7 && (
-                    <div className="absolute left-[25%] bottom-[8%] w-[50%] h-[12%] bg-[#BE4139] opacity-30 rounded-full animate-pulse border-4 border-[#BE4139]"></div>
+                    <div className="absolute left-[24.5%] bottom-[5.5%] w-[28.5%] h-[8%] bg-[#BE4139] opacity-30 rounded-full animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                 </div>
               </div>

@@ -243,6 +243,7 @@ export function ManajemenBukuPage() {
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Penulis</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">ISBN</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Tahun</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Kategori</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Stok</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Action</th>
                 </tr>
@@ -250,20 +251,57 @@ export function ManajemenBukuPage() {
               <tbody className="divide-y divide-gray-200">
                 {paginatedBooks.map((book, index) => (
                   <tr key={book.id} className="hover:bg-gray-50 transition-all duration-200">
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{startIndex + index + 1}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{book.title || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{book.author?.name || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{book.isbn || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{book.year_published ? new Date(book.year_published).getFullYear() : "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.num_book_available ?? 0}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+                      {startIndex + index + 1}
+                    </td>
+
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+                      {book.title || "-"}
+                    </td>
+
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {book.author?.name || "-"}
+                    </td>
+
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {book.isbn || "-"}
+                    </td>
+
+                    {/* Tahun */}
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {book.year_published
+                        ? new Date(book.year_published).getFullYear()
+                        : "-"}
+                    </td>
+
+                    {/* Kategori */}
+                    <td className="px-6 py-4 text-sm">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-bold ${
+                          getCategoryBadgeColor(book.category)
+                        }`}
+                      >
+                        {book.category || "-"}
+                      </span>
+                    </td>
+
+                    {/* Stok */}
+                    <td className="px-6 py-4 text-sm text-gray-700 font-semibold">
+                      {book.num_book_available ?? 0}
+                    </td>
+
+                    {/* Action */}
                     <td className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => navigate(`/manajemen-buku/detail?id=${book.id}`)}
+                          onClick={() =>
+                            navigate(`/manajemen-buku/detail?id=${book.id}`)
+                          }
                           className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
                         >
                           <Eye size={16} className="text-[#BE4139]" />
                         </button>
+
                         <button
                           onClick={() => handleDeleteBook(book)}
                           className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"

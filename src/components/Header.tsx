@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Bell, ChevronDown, User, LogOut } from "lucide-react"
+import logoSekolah from "../assets/logo-sekolah.png";
 
 const Header: React.FC = () => {
   const navigate = useNavigate()
@@ -56,13 +57,12 @@ const Header: React.FC = () => {
     <header className="fixed top-0 left-0 right-0 z-50 flex h-[60px] shadow-lg">
       {/* Sidebar Title Area */}
       <div className="w-52 bg-gradient-to-br from-[#BE4139] to-[#9e3530] flex items-center justify-center border-r border-white/20">
-        <div className="text-white text-center">
-          <div className="text-xs font-black bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-3 py-1 rounded-xl shadow-md">
-            SMA TELKOM
-          </div>
-          <div className="text-[10px] text-white/90 font-semibold mt-1">
-            BANDUNG
-          </div>
+        <div className="flex items-center justify-center w-full">
+          <img
+            src={logoSekolah}
+            alt="Logo Sekolah"
+            className="h-10 w-auto object-contain"
+          />
         </div>
       </div>
 
