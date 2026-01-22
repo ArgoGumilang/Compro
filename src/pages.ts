@@ -26,3 +26,4 @@ export { default as ProfileAng } from "./pages/ProfileAng";
 
 // ================= OPTIONAL =================
 export { default as ArtikelPage } from "./pages/ArtikelPage";
+export { default as NotFoundPage } from "./pages/NotFoundPage";

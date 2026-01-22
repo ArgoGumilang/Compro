@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Star, Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getBookById } from "../lib/api";
@@ -48,6 +48,30 @@ const Header = () => {
     setOpenProfile(false);
     navigate("/login");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600">
+        {error}
+      </div>
+    );
+  }
+
+  if (!bookData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Data buku tidak tersedia
+      </div>
+    );
+  }
 
   return (
     <header className="bg-white border-b sticky top-0 z-50">
@@ -340,7 +364,7 @@ const DetailBukuPage: React.FC = () => {
           {/* COVER */}
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src="https://cdn.eurekabookhouse.co.id/ebh/product/all/004510075020.jpg"
+              src={bookData.cover}
               className="rounded-lg w-full aspect-[3/4] object-cover"
             />
           </div>
@@ -354,17 +378,17 @@ const DetailBukuPage: React.FC = () => {
 
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 {[
-                  ["Judul", bookData.judul],
-                  ["Penulis", bookData.penulis],
-                  ["Publisher", bookData.publisher],
-                  ["Kategori", bookData.kategori],
-                  ["ISBN", bookData.isbn],
-                  ["DDC", bookData.ddc],
-                  ["Total Halaman", bookData.totalHalaman],
-                  ["Tahun Terbit", bookData.tahunTerbit],
-                  ["Asal Kota", bookData.asalKota],
-                  ["Jumlah Buku", bookData.jumlahBukuTersedia],
-                  ["Deskripsi Fisik", bookData.deskripsiFisikBuku],
+                  ["Judul", bookData?.judul || "-"],
+                  ["Penulis", bookData?.penulis || "-"],
+                  ["Publisher", bookData?.publisher || "-"],
+                  ["Kategori", bookData?.kategori || "-"],
+                  ["ISBN", bookData?.isbn || "-"],
+                  ["DDC", bookData?.ddc || "-"],
+                  ["Total Halaman", bookData?.totalHalaman || "-"],
+                  ["Tahun Terbit", bookData?.tahunTerbit || "-"],
+                  ["Asal Kota", bookData?.asalKota || "-"],
+                  ["Jumlah Buku", bookData?.jumlahBukuTersedia || "-"],
+                  ["Deskripsi Fisik", bookData?.deskripsiFisikBuku || "-"],
                 ].map(([label, value]) => (
                   <div key={label}>
                     <p className="font-semibold text-gray-500">{label}</p>
@@ -403,7 +427,7 @@ const DetailBukuPage: React.FC = () => {
                 <div className="absolute inset-0 z-10 pointer-events-none">
                   {(() => {
                     // Ambil nomor lokasi dari string, misal "Rak Koleksi Buku Pelajaran (5)" -> 5
-                    const match = bookData.denah.match(/\((\d+)\)/);
+                    const match = bookData?.denah?.match(/\((\d+)\)/);
                     const loc = match ? Number(match[1]) : null;
                     if (!loc) return null;
 

@@ -395,63 +395,38 @@ export async function updateBook(id: string | number, data: any) {
   });
 }
 
-// GET /books/{id}/cover
-export async function getBookCover(id: string | number) {
-  if (USE_DUMMY_DATA) {
-    console.log("📚 Returning dummy cover for book:", id);
-    return Promise.resolve({ cover_path: "" });
-  }
-  return fetchWithCredentials(`/books/${id}/cover`, {
-    method: "GET",
-  });
-}
-
-// POST /books/{id}/cover - Upload cover image
-export async function uploadBookCover(id: string | number, file: File) {
-  const fullUrl = `${API_BASE_URL}/books/${id}/cover`;
-  const accessToken = getAccessToken();
-  
-  const formData = new FormData();
-  formData.append('cover', file);
-  
-  console.log("📤 Uploading cover for book:", id);
-  console.log("📎 File:", file.name, "Size:", file.size, "Type:", file.type);
-  
-  try {
-    const response = await fetch(fullUrl, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {}),
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { error: errorText };
-      }
-      throw new Error(errorData.error || errorData.message || `Failed to upload cover: HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("✅ Cover uploaded successfully:", data);
-    return data;
-  } catch (error: any) {
-    console.error("❌ Failed to upload cover:", error);
-    throw error;
-  }
-}
-
 // DELETE /books/{id}
 export async function deleteBook(id: string | number) {
   return fetchWithCredentials(`/books/${id}`, {
     method: "DELETE",
   });
+}
+
+// ==================== UPLOAD BOOK COVER ====================
+export async function uploadBookCover(bookId: string | number, file: File) {
+  const formData = new FormData();
+  formData.append("cover", file);
+
+  const token = getAccessToken();
+
+  const res = await fetch(`${API_BASE_URL}/books/${bookId}/uploadCover`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Gagal upload cover: ${text}`);
+  }
+
+  return res.json();
+}
+
+// Optional helper to get cover URL
+export function getBookCover(fileName: string) {
+  return `${API_BASE_URL}/uploads/book_covers/${fileName}`;
 }
 
 // ==================== AUTHORS API ====================

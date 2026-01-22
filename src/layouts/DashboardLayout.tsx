@@ -15,6 +15,8 @@ import {
   Kategori,
   Forum,
   ArtikelAng,
+  Jelajahi,
+  ProfileAng,
 } from "../pages";
 
 import DashboardPage from "../pages/DashboardPage";
@@ -41,6 +43,8 @@ const pageTitles: { [key: string]: string } = {
   "/kategori": "Kategori",
   "/forum": "Forum",
   "/artikelang": "Artikel Ang",
+  "/jelajahi": "Jelajahi",
+  "/profileang": "Profile Ang",
 };
 
 const DashboardLayout = () => {
@@ -76,6 +80,8 @@ const DashboardLayout = () => {
             <Route path="/kategori" element={<Kategori />} />
             <Route path="/Forum" element={<Forum />} />
             <Route path="/artikelang" element={<ArtikelAng />} />
+            <Route path="/jelajahi" element={<Jelajahi />} />
+            <Route path="/profileang" element={<ProfileAng />} />
           </Routes>
         </div>
       </main>
