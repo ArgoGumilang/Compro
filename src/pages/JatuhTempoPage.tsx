@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Filter, Eye, Trash2 } from 'lucide-react';
+import { Search, Filter, Eye, Trash2, Pencil } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { ViewTempoModal } from "../components/modals/view-tempo-modal";
+import { EditTempoModal } from "../components/modals/edit-tempo-modal";
 import { DeleteTempoModal } from "../components/modals/delete-tempo-modal";
 
 interface JatuhTempoData {
@@ -22,10 +23,10 @@ const JatuhTempoPage: React.FC = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteTempoOpen, setDeleteTempoOpen] = useState(false);
   const [selectedTempo, setSelectedTempo] = useState<JatuhTempoData | undefined>(undefined);
-  
+  const [editTempoOpen, setEditTempoOpen] = useState(false);
 
   // Sample data - Data yang jatuh tempo atau terlambat
-  const jatuhTempoData: JatuhTempoData[] = [
+  const [jatuhTempoData, setJatuhTempoData] = useState<JatuhTempoData[]>([
     {
       id: 1,
       nama: 'Andi Prasetya',
@@ -116,7 +117,7 @@ const JatuhTempoPage: React.FC = () => {
       denda: 'Rp 0',
       status: 'Dikembalikan'
     }
-  ];
+  ]);
 
   // Filter data based on search
   const filteredData = jatuhTempoData.filter(item =>
@@ -167,6 +168,11 @@ const JatuhTempoPage: React.FC = () => {
   const handleViewTempo = (data: JatuhTempoData) => {
     setSelectedTempo(data);
     setViewModalOpen(true);
+  };
+
+  const handleEditTempo = (data: JatuhTempoData) => {
+    setSelectedTempo(data);
+    setEditTempoOpen(true);
   };
 
   const handleDeleteTempo = (data: JatuhTempoData) => {
@@ -239,6 +245,12 @@ const JatuhTempoPage: React.FC = () => {
                         <Eye size={16} className="text-[#BE4139]" />
                       </button>
                       <button
+                        onClick={() => handleEditTempo(item)}
+                        className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
+                        <Pencil size={16} className="text-[#BE4139]" />
+                      </button>
+                      <button
                         onClick={() => handleDeleteTempo(item)}
                         className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
                       >
@@ -259,6 +271,18 @@ const JatuhTempoPage: React.FC = () => {
         
       </div>
       <ViewTempoModal isOpen={viewModalOpen} data={selectedTempo ?? undefined} onClose={() => setViewModalOpen(false)}/>
+      <EditTempoModal
+        isOpen={editTempoOpen}
+        data={selectedTempo}
+        onClose={() => setEditTempoOpen(false)}
+        onSave={(updated) => {
+          const index = jatuhTempoData.findIndex(d => d.id === updated.id);
+          if (index !== -1) {
+            jatuhTempoData[index] = updated;
+            setSelectedTempo({ ...updated }); 
+          }
+        }}
+      />
       <DeleteTempoModal isOpen={deleteTempoOpen} data={selectedTempo} onClose={() => setDeleteTempoOpen(false)}/>
     </div>
   );

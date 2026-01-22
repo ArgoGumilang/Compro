@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Download, Filter, Eye, Trash2 } from "lucide-react";
+import { Search, Plus, Download, Filter, Eye, Trash2, Pencil } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ViewBookModal } from "../components/modals/view-book-modal";
@@ -291,20 +291,36 @@ export function ManajemenBukuPage() {
                     {/* Action */}
                     <td className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-2">
+                        {/* VIEW */}
                         <button
                           onClick={() =>
                             navigate(`/manajemen-buku/detail?id=${book.id}`)
                           }
                           className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                          title="Lihat Detail"
                         >
                           <Eye size={16} className="text-[#BE4139]" />
                         </button>
 
+                        {/* EDIT */}
+                        <button
+                          onClick={() =>
+                            navigate(`/manajemen-buku/detail?id=${book.id}`)
+                            // nanti bisa diganti: setEditModalOpen(true)
+                          }
+                          className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                          title="Edit Buku"
+                        >
+                          <Pencil size={16} className="text-[#BE4139]" />
+                        </button>
+
+                        {/* DELETE */}
                         <button
                           onClick={() => handleDeleteBook(book)}
-                          className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                          className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                          title="Hapus Buku"
                         >
-                          <Trash2 size={16} className="text-red-500" />
+                          <Trash2 size={16} className="text-[#BE4139]" />
                         </button>
                       </div>
                     </td>

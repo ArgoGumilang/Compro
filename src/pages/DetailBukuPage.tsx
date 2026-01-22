@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronLeft, Star } from "lucide-react";
+import { ChevronLeft, Star, Pencil, Save, X } from "lucide-react";
 import { getBookById } from "../lib/api";
 import sadCover from "../assets/covers/sad.jpg";
 import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
 import cobaCover from "../assets/covers/coba.jpg";
 import leviathanCover from "../assets/covers/leviathan.jpg";
 import laskarCover from "../assets/covers/laskar pelangi.jpg";
+import { updateBook } from "../lib/api";
 
 // Cover mapping berdasarkan title buku (lowercase untuk matching)
 const coverMapping: { [key: string]: string } = {
@@ -30,6 +31,9 @@ const DetailBukuPage: React.FC = () => {
   const [bookData, setBookData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [formData, setFormData] = useState<any>({});
+  const [saving, setSaving] = useState(false);
 
   // Determine if user is admin or regular user based on current path or role
   const isAdminView = window.location.pathname.includes('manajemen') || false;
@@ -40,44 +44,52 @@ const DetailBukuPage: React.FC = () => {
   ====================== */
   useEffect(() => {
     const fetchBookDetail = async () => {
-      if (!bookId) {
-        setError("Book ID not provided");
-        setLoading(false);
-        return;
+    if (!bookId) return;
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await getBookById(bookId);
+
+      const titleLower =
+        response.title?.toLowerCase().trim().replace(/\s+/g, " ") || "";
+
+      let coverUrl = coverMapping[titleLower] || response.cover;
+
+      if (!coverUrl) {
+        coverUrl =
+          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23ddd'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='16' fill='%23999'%3EBook Cover%3C/text%3E%3C/svg%3E";
       }
 
-      try {
-        setLoading(true);
-        setError("");
-        const response = await getBookById(bookId);
-        console.log("📚 Book detail:", response);
-        
-        // Apply cover mapping
-        const titleLower = response.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
-        console.log('📖 Matching book title:', response.title, '-> normalized:', titleLower);
-        let coverUrl = coverMapping[titleLower];
-        console.log('🖼️ Found cover in mapping:', !!coverUrl);
-        
-        if (!coverUrl) {
-          if (response.cover) {
-            coverUrl = response.cover;
-          } else {
-            coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
-          }
-        }
-        
-        setBookData({
-          ...response,
-          cover: coverUrl,
-          cover_url: coverUrl
-        });
-      } catch (err: any) {
-        console.error("❌ Failed to fetch book:", err);
-        setError(err.message || "Gagal mengambil data buku");
-      } finally {
-        setLoading(false);
-      }
-    };
+      setBookData({
+        ...response,
+        cover: coverUrl,
+        cover_url: coverUrl,
+      });
+
+      setFormData({
+        title: response.title || "",
+        isbn: response.isbn || "",
+        ddc: response.ddc || "",
+        num_page: response.num_page || "",
+        year_published: response.year_published
+          ? new Date(response.year_published).getFullYear()
+          : "",
+        city_origin: response.city_origin || "",
+        num_book_available: response.num_book_available || "",
+        desc_singkat_buku: response.desc_singkat_buku || "",
+        author_name: response.author?.name || "",
+        publisher_name: response.publisher?.name || "",
+        desc_fisik_buku: response.desc_fisik_buku || "",
+        location_id: response.location_id || "",
+      });
+    } catch (err: any) {
+      setError(err.message || "Gagal mengambil data buku");
+    } finally {
+      setLoading(false);
+    }
+  };
 
     fetchBookDetail();
   }, [bookId]);
@@ -176,6 +188,118 @@ const DetailBukuPage: React.FC = () => {
     );
   }
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = async () => {
+    try {
+      const payload = {
+      ...formData,
+      year_published: formData.year_published
+        ? String(formData.year_published)
+        : null,
+
+      // pastikan number
+      location_id: Number(formData.location_id),
+    };
+
+      await updateBook(bookData.id, payload);
+
+      setIsEditMode(false);s
+      fetchBooks(); // auto refresh list
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const renderEditableField = (
+    label: string,
+    field: string,
+    value: any,
+    type: "text" | "number" | "textarea" = "text"
+  ) => {
+    return (
+      <div>
+        {/* LABEL (SAMA SEPERTI ID) */}
+        <p className="font-semibold text-gray-500">{label}</p>
+
+        {/* VIEW MODE */}
+        {!isEditMode && (
+          <p className="text-gray-800">
+            {value !== null && value !== undefined && value !== "" ? value : "-"}
+          </p>
+        )}
+
+        {/* EDIT MODE */}
+        {isEditMode && (
+          type === "textarea" ? (
+            <textarea
+              value={formData[field] ?? ""}
+              onChange={(e) =>
+                setFormData({ ...formData, [field]: e.target.value })
+              }
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              rows={3}
+            />
+          ) : (
+            <input
+              type={type}
+              value={formData[field] ?? ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  [field]: type === "number" ? Number(e.target.value) : e.target.value,
+                })
+              }
+              className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+          )
+        )}
+      </div>
+    );
+  };
+
+  const renderEditableLocation = () => (
+    <div>
+      <p className="font-semibold text-gray-500">Lokasi Buku</p>
+
+      {!isEditMode && (
+        <p className="text-gray-800">
+          {currentLocation ? `Lokasi #${currentLocation}` : "-"}
+        </p>
+      )}
+
+      {isEditMode && (
+        <select
+          value={formData.location_id ?? ""}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              location_id: Number(e.target.value),
+            })
+          }
+          className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+        >
+          <option value="">-- Pilih Lokasi --</option>
+          {[1, 2, 3, 4, 5, 6, 7].map((loc) => (
+            <option key={loc} value={loc}>
+              Lokasi #{loc}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
+  );
+
+  const currentLocation = isEditMode
+    ? formData.location_id
+    : bookData.location_id;
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       {/* BACK */}
@@ -188,10 +312,49 @@ const DetailBukuPage: React.FC = () => {
       </button>
 
       {/* TITLE */}
-      <div className="mb-8">
+      <div className="mb-8 flex items-center justify-between">
         <h1 className="text-3xl font-black text-[#BE4139]">
           Detail Data Buku
         </h1>
+
+        {isAdminView && (
+          <div className="flex gap-2">
+            {!isEditMode ? (
+              <button
+                onClick={() => setIsEditMode(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600"
+              >
+                <Pencil size={16} />
+                Edit
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700"
+                >
+                  <Save size={16} />
+                  {saving ? "Menyimpan..." : "Simpan"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setFormData((prev: any) => ({
+                      ...prev,
+                      location_id: bookData.location_id,
+                    }));
+                    setIsEditMode(false);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-white rounded-xl hover:bg-gray-500"
+                >
+                  <X size={16} />
+                  Batal
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* MAIN GRID */}
@@ -219,51 +382,81 @@ const DetailBukuPage: React.FC = () => {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              {[
-                ["ID", bookData.id],
-                ["Judul", bookData.title || "-"],
-                ["Penulis", bookData.author?.name || "-"],
-                ["Publisher", bookData.publisher?.name || "-"],
-                ["Kategori", bookData.sub_category?.category?.name || "-"],
-                ["Sub Kategori", bookData.sub_category?.name || "-"],
-                ["ISBN", bookData.isbn || "-"],
-                ["DDC", bookData.ddc || "-"],
-                ["Kode Eksemplar", bookData.eksemplar_code || "-"],
-                ["Total Halaman", bookData.num_page ? `${bookData.num_page} halaman` : "-"],
-                ["Tahun Terbit", bookData.year_published ? new Date(bookData.year_published).getFullYear() : "-"],
-                ["Asal Kota", bookData.city_origin || "-"],
-                ["Jumlah Buku Tersedia", bookData.num_book_available?.toString() || "-"],
-                ["Rating", bookData.rating ? `${bookData.rating} ⭐` : "Belum ada rating"],
-                ["Lokasi ID", bookData.location_id || "-"],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <p className="font-semibold text-gray-500">{label}</p>
-                  <p className="text-gray-800">{value}</p>
-                </div>
-              ))}
-            </div>
 
-            {bookData.desc_fisik_buku && (
-              <div className="mt-6">
-                <p className="font-semibold text-gray-500">Deskripsi Fisik Buku</p>
-                <p className="text-gray-700 mt-1">{bookData.desc_fisik_buku}</p>
+              <div>
+                <p className="font-semibold text-gray-500">ID</p>
+                <p className="text-gray-800">{bookData.id}</p>
               </div>
-            )}
 
-            <div className="mt-6">
-              <p className="font-semibold text-gray-500">Deskripsi Singkat</p>
-              <p className="text-gray-700 mt-1">{bookData.desc_singkat_buku || "Tidak ada deskripsi tersedia."}</p>
+              {renderEditableField("Judul", "title", bookData.title)}
+              {renderEditableField("ISBN", "isbn", bookData.isbn)}
+              {renderEditableField("DDC", "ddc", bookData.ddc)}
+              {renderEditableField(
+                "Total Halaman",
+                "num_page",
+                bookData.num_page,
+                "number"
+              )}
+              {renderEditableField(
+                "Tahun Terbit",
+                "year_published",
+                bookData.year_published
+                  ? new Date(bookData.year_published).getFullYear()
+                  : "",
+                "number"
+              )}
+              {renderEditableField("Asal Kota", "city_origin", bookData.city_origin)}
+              {renderEditableField(
+                "Jumlah Buku Tersedia",
+                "num_book_available",
+                bookData.num_book_available,
+                "number"
+              )}
+
+              {renderEditableLocation()}
+
+              {renderEditableField(
+                "Penulis",
+                "author_name",
+                bookData.author?.name || "-"
+              )}
+
+              {renderEditableField(
+                "Publisher",
+                "publisher_name",
+                bookData.publisher?.name || "-"
+              )}
+
             </div>
+
+            <div className="mt-4">
+              {renderEditableField(
+                "Deskripsi Fisik Buku",
+                "desc_fisik_buku",
+                bookData.desc_fisik_buku || "-",
+                "textarea"
+              )}
+            </div>
+
+            <div className="mt-2">
+              {renderEditableField(
+                "Deskripsi Singkat",
+                "desc_singkat_buku",
+                bookData.desc_singkat_buku,
+                "textarea"
+              )}
+            </div>
+
           </div>
 
           {/* LOCATION MAP */}
-          {bookData.location_id && (
+          {currentLocation && (
             <div className="bg-white rounded-xl border shadow p-6">
               <h2 className="font-bold text-[#BE4139] mb-4">
                 Lokasi Buku di Perpustakaan
               </h2>
               <p className="text-sm text-gray-600 mb-4">
-                Buku ini berada di Lokasi #{bookData.location_id}
+                Buku ini berada di Lokasi #{currentLocation}
               </p>
               
               <div className="relative inline-block max-w-full">
@@ -279,37 +472,37 @@ const DetailBukuPage: React.FC = () => {
                 {/* Location Highlights */}
                 <div className="absolute inset-0">
                   {/* Location 1 - Left side */}
-                  {bookData.location_id === 1 && (
+                  {currentLocation === 1 && (
                     <div className="absolute left-[3%] top-[6.5%] w-[5%] h-[63%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 2 - Top left */}
-                  {bookData.location_id === 2 && (
+                  {currentLocation === 2 && (
                     <div className="absolute left-[8%] top-[6.5%] w-[19.5%] h-[9.5%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 3 - Top center */}
-                  {bookData.location_id === 3 && (
+                  {currentLocation === 3 && (
                     <div className="absolute left-[27.5%] top-[6.5%] w-[12%] h-[9.5%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 4 - Top right circles */}
-                  {bookData.location_id === 4 && (
+                  {currentLocation === 4 && (
                     <div className="absolute left-[44.4%] top-[18.5%] w-[4.9%] h-[15%] bg-[#BE4139] opacity-30 rounded-full animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 5 - Right side */}
-                  {bookData.location_id === 5 && (
+                  {currentLocation === 5 && (
                     <div className="absolute right-[38.7%] top-[6.5%] w-[5%] h-[39%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 6 - Bottom right */}
-                  {bookData.location_id === 6 && (
+                  {currentLocation === 6 && (
                     <div className="absolute right-[38.7%] bottom-[5.5%] w-[5%] h-[39%] bg-[#BE4139] opacity-30 animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                   
                   {/* Location 7 - Bottom center */}
-                  {bookData.location_id === 7 && (
+                  {currentLocation === 7 && (
                     <div className="absolute left-[24.5%] bottom-[5.5%] w-[28.5%] h-[8%] bg-[#BE4139] opacity-30 rounded-full animate-pulse border-4 border-[#BE4139]"></div>
                   )}
                 </div>

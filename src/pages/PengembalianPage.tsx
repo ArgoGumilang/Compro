@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Search, Filter, Eye, Trash2 } from 'lucide-react';
+import { Search, Filter, Eye, Trash2, Pencil } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { ViewReturnModal } from "../components/modals/view-kembali-modal";
+import { EditReturnModal } from "../components/modals/edit-kembali-modal";
 import { DeleteReturnModal } from "../components/modals/delete-kembali-modal";
 
 interface PengembalianData {
@@ -23,9 +24,10 @@ const PengembalianPage: React.FC = () => {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [deleteReturnOpen, setDeleteReturnOpen] = useState(false);
   const [selectedReturn, setSelectedReturn] = useState<PengembalianData | undefined>(undefined);
+  const [editReturnOpen, setEditReturnOpen] = useState(false);
 
   // Sample data - Data pengembalian buku
-  const pengembalianData: PengembalianData[] = [
+  const [pengembalianData, setPengembalianData] = useState<PengembalianData[]>([
     {
       id: 1,
       nama: 'Siti Rahmawati',
@@ -106,7 +108,7 @@ const PengembalianPage: React.FC = () => {
       denda: 'Rp 0',
       status: 'Dikembalikan'
     }
-  ];
+  ]);
 
   // Filter data based on search
   const filteredData = pengembalianData.filter(item =>
@@ -157,6 +159,11 @@ const PengembalianPage: React.FC = () => {
   const handleViewReturn = (data: PengembalianData) => {
     setSelectedReturn(data);
     setViewModalOpen(true);
+  };
+
+  const handleEditReturn = (data: PengembalianData) => {
+    setSelectedReturn(data);
+    setEditReturnOpen(true);
   };
 
   const handleDeleteReturn = (data: PengembalianData) => {
@@ -224,12 +231,23 @@ const PengembalianPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex items-center gap-2">
+                      {/* View */}
                       <button
                         onClick={() => handleViewReturn(item)}
                         className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
                       >
                         <Eye size={16} className="text-[#BE4139]" />
                       </button>
+
+                      {/* Edit */}
+                      <button
+                        onClick={() => handleEditReturn(item)}
+                        className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
+                      >
+                        <Pencil size={16} className="text-[#BE4139]" />
+                      </button>
+
+                      {/* Delete */}
                       <button
                         onClick={() => handleDeleteReturn(item)}
                         className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
@@ -251,6 +269,19 @@ const PengembalianPage: React.FC = () => {
         
       </div>
       <ViewReturnModal isOpen={viewModalOpen} data={selectedReturn ?? undefined} onClose={() => setViewModalOpen(false)}/>
+      <EditReturnModal
+        isOpen={editReturnOpen}
+        data={selectedReturn}
+        onClose={() => setEditReturnOpen(false)}
+        onSave={(updated) => {
+          // Update data lokal
+          const index = pengembalianData.findIndex(p => p.id === updated.id);
+          if (index !== -1) {
+            pengembalianData[index] = updated;
+          }
+          setEditReturnOpen(false);
+        }}
+      />
       <DeleteReturnModal isOpen={deleteReturnOpen} data={selectedReturn} onClose={() => setDeleteReturnOpen(false)}/>
     </div>
   );

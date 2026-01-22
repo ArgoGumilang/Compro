@@ -26,7 +26,7 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
     book_id: '',
     booking_date: new Date().toISOString().split('T')[0],
     return_date: '',
-    status: true,
+    status: 'Dipinjam', // <-- pakai string sesuai tabel
   });
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
         book_id: parseInt(formData.book_id),
         booking_date: bookingDate.toISOString(),
         return_date: returnDate.toISOString(),
-        status: formData.status, // Keep as boolean: true = active, false = returned
+        status: true, 
       };
 
       console.log('📤 Creating booking history:', data);
@@ -90,14 +90,12 @@ export const AddPeminjamanModal: React.FC<AddPeminjamanModalProps> = ({
         book_id: '',
         booking_date: new Date().toISOString().split('T')[0],
         return_date: '',
-        status: true,
+        status: 'Dipinjam', // reset form
       });
       
       onClose();
       
-      setTimeout(() => {
-        onSuccess();
-      }, 500);
+      onSuccess(); // <-- langsung reload tabel tanpa delay
     } catch (err: any) {
       console.error('❌ Failed to create booking:', err);
       setError(`Gagal menambahkan peminjaman: ${err.message || 'Unknown error'}`);
