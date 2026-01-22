@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronLeft, Star, Pencil, Save, X } from "lucide-react";
+import { ChevronLeft, Star } from "lucide-react";
 import { getBookById } from "../lib/api";
 import sadCover from "../assets/covers/sad.jpg";
 import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
@@ -46,50 +46,38 @@ const DetailBukuPage: React.FC = () => {
     const fetchBookDetail = async () => {
     if (!bookId) return;
 
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await getBookById(bookId);
-
-      const titleLower =
-        response.title?.toLowerCase().trim().replace(/\s+/g, " ") || "";
-
-      let coverUrl = coverMapping[titleLower] || response.cover;
-
-      if (!coverUrl) {
-        coverUrl =
-          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23ddd'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='16' fill='%23999'%3EBook Cover%3C/text%3E%3C/svg%3E";
+      try {
+        setLoading(true);
+        setError("");
+        const response = await getBookById(bookId);
+        console.log("📚 Book detail:", response);
+        
+        // Apply cover mapping
+        const titleLower = response.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
+        console.log('📖 Matching book title:', response.title, '-> normalized:', titleLower);
+        let coverUrl = coverMapping[titleLower];
+        console.log('🖼️ Found cover in mapping:', !!coverUrl);
+        
+        if (!coverUrl) {
+          if (response.cover) {
+            coverUrl = response.cover;
+          } else {
+            coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+          }
+        }
+        
+        setBookData({
+          ...response,
+          cover: coverUrl,
+          cover_url: coverUrl
+        });
+      } catch (err: any) {
+        console.error("❌ Failed to fetch book:", err);
+        setError(err.message || "Gagal mengambil data buku");
+      } finally {
+        setLoading(false);
       }
-
-      setBookData({
-        ...response,
-        cover: coverUrl,
-        cover_url: coverUrl,
-      });
-
-      setFormData({
-        title: response.title || "",
-        isbn: response.isbn || "",
-        ddc: response.ddc || "",
-        num_page: response.num_page || "",
-        year_published: response.year_published
-          ? new Date(response.year_published).getFullYear()
-          : "",
-        city_origin: response.city_origin || "",
-        num_book_available: response.num_book_available || "",
-        desc_singkat_buku: response.desc_singkat_buku || "",
-        author_name: response.author?.name || "",
-        publisher_name: response.publisher?.name || "",
-        desc_fisik_buku: response.desc_fisik_buku || "",
-        location_id: response.location_id || "",
-      });
-    } catch (err: any) {
-      setError(err.message || "Gagal mengambil data buku");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
     fetchBookDetail();
   }, [bookId]);

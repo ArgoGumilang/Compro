@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Search, User, ChevronLeft } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getAllBooks } from "../lib/api";
+import { enrichBooksWithCovers } from "../lib/bookCoverHelper";
 /* ================= HEADER ================= */
 const Header = () => {
   const navigate = useNavigate();
@@ -242,8 +243,11 @@ export default function Jelajahi() {
       const response = await getAllBooks();
       const booksArray = response.books || response || [];
       
+      // Enrich books with covers from backend
+      const booksWithCovers = await enrichBooksWithCovers(Array.isArray(booksArray) ? booksArray : []);
+      
       // Convert to Book interface format
-      const formattedBooks = (Array.isArray(booksArray) ? booksArray : []).map((book: any) => ({
+      const formattedBooks = booksWithCovers.map((book: any) => ({
         id: book.id,
         cover: book.cover,
         cover_url: book.cover_url,

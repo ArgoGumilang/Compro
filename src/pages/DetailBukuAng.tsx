@@ -2,6 +2,23 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, Star, Bell, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
+import { getBookById } from "../lib/api";
+import sadCover from "../assets/covers/sad.jpg";
+import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
+import cobaCover from "../assets/covers/coba.jpg";
+import leviathanCover from "../assets/covers/leviathan.jpg";
+import laskarCover from "../assets/covers/laskar pelangi.jpg";
+
+// Cover mapping berdasarkan title buku (lowercase untuk matching)
+const coverMapping: { [key: string]: string } = {
+  'sad': sadCover,
+  'ayahku bukan pembohong': ayahkuCover,
+  'ayahkubukanpembohong': ayahkuCover,
+  'ayah ku bukan pembohong': ayahkuCover,
+  'coba': cobaCover,
+  'leviathan': leviathanCover,
+  'laskar pelangi': laskarCover,
+};
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -199,24 +216,61 @@ const Footer = () => (
 /* ================= PAGE ================= */
 const DetailBukuPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const bookId = searchParams.get("id");
 
-  const bookData = {
-    judul: "Matematika Wajib untuk SMA/MA Kelas XII",
-    kategori: "Matematika",
-    isbn: "9786020321231",
-    penulis: "B. K. Noormandiri",
-    jumlahBukuTersedia: "12",
-    ddc: "510 MAT",
-    publisher:
-      "Pusat Kurikulum dan Perbukuan, Kementerian Pendidikan dan Kebudayaan, Penerbit Erlangga",
-    asalKota: "Jakarta",
-    deskripsiFisikBuku: "Softcover, ukuran A4, cetakan ke-2",
-    totalHalaman: "280 halaman",
-    tahunTerbit: "2021",
-    deskripsiSingkatBuku:
-      "Buku ini disusun berdasarkan Kurikulum 2013 revisi, mencakup materi limit, turunan, integral, dan statistika. Dilengkapi latihan soal dan evaluasi akhir bab.",
-    denah: "Rak Koleksi Buku Pelajaran (5)",
-  };
+  const [bookData, setBookData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Determine if this is admin or user view
+  const isAdminView = window.location.pathname.includes('manajemen');
+  const backUrl = isAdminView ? "/manajemen-buku" : "/dashanggota";
+
+  useEffect(() => {
+    const fetchBookDetail = async () => {
+      if (!bookId) {
+        setError("ID buku tidak ditemukan");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        console.log("📚 Fetching book detail for ID:", bookId);
+        const data = await getBookById(bookId);
+        console.log("✅ Book data received:", data);
+        
+        // Apply cover mapping
+        const titleLower = data.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
+        console.log('📖 Matching book title:', data.title, '-> normalized:', titleLower);
+        let coverUrl = coverMapping[titleLower];
+        console.log('🖼️ Found cover in mapping:', !!coverUrl);
+        
+        if (!coverUrl) {
+          if (data.cover) {
+            coverUrl = data.cover;
+          } else {
+            coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+          }
+        }
+        
+        setBookData({
+          ...data,
+          cover: coverUrl,
+          cover_url: coverUrl
+        });
+        setError(null);
+      } catch (err: any) {
+        console.error("❌ Error fetching book:", err);
+        setError(err.message || "Gagal memuat detail buku");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookDetail();
+  }, [bookId]);
 
   const ratingData = {
     averageRating: 4.5,

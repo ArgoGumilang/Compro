@@ -3,22 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, Search, User, ChevronDown } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getAllBooks } from "../lib/api";
-import sadCover from "../assets/covers/sad.jpg";
-import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
-import cobaCover from "../assets/covers/coba.jpg";
-import leviathanCover from "../assets/covers/leviathan.jpg";
-import laskarCover from "../assets/covers/laskar pelangi.jpg";
-
-// Cover mapping berdasarkan title buku (lowercase untuk matching)
-const coverMapping: { [key: string]: string } = {
-  'sad': sadCover,
-  'ayahku bukan pembohong': ayahkuCover,
-  'ayahkubukanpembohong': ayahkuCover,
-  'ayah ku bukan pembohong': ayahkuCover,
-  'coba': cobaCover,
-  'leviathan': leviathanCover,
-  'laskar pelangi': laskarCover,
-};
+import { enrichBooksWithCovers } from "../lib/bookCoverHelper";
 
 /* ================= HEADER ================= */
 const Header = () => {
@@ -296,34 +281,13 @@ export default function DashAnggota() {
       setLoading(true);
       const response = await getAllBooks();
       const booksArray = response.books || response || [];
-      // Limit to 5 books for recommendations and add cover mapping
-      const limitedBooks = Array.isArray(booksArray) 
-        ? booksArray.slice(0, 5).map(book => {
-            // Use cover mapping based on book title
-            const titleLower = book.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
-            console.log('📖 Matching book title:', book.title, '-> normalized:', titleLower);
-            let coverUrl = coverMapping[titleLower];
-            console.log('🖼️ Found cover in mapping:', !!coverUrl);
-            
-            // Fallback to API cover if no local cover found
-            if (!coverUrl) {
-              if (book.cover) {
-                coverUrl = book.cover;
-              } else {
-                coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
-              }
-            }
-            return {
-              ...book,
-              cover: coverUrl,
-              cover_url: coverUrl
-            };
-          })
-        : [];
-      setBooks(limitedBooks);
-      console.log("📚 Loaded books for recommendations:", limitedBooks.length);
-    } catch (err) {
-      console.error("❌ Failed to load books:", err);
+      // Limit to 5 books for recommendations
+      const limitedBooks = Array.isArray(booksArray) ? booksArray.slice(0, 5) : [];
+      // Enrich with covers from backend
+      const booksWithCovers = await enrichBooksWithCovers(limitedBooks);
+      setBooks(booksWithCovers);
+    } catch (error) {
+      console.error('❌ Failed to fetch books:', error);
       setBooks([]);
     } finally {
       setLoading(false);
