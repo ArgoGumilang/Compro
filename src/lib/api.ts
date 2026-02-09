@@ -1,19 +1,9 @@
 // API Configuration
 // src/lib/api.ts
 
-import { 
-  USE_DUMMY_DATA, 
-  DUMMY_BOOKS, 
-  DUMMY_USERS, 
-  DUMMY_BOOKING_HISTORIES, 
-  DUMMY_VISIT_HISTORIES,
-  DUMMY_CATEGORIES
-} from './dummyData';
-
 export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 console.log("🔗 API Base URL:", API_BASE_URL);
-console.log("🎭 Using Dummy Data:", USE_DUMMY_DATA);
 
 // Token Management
 export const TOKEN_KEY = "access_token";
@@ -268,10 +258,6 @@ export async function getCurrentUser() {
 
 // GET /users - Get all users
 export async function getAllUsers() {
-  if (USE_DUMMY_DATA) {
-    console.log("👥 Returning dummy users data");
-    return Promise.resolve({ users: DUMMY_USERS });
-  }
   return fetchWithCredentials("/users", {
     method: "GET",
   });
@@ -327,10 +313,7 @@ export async function getRoleById(id: string | number) {
 
 // GET /visit_hists
 export async function getAllVisitHists() {
-  if (USE_DUMMY_DATA) {
-    console.log("📊 Returning dummy visit histories data");
-    return Promise.resolve({ visit_hists: DUMMY_VISIT_HISTORIES });
-  }
+
   return fetchWithCredentials("/visit_hists", {
     method: "GET",
   });
@@ -355,10 +338,6 @@ export async function createVisitHist(data: any) {
 
 // GET /books
 export async function getAllBooks() {
-  if (USE_DUMMY_DATA) {
-    console.log("📚 Returning dummy books data");
-    return Promise.resolve({ books: DUMMY_BOOKS });
-  }
   return fetchWithCredentials("/books", {
     method: "GET",
   });
@@ -366,14 +345,6 @@ export async function getAllBooks() {
 
 // GET /books/{id}
 export async function getBookById(id: string | number) {
-  if (USE_DUMMY_DATA) {
-    console.log("📚 Returning dummy book by ID:", id);
-    const book = DUMMY_BOOKS.find(b => b.id === Number(id));
-    if (book) {
-      return Promise.resolve(book);
-    }
-    throw new Error("Book not found");
-  }
   return fetchWithCredentials(`/books/${id}`, {
     method: "GET",
   });
@@ -395,63 +366,145 @@ export async function updateBook(id: string | number, data: any) {
   });
 }
 
-// GET /books/{id}/cover
-export async function getBookCover(id: string | number) {
-  if (USE_DUMMY_DATA) {
-    console.log("📚 Returning dummy cover for book:", id);
-    return Promise.resolve({ cover_path: "" });
-  }
-  return fetchWithCredentials(`/books/${id}/cover`, {
-    method: "GET",
-  });
-}
-
-// POST /books/{id}/cover - Upload cover image
-export async function uploadBookCover(id: string | number, file: File) {
-  const fullUrl = `${API_BASE_URL}/books/${id}/cover`;
-  const accessToken = getAccessToken();
-  
-  const formData = new FormData();
-  formData.append('cover', file);
-  
-  console.log("📤 Uploading cover for book:", id);
-  console.log("📎 File:", file.name, "Size:", file.size, "Type:", file.type);
-  
-  try {
-    const response = await fetch(fullUrl, {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        ...(accessToken ? { "Authorization": `Bearer ${accessToken}` } : {}),
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorData;
-      try {
-        errorData = JSON.parse(errorText);
-      } catch {
-        errorData = { error: errorText };
-      }
-      throw new Error(errorData.error || errorData.message || `Failed to upload cover: HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("✅ Cover uploaded successfully:", data);
-    return data;
-  } catch (error: any) {
-    console.error("❌ Failed to upload cover:", error);
-    throw error;
-  }
-}
-
 // DELETE /books/{id}
 export async function deleteBook(id: string | number) {
   return fetchWithCredentials(`/books/${id}`, {
     method: "DELETE",
   });
+}
+
+// Helper function untuk upload file dengan credentials
+async function uploadFileWithCredentials(url: string, file: File, fieldName: string = 'file') {
+  const fullUrl = `${API_BASE_URL}${url}`;
+  console.log("📤 Uploading file to:", fullUrl);
+  
+  const formData = new FormData();
+  formData.append(fieldName, file);
+  
+  const accessToken = getAccessToken();
+  const headers: Record<string, string> = {};
+  
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+  
+  try {
+    const response = await fetch(fullUrl, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: formData,
+    });
+
+    // Handle 401 Unauthorized - token expired
+    if (response.status === 401) {
+      console.log("🔄 Token expired (401), attempting refresh...");
+      const newToken = await refreshAccessToken();
+      
+      if (newToken) {
+        headers["Authorization"] = `Bearer ${newToken}`;
+        console.log("🔁 Retrying upload with new token...");
+        
+        const retryResponse = await fetch(fullUrl, {
+          method: "POST",
+          credentials: "include",
+          headers,
+          body: formData,
+        });
+
+        if (!retryResponse.ok) {
+          const error = await retryResponse.json().catch(() => ({ message: `HTTP ${retryResponse.status}` }));
+          throw new Error(error.message || `HTTP ${retryResponse.status}`);
+        }
+
+        return await retryResponse.json();
+      }
+      
+      throw new Error("Session expired");
+    }
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      throw new Error(error.message || `HTTP ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("🔴 File upload error:", error);
+    throw error;
+  }
+}
+
+// POST /users/registrasi_excel - Upload users Excel file
+export async function uploadUsersExcel(file: File) {
+  return uploadFileWithCredentials("/users/registrasi_excel", file, 'file');
+}
+
+// POST /books/registrasi_excel - Upload books Excel file
+export async function uploadBooksExcel(file: File) {
+  return uploadFileWithCredentials("/books/registrasi_excel", file, 'file');
+}
+
+// POST /books/{id}/cover - Upload book cover
+export async function uploadBookCover(bookId: string | number, coverFile: File) {
+  const fullUrl = `${API_BASE_URL}/books/${bookId}/cover`;
+  console.log("📤 Uploading book cover to:", fullUrl);
+  
+  const formData = new FormData();
+  formData.append('cover', coverFile);
+  
+  const accessToken = getAccessToken();
+  const headers: Record<string, string> = {};
+  
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
+  }
+  
+  try {
+    const response = await fetch(fullUrl, {
+      method: "POST",
+      credentials: "include",
+      headers,
+      body: formData,
+    });
+
+    // Handle 401 Unauthorized - token expired
+    if (response.status === 401) {
+      console.log("🔄 Token expired (401), attempting refresh...");
+      const newToken = await refreshAccessToken();
+      
+      if (newToken) {
+        headers["Authorization"] = `Bearer ${newToken}`;
+        console.log("🔁 Retrying upload with new token...");
+        
+        const retryResponse = await fetch(fullUrl, {
+          method: "POST",
+          credentials: "include",
+          headers,
+          body: formData,
+        });
+
+        if (!retryResponse.ok) {
+          const error = await retryResponse.json().catch(() => ({ message: `HTTP ${retryResponse.status}` }));
+          throw new Error(error.message || `HTTP ${retryResponse.status}`);
+        }
+
+        return await retryResponse.json();
+      }
+      
+      throw new Error("Session expired");
+    }
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+      throw new Error(error.message || `HTTP ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("🔴 Cover upload error:", error);
+    throw error;
+  }
 }
 
 // ==================== AUTHORS API ====================
@@ -536,10 +589,7 @@ export async function deletePublisher(id: string | number) {
 
 // GET /categories
 export async function getAllCategories() {
-  if (USE_DUMMY_DATA) {
-    console.log("📂 Returning dummy categories data");
-    return Promise.resolve({ categories: DUMMY_CATEGORIES });
-  }
+
   return fetchWithCredentials("/categories", {
     method: "GET",
   });
@@ -618,10 +668,7 @@ export async function deleteSubCategory(id: string | number) {
 
 // GET /booking_histories
 export async function getAllBookingHistories() {
-  if (USE_DUMMY_DATA) {
-    console.log("📖 Returning dummy booking histories data");
-    return Promise.resolve({ booking_histories: DUMMY_BOOKING_HISTORIES });
-  }
+
   return fetchWithCredentials("/booking_histories", {
     method: "GET",
   });
@@ -629,14 +676,6 @@ export async function getAllBookingHistories() {
 
 // GET /booking_histories/{id}
 export async function getBookingHistoryById(id: string | number) {
-  if (USE_DUMMY_DATA) {
-    console.log("📖 Returning dummy booking history by ID:", id);
-    const history = DUMMY_BOOKING_HISTORIES.find(h => h.id === Number(id));
-    if (history) {
-      return Promise.resolve(history);
-    }
-    throw new Error("Booking history not found");
-  }
   return fetchWithCredentials(`/booking_histories/${id}`, {
     method: "GET",
   });
@@ -644,11 +683,7 @@ export async function getBookingHistoryById(id: string | number) {
 
 // GET /booking_histories/user/{user_id}
 export async function getBookingHistoriesByUser(userId: string | number) {
-  if (USE_DUMMY_DATA) {
-    console.log("📖 Returning dummy booking histories for user:", userId);
-    const histories = DUMMY_BOOKING_HISTORIES.filter(h => h.user_id === Number(userId));
-    return Promise.resolve({ booking_histories: histories });
-  }
+
   return fetchWithCredentials(`/booking_histories/user/${userId}`, {
     method: "GET",
   });

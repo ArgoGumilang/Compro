@@ -5,9 +5,9 @@ import { Button } from '../ui/button';
 interface Book {
   id: number;
   title: string;
-  author: string;
+  author: string | { id: number; name: string };
   isbn: string;
-  category: string;
+  category: string | { id: number; name: string };
   quantity: number;
 }
 
@@ -20,6 +20,9 @@ interface ViewBookModalProps {
 const ViewBookModal: React.FC<ViewBookModalProps> = ({ isOpen, book, onClose }) => {
   if (!book) return null;
 
+  const authorName = typeof book.author === 'string' ? book.author : book.author?.name || '-';
+  const categoryName = typeof book.category === 'string' ? book.category : book.category?.name || '-';
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Detail Buku">
       <div className="space-y-4">
@@ -29,7 +32,7 @@ const ViewBookModal: React.FC<ViewBookModalProps> = ({ isOpen, book, onClose }) 
         </div>
         <div>
           <label className="text-sm font-medium text-gray-500">Penulis</label>
-          <p className="text-gray-800">{book.author}</p>
+          <p className="text-gray-800">{authorName}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-500">ISBN</label>
@@ -37,7 +40,7 @@ const ViewBookModal: React.FC<ViewBookModalProps> = ({ isOpen, book, onClose }) 
         </div>
         <div>
           <label className="text-sm font-medium text-gray-500">Kategori</label>
-          <p className="text-gray-800">{book.category}</p>
+          <p className="text-gray-800">{categoryName}</p>
         </div>
         <div>
           <label className="text-sm font-medium text-gray-500">Jumlah</label>

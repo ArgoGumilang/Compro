@@ -19,7 +19,6 @@ interface MenuItem {
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const [openDropdown, setOpenDropdown] = useState<string | null>(
-    location.pathname.startsWith("/peminjaman") ? "peminjaman" : 
     location.pathname.startsWith("/presensi") ? "presensi" : null
   );
   
@@ -46,16 +45,7 @@ const Sidebar: React.FC = () => {
     { id: "dashboard", label: "Dashboard", icon: LayoutGrid, path: "/" },
     { id: "data-anggota", label: "Data Anggota", icon: Users, path: "/data-anggota" },
     { id: "manajemen-buku", label: "Manajemen Buku", icon: BookOpen, path: "/manajemen-buku" },
-    { 
-      id: "peminjaman", 
-      label: "Peminjaman", 
-      icon: BookMarked,
-      subItems: [
-        { id: "peminjaman-aktif", label: "Peminjaman Aktif", path: "/peminjaman/aktif" },
-        { id: "pengembalian", label: "Pengembalian", path: "/peminjaman/pengembalian" },
-        { id: "jatuh-tempo", label: "Jatuh Tempo", path: "/peminjaman/jatuh-tempo" },
-      ]
-    },
+    { id: "peminjaman-aktif", label: "Peminjaman Aktif", icon: BookMarked, path: "/peminjaman/aktif" },
     { 
       id: "presensi", 
       label: "Presensi", 

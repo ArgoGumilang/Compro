@@ -2,71 +2,52 @@ import React from 'react';
 import { Modal } from '../ui/modal';
 import { Button } from '../ui/button';
 
-interface Member {
-  id: number;
-  username: string;
-  full_name?: string;
-  email?: string;
-  role_id?: number;
-  role?: { id: number; name: string };
-  created_at?: string;
-}
-
 interface ViewMemberModalProps {
   isOpen: boolean;
-  member?: Member;
+  member?: any;
   onClose: () => void;
 }
 
 const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ isOpen, member, onClose }) => {
   if (!member) return null;
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Detail Anggota">
       <div className="space-y-4">
-        {/* ID User */}
+        {/* ID */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            ID User
+            User ID
           </label>
           <input
             type="text"
-            value={member.id}
+            value={member.id || '-'}
             readOnly
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
           />
         </div>
 
-        {/* Username */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Username
-          </label>
-          <input
-            type="text"
-            value={member.username}
-            readOnly
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
-          />
-        </div>
-
-        {/* Nama Lengkap */}
+        {/* Nama */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Nama Lengkap
           </label>
           <input
             type="text"
-            value={member.full_name || '-'}
+            value={member.full_name || member.nama || '-'}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
+        </div>
+
+        {/* Username / NIS */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Username / NIS
+          </label>
+          <input
+            type="text"
+            value={member.username || member.nisNip || '-'}
             readOnly
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
           />
@@ -85,6 +66,32 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ isOpen, member, onClo
           />
         </div>
 
+        {/* No HP */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            No. HP
+          </label>
+          <input
+            type="text"
+            value={member.no_hp || member.phone || '-'}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
+        </div>
+
+        {/* Kelas */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Kelas
+          </label>
+          <input
+            type="text"
+            value={member.kelas || member.class || '-'}
+            readOnly
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+          />
+        </div>
+
         {/* Role */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -92,20 +99,28 @@ const ViewMemberModal: React.FC<ViewMemberModalProps> = ({ isOpen, member, onClo
           </label>
           <input
             type="text"
-            value={member.role?.name || `Role ID: ${member.role_id}` || '-'}
+            value={member.role?.name || member.role || '-'}
             readOnly
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
           />
         </div>
 
-        {/* Tanggal Daftar */}
+        {/* Tanggal Terdaftar */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Tanggal Terdaftar
           </label>
           <input
             type="text"
-            value={formatDate(member.created_at)}
+            value={
+              member.tanggal_terdaftar || member.created_at
+                ? new Date(member.tanggal_terdaftar || member.created_at).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })
+                : '-'
+            }
             readOnly
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
           />

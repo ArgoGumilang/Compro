@@ -7,5 +7,12 @@ export default defineConfig({
   server: {
     port: 5173, // default Vite dev port
     allowedHosts: ["milissa-anuric-unpalpablely.ngrok-free.dev"],
+    proxy: {
+      '/api': {
+        target: 'https://vandikategar.online',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
 });

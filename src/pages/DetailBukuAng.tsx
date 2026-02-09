@@ -1,48 +1,15 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Star, Bell, Search, User } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ChevronLeft, Star, Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getBookById } from "../lib/api";
-import sadCover from "../assets/covers/sad.jpg";
-import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
-import cobaCover from "../assets/covers/coba.jpg";
-import leviathanCover from "../assets/covers/leviathan.jpg";
-import laskarCover from "../assets/covers/laskar pelangi.jpg";
-
-// Cover mapping berdasarkan title buku (lowercase untuk matching)
-const coverMapping: { [key: string]: string } = {
-  'sad': sadCover,
-  'ayahku bukan pembohong': ayahkuCover,
-  'ayahkubukanpembohong': ayahkuCover,
-  'ayah ku bukan pembohong': ayahkuCover,
-  'coba': cobaCover,
-  'leviathan': leviathanCover,
-  'laskar pelangi': laskarCover,
-};
+import { getBookCoverUrl } from "../lib/bookCoverHelper";
+import logoSekolah from "../assets/logo-sekolah.png";
 
 /* ================= HEADER ================= */
 const Header = () => {
   const navigate = useNavigate();
-  const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-
-  const notifications = [
-    {
-      title: "Buku hampir jatuh tempo",
-      desc: "Buku Matematika Wajib harus dikembalikan besok",
-      time: "1 jam lalu",
-    },
-    {
-      title: "Peminjaman berhasil",
-      desc: "Kamu berhasil meminjam buku Fisika Dasar",
-      time: "2 hari lalu",
-    },
-    {
-      title: "Info Perpustakaan",
-      desc: "Jam operasional berubah selama ujian",
-      time: "1 minggu lalu",
-    },
-  ];
 
   const handleLogout = () => {
     setOpenProfile(false);
@@ -53,9 +20,12 @@ const Header = () => {
     <header className="bg-white border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
         {/* LEFT */}
-        <div className="flex items-center gap-3 font-bold text-sm">
-          <span className="text-[#BE4139]">SMA TELKOM</span>
-          <span className="text-gray-700">BANDUNG</span>
+        <div className="flex items-center gap-3">
+          <img
+            src={logoSekolah}
+            alt="Logo Sekolah"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         {/* CENTER */}
@@ -72,68 +42,32 @@ const Header = () => {
           <button onClick={() => navigate("/kategori")}>
             Kategori
           </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
-          </button>
         </nav>
 
         {/* RIGHT */}
         <div className="flex items-center gap-4 relative">
+          {/* SEARCH */}
           <div className="hidden md:flex items-center border rounded-lg px-2 py-1 text-sm">
             <Search size={16} className="text-gray-400" />
-            <input placeholder="Search" className="outline-none px-2 w-32" />
+            <input
+              placeholder="Search"
+              className="outline-none px-2 w-32"
+            />
           </div>
 
+          {/* ICON NOTIF & PROFILE (SESUSAI REVISI) */}
           <div className="flex items-center gap-4 relative">
-            <button
-              onClick={() => {
-                setOpenNotif(!openNotif);
-                setOpenProfile(false);
-              }}
-            >
-              <Bell size={20} />
-            </button>
-
-            <button
-              onClick={() => {
-                setOpenProfile(!openProfile);
-                setOpenNotif(false);
-              }}
-            >
+            <button onClick={() => setOpenProfile(!openProfile)}>
               <User size={20} />
             </button>
           </div>
 
-          {openNotif && (
-            <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg">
-              <div className="px-4 py-3 font-semibold text-sm border-b">
-                Notifikasi
-              </div>
-              {notifications.map((n, i) => (
-                <div
-                  key={i}
-                  className="px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
-                >
-                  <p className="font-semibold text-sm">{n.title}</p>
-                  <p className="text-xs text-gray-500">{n.desc}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
+          {/* NOTIF DROPDOWN */}
           {openProfile && (
             <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">
-              <button
-                onClick={() => {
-                  navigate("/profileang");
-                  setOpenProfile(false);
-                }}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-              >
+              <button className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
                 Profil
               </button>
-
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
@@ -142,7 +76,6 @@ const Header = () => {
               </button>
             </div>
           )}
-
         </div>
       </div>
     </header>
@@ -241,19 +174,8 @@ const DetailBukuPage: React.FC = () => {
         const data = await getBookById(bookId);
         console.log("✅ Book data received:", data);
         
-        // Apply cover mapping
-        const titleLower = data.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
-        console.log('📖 Matching book title:', data.title, '-> normalized:', titleLower);
-        let coverUrl = coverMapping[titleLower];
-        console.log('🖼️ Found cover in mapping:', !!coverUrl);
-        
-        if (!coverUrl) {
-          if (data.cover) {
-            coverUrl = data.cover;
-          } else {
-            coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
-          }
-        }
+        // Use cover from API or placeholder
+        const coverUrl = data.cover || data.cover_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="400"%3E%3Crect width="300" height="400" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="16" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
         
         setBookData({
           ...data,
@@ -324,13 +246,52 @@ const DetailBukuPage: React.FC = () => {
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <main className="max-w-7xl mx-auto px-6 py-10">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#BE4139] mx-auto mb-4"></div>
+              <p className="text-gray-600">Memuat detail buku...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !bookData) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <main className="max-w-7xl mx-auto px-6 py-10">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error || "Buku tidak ditemukan"}</p>
+              <button
+                onClick={() => navigate(backUrl)}
+                className="px-4 py-2 bg-[#BE4139] text-white rounded-lg hover:bg-[#9e342e]"
+              >
+                Kembali
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
 
       <main className="max-w-7xl mx-auto px-6 py-10">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate(backUrl)}
           className="flex items-center gap-2 text-sm text-gray-600 mb-6"
         >
           <ChevronLeft size={16} /> Kembali
@@ -340,8 +301,12 @@ const DetailBukuPage: React.FC = () => {
           {/* COVER */}
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src="https://cdn.eurekabookhouse.co.id/ebh/product/all/004510075020.jpg"
+              src={getBookCoverUrl(bookData.cover, bookData.cover_url)}
+              alt={bookData.title}
               className="rounded-lg w-full aspect-[3/4] object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E";
+              }}
             />
           </div>
 
@@ -354,17 +319,19 @@ const DetailBukuPage: React.FC = () => {
 
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 {[
-                  ["Judul", bookData.judul],
-                  ["Penulis", bookData.penulis],
-                  ["Publisher", bookData.publisher],
-                  ["Kategori", bookData.kategori],
-                  ["ISBN", bookData.isbn],
-                  ["DDC", bookData.ddc],
-                  ["Total Halaman", bookData.totalHalaman],
-                  ["Tahun Terbit", bookData.tahunTerbit],
-                  ["Asal Kota", bookData.asalKota],
-                  ["Jumlah Buku", bookData.jumlahBukuTersedia],
-                  ["Deskripsi Fisik", bookData.deskripsiFisikBuku],
+                  ["Judul", bookData.title || "-"],
+                  ["Penulis", typeof bookData.author === 'string' ? bookData.author : bookData.author?.name || "-"],
+                  ["Publisher", typeof bookData.publisher === 'string' ? bookData.publisher : bookData.publisher?.name || "-"],
+                  ["Kategori", typeof bookData.category === 'string' ? bookData.category : (bookData.sub_category?.category?.name || bookData.category?.name || "-")],
+                  ["Sub Kategori", typeof bookData.sub_category === 'string' ? bookData.sub_category : bookData.sub_category?.name || "-"],
+                  ["ISBN", bookData.isbn || "-"],
+                  ["DDC", bookData.ddc || "-"],
+                  ["Kode Eksemplar", bookData.eksemplar_code || "-"],
+                  ["Total Halaman", bookData.num_page ? `${bookData.num_page} halaman` : "-"],
+                  ["Tahun Terbit", bookData.year_published ? new Date(bookData.year_published).getFullYear() : "-"],
+                  ["Asal Kota", bookData.city_origin || "-"],
+                  ["Jumlah Buku Tersedia", bookData.num_book_available?.toString() || "-"],
+                  ["Rating", bookData.rating ? `${bookData.rating} ⭐` : "Belum ada rating"],
                 ].map(([label, value]) => (
                   <div key={label}>
                     <p className="font-semibold text-gray-500">{label}</p>
@@ -373,59 +340,42 @@ const DetailBukuPage: React.FC = () => {
                 ))}
               </div>
 
+              {bookData.desc_fisik_buku && (
+                <div className="mt-6">
+                  <p className="font-semibold text-gray-500">
+                    Deskripsi Fisik Buku
+                  </p>
+                  <p className="text-gray-700 mt-1">
+                    {bookData.desc_fisik_buku}
+                  </p>
+                </div>
+              )}
+
               <div className="mt-6">
                 <p className="font-semibold text-gray-500">
                   Deskripsi Singkat
                 </p>
                 <p className="text-gray-700 mt-1">
-                  {bookData.deskripsiSingkatBuku}
+                  {bookData.desc_singkat_buku || "Tidak ada deskripsi tersedia."}
                 </p>
               </div>
             </div>
 
             <div className="bg-white rounded-xl border shadow p-6">
-              <h2 className="font-bold text-[#BE4139] mb-2">
-                Lokasi Buku
+              <h2 className="font-bold text-[#BE4139] mb-4">
+                Lokasi Buku di Perpustakaan
               </h2>
-              <p className="mb-4">{bookData.denah}</p>
-
-              <div className="relative inline-block max-w-full">
-                <img 
-                  src="/images/denah.png" 
-                  alt="Denah Perpustakaan"
-                  className="rounded-lg border w-full"
-                  onError={(e) => {
-                    e.currentTarget.src = "https://via.placeholder.com/600x400?text=Denah+Tidak+Tersedia";
-                  }}
-                />
-
-                {/* Highlight lokasi */}
-                <div className="absolute inset-0 z-10 pointer-events-none">
-                  {(() => {
-                    // Ambil nomor lokasi dari string, misal "Rak Koleksi Buku Pelajaran (5)" -> 5
-                    const match = bookData.denah.match(/\((\d+)\)/);
-                    const loc = match ? Number(match[1]) : null;
-                    if (!loc) return null;
-
-                    const highlights: Record<number, string> = {
-                      1: "absolute left-[3%] top-[6.5%] w-[5%] h-[63%] bg-[#BE4139] opacity-50 animate-pulse border-2 border-[#BE4139]",
-                      2: "absolute left-[8%] top-[6.5%] w-[19.5%] h-[9.5%] bg-[#BE4139] opacity-50 animate-pulse border-2 border-[#BE4139]",
-                      3: "absolute left-[27.5%] top-[6.5%] w-[12%] h-[9.5%] bg-[#BE4139] opacity-50 animate-pulse border-2 border-[#BE4139]",
-                      4: "absolute left-[44.4%] top-[18.5%] w-[4.9%] h-[15%] bg-[#BE4139] opacity-50 rounded-full animate-pulse border-2 border-[#BE4139]",
-                      5: "absolute right-[38.7%] top-[6.5%] w-[5%] h-[39%] bg-[#BE4139] opacity-50 animate-pulse border-2 border-[#BE4139]",
-                      6: "absolute right-[38.7%] bottom-[5.5%] w-[5%] h-[39%] bg-[#BE4139] opacity-50 animate-pulse border-2 border-[#BE4139]",
-                      7: "absolute left-[24.5%] bottom-[5.5%] w-[28.5%] h-[8%] bg-[#BE4139] opacity-50 rounded-full animate-pulse border-2 border-[#BE4139]",
-                    };
-
-                    return <div className={highlights[loc]} />;
-                  })()}
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
-                <div className="w-4 h-4 bg-[#BE4139] opacity-50 border-2 border-[#BE4139] rounded"></div>
-                <span>Lokasi buku saat ini</span>
-              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Buku ini berada di Lokasi #{bookData.location_id || "-"}
+              </p>
+              <img 
+                src="/images/denah.png" 
+                alt="Denah Perpustakaan" 
+                className="mx-auto rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='20' fill='%239ca3af'%3EDenah Tidak Tersedia%3C/text%3E%3C/svg%3E";
+                }}
+              />
             </div>
 
             <div className="bg-white rounded-xl border shadow p-6">

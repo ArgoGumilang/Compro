@@ -7,8 +7,6 @@ import { DataAnggotaPage } from "./pages/DataAnggotaPage";
 import { ManajemenBukuPage } from "./pages/ManajemenBukuPage";
 import DetailBukuPage from "./pages/DetailBukuPage";
 import PeminjamanAktifPage from "./pages/PeminjamanAktifPage";
-import PengembalianPage from "./pages/PengembalianPage";
-import JatuhTempoPage from "./pages/JatuhTempoPage";
 import { DataPresensiPage } from "./pages/DataPresensiPage";
 import BarcodePage from "./pages/BarcodePage";
 
@@ -30,7 +28,6 @@ function App() {
       <Routes>
         {/* ================= PUBLIC ================= */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="*" element={<NotFoundPage />} />
 
         {/* ================= DASH ANGGOTA (NO ADMIN LAYOUT) ================= */}
         <Route path="/dashanggota" element={ <ProtectedRoute requiredRole="member"><DashAnggota /></ProtectedRoute>}/>
@@ -54,11 +51,12 @@ function App() {
           <Route path="/manajemen-buku" element={<ManajemenBukuPage />} />
           <Route path="/manajemen-buku/detail" element={<DetailBukuPage />} />
           <Route path="/peminjaman/aktif" element={<PeminjamanAktifPage />} />
-          <Route path="/peminjaman/pengembalian" element={<PengembalianPage />} />
-          <Route path="/peminjaman/jatuh-tempo" element={<JatuhTempoPage />} />
           <Route path="/presensi/data" element={<DataPresensiPage />} />
           <Route path="/presensi/scan-barcode" element={<BarcodePage />} />
         </Route>
+        
+        {/* ================= 404 - MUST BE LAST ================= */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

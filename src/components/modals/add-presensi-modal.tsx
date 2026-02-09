@@ -15,6 +15,7 @@ const AddAbsenceModal: React.FC<AddAbsenceModalProps> = ({ isOpen, onClose, onSu
   const [users, setUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // --- Form Data ---
   const [formData, setFormData] = useState({
@@ -99,21 +100,33 @@ const AddAbsenceModal: React.FC<AddAbsenceModalProps> = ({ isOpen, onClose, onSu
             </div>
           )}
 
-          {/* User Selection */}
+          {/* User Selection with Search */}
           <div>
-            <label className="block text-sm font-bold text-[#BE4139] mb-2">Pilih Anggota</label>
+            <label className="block text-sm font-bold text-[#BE4139] mb-2">Cari & Pilih Anggota</label>
+            <Input
+              type="text"
+              placeholder="Cari nama anggota..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="mb-2"
+            />
             <select
               value={formData.user_id}
               onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
               className="w-full px-4 py-2 border-2 border-[#BE4139]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#BE4139]"
               required
+              size={5}
             >
               <option value="">-- Pilih Anggota --</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.full_name || user.username} - {user.role?.name || 'Member'}
-                </option>
-              ))}
+              {users
+                .filter((user) => 
+                  (user.full_name || user.username || '').toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.full_name || user.username} - {user.role?.name || 'Member'}
+                  </option>
+                ))}
             </select>
           </div>
 

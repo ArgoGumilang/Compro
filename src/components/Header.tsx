@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Bell, ChevronDown, User, LogOut } from "lucide-react"
+import { ChevronDown, User, LogOut } from "lucide-react"
 import logoSekolah from "../assets/logo-sekolah.png";
 
 const Header: React.FC = () => {
@@ -8,9 +8,6 @@ const Header: React.FC = () => {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-
-  const [showNotif, setShowNotif] = useState(false)
-  const notifRef = useRef<HTMLDivElement>(null)
 
   /* =======================
      CLOSE PROFILE DROPDOWN
@@ -27,24 +24,6 @@ const Header: React.FC = () => {
 
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
-
-  /* =======================
-     CLOSE NOTIFICATION POPUP
-     ======================= */
-  useEffect(() => {
-    const handleClickOutsideNotif = (event: MouseEvent) => {
-      if (
-        notifRef.current &&
-        !notifRef.current.contains(event.target as Node)
-      ) {
-        setShowNotif(false)
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutsideNotif)
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutsideNotif)
   }, [])
 
   const handleLogout = () => {
@@ -76,92 +55,10 @@ const Header: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-4 relative">
-          {/* 🔔 Bell Notification */}
-          <button
-            onClick={() => {
-              setShowNotif(!showNotif)
-              setIsDropdownOpen(false)
-            }}
-            className="p-2 rounded-xl transition-all duration-300 hover:bg-white/20 transform hover:scale-110 relative"
-          >
-            <Bell size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-          </button>
-
-          {/* 🔔 Notification Popup */}
-          {showNotif && (
-            <div
-              ref={notifRef}
-              className="absolute right-16 top-14 w-[360px] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 overflow-hidden"
-            >
-              {/* Header */}
-              <div className="px-4 py-3 border-b">
-                <h3 className="text-lg font-bold text-gray-800">
-                  Notifikasi
-                </h3>
-              </div>
-
-              {/* Today */}
-              <div className="bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-600">
-                Today
-              </div>
-
-              {/* Item 1 */}
-              <div className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50">
-                <div className="w-10 h-10 rounded-full border flex items-center justify-center">
-                  ⚠️
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-sm leading-snug">
-                    Pengembalian Buku Terlambat
-                  </p>
-                  <p className="text-xs text-gray-600 mt-[-16px]">
-                    Buku <b>UI/UX Handbook</b> belum dikembalikan.
-                    <span className="text-red-500 font-semibold">
-                      {" "}10 November 2025
-                    </span>
-                  </p>
-                </div>
-                <span className="text-xs text-gray-400">
-                  5 jam lalu
-                </span>
-              </div>
-
-              {/* Item 2 */}
-              <div className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50">
-                <div className="w-10 h-10 rounded-full border flex items-center justify-center">
-                  ⏳
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-sm leading-snug">
-                    Pengingat Pengembalian Buku
-                  </p>
-                  <p className="text-xs text-gray-600 mt-[-16px]">
-                    Buku <b>Desain UI/UX</b> tinggal <b>1 hari lagi</b>.
-                  </p>
-                </div>
-                <span className="text-xs text-gray-400">
-                  7 jam lalu
-                </span>
-              </div>
-
-              {/* Footer */}
-              <button
-                className="w-full text-center py-3 text-sm font-semibold text-[#BE4139] hover:bg-gray-100"
-                onClick={() => setShowNotif(false)}
-              >
-                Lihat semua notifikasi
-              </button>
-            </div>
-          )}
-
           {/* Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <div
-              onClick={() => {
-                setIsDropdownOpen(!isDropdownOpen)
-                setShowNotif(false)
-              }}
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl transition-all duration-300 hover:bg-white/20 transform hover:scale-105"
             >
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center ring-2 ring-white/50">

@@ -1,13 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Download, Filter, Eye, Trash2, Pencil } from "lucide-react";
+import { Search, Plus, Download, Filter, Eye, Trash2, Upload } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ViewBookModal } from "../components/modals/view-book-modal";
 import { AddBookModal } from "../components/modals/add-book-modal";
 import { DeleteBookModal } from "../components/modals/delete-book-modal";
-import { getAllBooks } from "../lib/api";
-import { enrichBooksWithCovers } from "../lib/bookCoverHelper";
+import { getAllBooks, uploadBooksExcel } from "../lib/api";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -23,6 +22,8 @@ export function ManajemenBukuPage() {
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadBooks();
@@ -36,8 +37,7 @@ export function ManajemenBukuPage() {
       console.log("📚 Books response:", data);
       // Backend return {books: [], page: 1, ...}
       const booksArray = data.books || data;
-      const booksWithCovers = await enrichBooksWithCovers(Array.isArray(booksArray) ? booksArray : []);
-      setBooks(booksWithCovers);
+      setBooks(Array.isArray(booksArray) ? booksArray : []);
     } catch (err: any) {
       setError(err.message || "Gagal memuat data buku");
     } finally {
@@ -48,7 +48,7 @@ export function ManajemenBukuPage() {
   const filteredBooks = useMemo(() => {
     return books.filter(
       (book) =>
-        book.author?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (typeof book.author === 'string' ? book.author : book.author?.name || '')?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         book.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         book.isbn?.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -189,6 +189,39 @@ export function ManajemenBukuPage() {
     setDeleteModalOpen(true);
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    if (!validTypes.includes(file.type) && !file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      alert('File harus berformat Excel (.xlsx atau .xls)');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      console.log('📤 Uploading Excel file:', file.name);
+      await uploadBooksExcel(file);
+      alert('Data buku berhasil diimport!');
+      loadBooks(); // Refresh data
+    } catch (err: any) {
+      console.error('❌ Upload failed:', err);
+      alert('Gagal mengimport data: ' + (err.message || 'Unknown error'));
+    } finally {
+      setUploading(false);
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   return (
     <div className="space-y-6 p-8">
       {/* Search and Action Bar */}
@@ -206,6 +239,21 @@ export function ManajemenBukuPage() {
               className="pl-10 bg-white border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
             />
           </div>
+          <Button 
+            onClick={handleImportClick} 
+            disabled={uploading}
+            className="gap-2 text-[#BE4139] bg-white border-2 border-[#BE4139] hover:bg-[#BE4139] hover:text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold"
+          >
+            <Upload size={18} />
+            {uploading ? 'Mengupload...' : 'Import Excel'}
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleFileChange}
+            style={{ display: 'none' }}
+          />
           <Button onClick={() => setAddModalOpen(true)} className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold">
             <Plus size={18} />
             Tambah Buku
@@ -243,7 +291,6 @@ export function ManajemenBukuPage() {
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Penulis</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">ISBN</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Tahun</th>
-                  <th className="px-6 py-4 text-left text-sm font-black text-white">Kategori</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Stok</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Action</th>
                 </tr>
@@ -251,78 +298,25 @@ export function ManajemenBukuPage() {
               <tbody className="divide-y divide-gray-200">
                 {paginatedBooks.map((book, index) => (
                   <tr key={book.id} className="hover:bg-gray-50 transition-all duration-200">
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
-                      {startIndex + index + 1}
-                    </td>
-
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
-                      {book.title || "-"}
-                    </td>
-
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {book.author?.name || "-"}
-                    </td>
-
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {book.isbn || "-"}
-                    </td>
-
-                    {/* Tahun */}
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {book.year_published
-                        ? new Date(book.year_published).getFullYear()
-                        : "-"}
-                    </td>
-
-                    {/* Kategori */}
-                    <td className="px-6 py-4 text-sm">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          getCategoryBadgeColor(book.category)
-                        }`}
-                      >
-                        {book.category || "-"}
-                      </span>
-                    </td>
-
-                    {/* Stok */}
-                    <td className="px-6 py-4 text-sm text-gray-700 font-semibold">
-                      {book.num_book_available ?? 0}
-                    </td>
-
-                    {/* Action */}
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{startIndex + index + 1}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">{book.title || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{typeof book.author === 'string' ? book.author : book.author?.name || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{book.isbn || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{book.year_published ? new Date(book.year_published).getFullYear() : "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-semibold">{book.num_book_available ?? 0}</td>
                     <td className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-2">
-                        {/* VIEW */}
                         <button
-                          onClick={() =>
-                            navigate(`/manajemen-buku/detail?id=${book.id}`)
-                          }
+                          onClick={() => navigate(`/manajemen-buku/detail?id=${book.id}`)}
                           className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
-                          title="Lihat Detail"
                         >
                           <Eye size={16} className="text-[#BE4139]" />
                         </button>
-
-                        {/* EDIT */}
-                        <button
-                          onClick={() =>
-                            navigate(`/manajemen-buku/detail?id=${book.id}`)
-                            // nanti bisa diganti: setEditModalOpen(true)
-                          }
-                          className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
-                          title="Edit Buku"
-                        >
-                          <Pencil size={16} className="text-[#BE4139]" />
-                        </button>
-
-                        {/* DELETE */}
                         <button
                           onClick={() => handleDeleteBook(book)}
-                          className="p-2 hover:bg-gray-200 rounded-xl transition-all duration-300 transform hover:scale-110"
-                          title="Hapus Buku"
+                          className="p-2 hover:bg-red-200 rounded-xl transition-all duration-300 transform hover:scale-110"
                         >
-                          <Trash2 size={16} className="text-[#BE4139]" />
+                          <Trash2 size={16} className="text-red-500" />
                         </button>
                       </div>
                     </td>

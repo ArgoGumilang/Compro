@@ -9,8 +9,6 @@ import {
   BarcodePage,
   DataAnggotaPage,
   PeminjamanAktifPage,
-  PengembalianPage,
-  JatuhTempoPage,
   PinjamanSaya,
   Kategori,
   Forum,
@@ -29,8 +27,6 @@ const pageTitles: { [key: string]: string } = {
   "/manajemen-buku": "Manajemen Buku",
   "/manajemen-buku/detail": "Manajemen Buku",
   "/peminjaman/aktif": "Peminjaman Aktif",
-  "/peminjaman/pengembalian": "Pengembalian",
-  "/peminjaman/jatuh-tempo": "Jatuh Tempo",
   "/presensi/data": "Presensi",
   "/presensi/barcode": "Barcode",
   "/upload-artikel": "Upload Artikel",
@@ -64,8 +60,6 @@ const DashboardLayout = () => {
             <Route path="/manajemen-buku" element={<ManajemenBukuPage />} />
             <Route path="/manajemen-buku/detail" element={<DetailBukuPage />} />
             <Route path="/peminjaman/aktif" element={<PeminjamanAktifPage />} />
-            <Route path="/peminjaman/pengembalian" element={<PengembalianPage />} />
-            <Route path="/peminjaman/jatuh-tempo" element={<JatuhTempoPage />} />
             <Route path="/presensi/data" element={<DataPresensiPage />} />
             <Route path="/presensi/barcode" element={<BarcodePage />} />
             <Route path="/upload-artikel" element={<ArtikelPage />} />

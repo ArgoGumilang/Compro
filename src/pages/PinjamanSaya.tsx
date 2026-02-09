@@ -1,49 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getCurrentUser, getBookingHistoriesByUser, getBookById } from "../lib/api";
-import sadCover from "../assets/covers/sad.jpg";
-import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
-import cobaCover from "../assets/covers/coba.jpg";
-import leviathanCover from "../assets/covers/leviathan.jpg";
-import laskarCover from "../assets/covers/laskar pelangi.jpg";
-import { USE_DUMMY_DATA, DUMMY_BOOKING_HISTORIES, DUMMY_BOOKS } from "../lib/dummyData";
-
-// Cover mapping berdasarkan title buku (lowercase untuk matching)
-const coverMapping: { [key: string]: string } = {
-  'sad': sadCover,
-  'ayahku bukan pembohong': ayahkuCover,
-  'ayahkubukanpembohong': ayahkuCover,
-  'ayah ku bukan pembohong': ayahkuCover,
-  'coba': cobaCover,
-  'leviathan': leviathanCover,
-  'laskar pelangi': laskarCover,
-};
+import { getBookCoverUrl } from "../lib/bookCoverHelper";
+import logoSekolah from "../assets/logo-sekolah.png";
 
 /* ================= HEADER ================= */
 const Header = () => {
   const navigate = useNavigate();
-  const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-
-  const notifications = [
-    {
-      title: "Buku hampir jatuh tempo",
-      desc: "Buku Matematika Wajib harus dikembalikan besok",
-      time: "1 jam lalu",
-    },
-    {
-      title: "Peminjaman berhasil",
-      desc: "Kamu berhasil meminjam buku Fisika Dasar",
-      time: "2 hari lalu",
-    },
-    {
-      title: "Info Perpustakaan",
-      desc: "Jam operasional berubah selama ujian",
-      time: "1 minggu lalu",
-    },
-  ];
 
   const handleLogout = () => {
     setOpenProfile(false);
@@ -54,9 +20,12 @@ const Header = () => {
     <header className="bg-white border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
         {/* LEFT */}
-        <div className="flex items-center gap-3 font-bold text-sm">
-          <span className="text-[#BE4139]">SMA TELKOM</span>
-          <span className="text-gray-700">BANDUNG</span>
+        <div className="flex items-center gap-3">
+          <img
+            src={logoSekolah}
+            alt="Logo Sekolah"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         {/* CENTER */}
@@ -71,9 +40,6 @@ const Header = () => {
           onClick={() => navigate("/pinjamansaya")}>
             Pinjaman Saya
           </button>
-          <button onClick={() => navigate("/kategori")}>
-            Kategori
-          </button>
         </nav>
 
         {/* RIGHT */}
@@ -85,41 +51,11 @@ const Header = () => {
 
           <div className="flex items-center gap-4 relative">
             <button
-              onClick={() => {
-                setOpenNotif(!openNotif);
-                setOpenProfile(false);
-              }}
-            >
-              <Bell size={20} />
-            </button>
-
-            <button
-              onClick={() => {
-                setOpenProfile(!openProfile);
-                setOpenNotif(false);
-              }}
+              onClick={() => setOpenProfile(!openProfile)}
             >
               <User size={20} />
             </button>
           </div>
-
-          {openNotif && (
-            <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg">
-              <div className="px-4 py-3 font-semibold text-sm border-b">
-                Notifikasi
-              </div>
-              {notifications.map((n, i) => (
-                <div
-                  key={i}
-                  className="px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
-                >
-                  <p className="font-semibold text-sm">{n.title}</p>
-                  <p className="text-xs text-gray-500">{n.desc}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
-                </div>
-              ))}
-            </div>
-          )}
 
           {openProfile && (
             <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">
@@ -223,7 +159,7 @@ const BorrowedBookCard = ({ book }: { book: any }) => {
   return (
     <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
       <img 
-        src={book.cover || book.cover_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E'} 
+        src={getBookCoverUrl(book.cover, book.cover_url)} 
         alt={book.book_title || book.title} 
         className="h-44 w-full object-cover" 
       />
@@ -284,26 +220,14 @@ export default function PinjamanSaya() {
             const bookDetails = await getBookById(booking.book_id);
             console.log('📚 Book details for ID', booking.book_id, ':', bookDetails);
             
-            // Use cover mapping based on book title
-            const titleLower = bookDetails.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
-            console.log('📖 Matching book title:', bookDetails.title, '-> normalized:', titleLower);
-            let coverUrl = coverMapping[titleLower];
-            console.log('🖼️ Found cover in mapping:', !!coverUrl);
-            
-            // Fallback to API cover if no local cover found
-            if (!coverUrl) {
-              if (bookDetails.cover) {
-                coverUrl = bookDetails.cover;
-              } else {
-                coverUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
-              }
-            }
+            // Use cover from API or placeholder
+            const coverUrl = bookDetails.cover || bookDetails.cover_url || 'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"200\"%3E%3Crect width=\"150\" height=\"200\" fill=\"%23ddd\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" dominant-baseline=\"middle\" text-anchor=\"middle\" font-family=\"sans-serif\" font-size=\"14\" fill=\"%23999\"%3EBook Cover%3C/text%3E%3C/svg%3E';
             console.log('🖼️ Title:', bookDetails.title, '| Using cover:', coverUrl);
             
             return {
               ...booking,
               book_title: bookDetails.title || 'Unknown Title',
-              author_name: bookDetails.author?.name || 'Unknown Author',
+              author_name: typeof bookDetails.author === 'string' ? bookDetails.author : bookDetails.author?.name || 'Unknown Author',
               cover: coverUrl,
               cover_url: coverUrl,
             };
