@@ -165,7 +165,7 @@ const BookCard: React.FC<Book> = ({ id, cover, cover_url, title, author, author_
       onClick={() => navigate(`/detailbuku?id=${id}`)}
     >
       <img
-        src={getBookCoverUrl(cover, cover_url)}
+        src={getBookCoverUrl(cover, cover_url, title)}
         alt={title}
         className="h-52 w-full object-cover rounded-xl mb-2 group-hover:shadow-lg transition"
       />

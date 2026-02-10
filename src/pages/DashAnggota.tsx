@@ -196,7 +196,7 @@ const BookCard = ({ book }: { book: any }) => {
       onClick={() => navigate(`/detailbuku?id=${book.id}`)}
     >
       <img 
-        src={getBookCoverUrl(book.cover, book.cover_url)} 
+        src={getBookCoverUrl(book.cover, book.cover_url, book.title)} 
         alt={book.title} 
         className="h-52 w-full object-cover rounded-xl mb-3 group-hover:shadow-md transition" 
       />

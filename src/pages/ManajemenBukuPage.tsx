@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Download, Filter, Eye, Trash2, Upload } from "lucide-react";
+import { Search, Plus, Filter, Eye, Trash2, Upload, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ViewBookModal } from "../components/modals/view-book-modal";
 import { AddBookModal } from "../components/modals/add-book-modal";
 import { DeleteBookModal } from "../components/modals/delete-book-modal";
-import { getAllBooks, uploadBooksExcel } from "../lib/api";
+import { getAllBooks, uploadBooksExcel, getAllCategories } from "../lib/api";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -24,9 +24,17 @@ export function ManajemenBukuPage() {
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Filter states
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [availabilityFilter, setAvailabilityFilter] = useState<string>("");
+  const [categories, setCategories] = useState<any[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{success: number, failed: number, total: number} | null>(null);
 
   useEffect(() => {
     loadBooks();
+    loadCategories();
   }, []);
 
   const loadBooks = async () => {
@@ -44,15 +52,42 @@ export function ManajemenBukuPage() {
       setLoading(false);
     }
   };
+  
+  const loadCategories = async () => {
+    try {
+      const data = await getAllCategories();
+      const categoriesArray = data.categories || data;
+      setCategories(Array.isArray(categoriesArray) ? categoriesArray : []);
+    } catch (err: any) {
+      console.error("Failed to load categories:", err);
+    }
+  };
 
   const filteredBooks = useMemo(() => {
-    return books.filter(
-      (book) =>
-        (typeof book.author === 'string' ? book.author : book.author?.name || '')?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    return books.filter((book) => {
+      // Search filter
+      const searchMatch = !searchQuery || 
+        (typeof book.author === 'string' ? book.author : book.author?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         book.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        book.isbn?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery, books]);
+        book.isbn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        book.category?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Category filter
+      const categoryMatch = !categoryFilter || 
+        book.category_id?.toString() === categoryFilter ||
+        book.category?.id?.toString() === categoryFilter;
+      
+      // Availability filter
+      let availabilityMatch = true;
+      if (availabilityFilter === 'available') {
+        availabilityMatch = (book.num_book_available ?? 0) > 0;
+      } else if (availabilityFilter === 'unavailable') {
+        availabilityMatch = (book.num_book_available ?? 0) === 0;
+      }
+      
+      return searchMatch && categoryMatch && availabilityMatch;
+    });
+  }, [searchQuery, books, categoryFilter, availabilityFilter]);
 
   const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -184,7 +219,7 @@ export function ManajemenBukuPage() {
     return pages;
   };
 
-  const handleDeleteBook = (book: (typeof BOOKS_DATA)[0]) => {
+  const handleDeleteBook = (book: any) => {
     setSelectedBook(book);
     setDeleteModalOpen(true);
   };
@@ -206,9 +241,28 @@ export function ManajemenBukuPage() {
 
     try {
       setUploading(true);
+      setUploadResult(null);
       console.log('📤 Uploading Excel file:', file.name);
-      await uploadBooksExcel(file);
-      alert('Data buku berhasil diimport!');
+      const result = await uploadBooksExcel(file);
+      console.log('✅ Upload result:', result);
+      
+      // Parse result to show success/failure count
+      const successCount = result.success_count || result.successCount || 0;
+      const failedCount = result.failed_count || result.failedCount || 0;
+      const totalCount = result.total_count || result.totalCount || successCount + failedCount;
+      
+      setUploadResult({
+        success: successCount,
+        failed: failedCount,
+        total: totalCount
+      });
+      
+      if (failedCount > 0) {
+        alert(`Import selesai!\n✅ Berhasil: ${successCount}\n❌ Gagal: ${failedCount}\n📊 Total: ${totalCount}`);
+      } else {
+        alert(`Import berhasil! ${successCount} buku ditambahkan.`);
+      }
+      
       loadBooks(); // Refresh data
     } catch (err: any) {
       console.error('❌ Upload failed:', err);
@@ -224,13 +278,41 @@ export function ManajemenBukuPage() {
 
   return (
     <div className="space-y-6 p-8">
+      {/* Upload Result Banner */}
+      {uploadResult && (
+        <div className="bg-blue-50 border-2 border-blue-300 rounded-2xl p-4 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex gap-6">
+              <div>
+                <p className="text-sm text-gray-600 font-semibold">📊 Total</p>
+                <p className="text-2xl font-black text-blue-700">{uploadResult.total}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-semibold">✅ Berhasil</p>
+                <p className="text-2xl font-black text-green-600">{uploadResult.success}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-semibold">❌ Gagal</p>
+                <p className="text-2xl font-black text-red-600">{uploadResult.failed}</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setUploadResult(null)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Search and Action Bar */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139]">
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-4 items-center mb-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
-              placeholder="Cari buku..."
+              placeholder="Cari buku (judul, penulis, ISBN, kategori)..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -239,6 +321,13 @@ export function ManajemenBukuPage() {
               className="pl-10 bg-white border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
             />
           </div>
+          <Button 
+            onClick={() => setShowFilters(!showFilters)}
+            className="gap-2 text-[#BE4139] bg-white border-2 border-[#BE4139] hover:bg-[#BE4139] hover:text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold"
+          >
+            <Filter size={18} />
+            Filter
+          </Button>
           <Button 
             onClick={handleImportClick} 
             disabled={uploading}
@@ -259,6 +348,59 @@ export function ManajemenBukuPage() {
             Tambah Buku
           </Button>
         </div>
+        
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t-2 border-gray-200">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">📚 Kategori</label>
+              <select
+                value={categoryFilter}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
+              >
+                <option value="">Semua Kategori</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">📋 Ketersediaan</label>
+              <select
+                value={availabilityFilter}
+                onChange={(e) => {
+                  setAvailabilityFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
+              >
+                <option value="">Semua Status</option>
+                <option value="available">Tersedia</option>
+                <option value="unavailable">Tidak Tersedia</option>
+              </select>
+            </div>
+            {(categoryFilter || availabilityFilter) && (
+              <div className="col-span-full">
+                <Button
+                  onClick={() => {
+                    setCategoryFilter("");
+                    setAvailabilityFilter("");
+                    setCurrentPage(1);
+                  }}
+                  className="text-[#BE4139] hover:underline text-sm font-semibold"
+                >
+                  ✖️ Reset Filter
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Table */}

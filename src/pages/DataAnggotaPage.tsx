@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Search, Plus, Filter, Eye, Trash2, Upload } from "lucide-react";
+import { Search, Plus, Eye, Trash2, Upload, X } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ViewMemberModal } from "../components/modals/view-member-modal";
@@ -23,6 +23,7 @@ export function DataAnggotaPage() {
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadResult, setUploadResult] = useState<{success: number, failed: number, total: number} | null>(null);
 
   // Fetch data users dari backend
   useEffect(() => {
@@ -194,8 +195,27 @@ export function DataAnggotaPage() {
 
     try {
       setUploading(true);
-      await uploadUsersExcel(file);
-      alert('Data users berhasil diimpor dari Excel!');
+      setUploadResult(null);
+      const result = await uploadUsersExcel(file);
+      console.log('✅ Upload user result:', result);
+      
+      // Parse result to show success/failure count
+      const successCount = result.success_count || result.successCount || 0;
+      const failedCount = result.failed_count || result.failedCount || 0;
+      const totalCount = result.total_count || result.totalCount || successCount + failedCount;
+      
+      setUploadResult({
+        success: successCount,
+        failed: failedCount,
+        total: totalCount
+      });
+      
+      if (failedCount > 0) {
+        alert(`Import selesai!\n✅ Berhasil: ${successCount}\n❌ Gagal: ${failedCount}\n📊 Total: ${totalCount}`);
+      } else {
+        alert(`Import berhasil! ${successCount} pengguna ditambahkan.`);
+      }
+      
       await fetchUsers(); // Refresh data
       e.target.value = ''; // Reset input
     } catch (error: any) {
@@ -209,6 +229,34 @@ export function DataAnggotaPage() {
 
   return (
     <div className="space-y-6 p-8">
+      {/* Upload Result Banner */}
+      {uploadResult && (
+        <div className="bg-blue-50 border-2 border-blue-300 rounded-2xl p-4 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex gap-6">
+              <div>
+                <p className="text-sm text-gray-600 font-semibold">📊 Total</p>
+                <p className="text-2xl font-black text-blue-700">{uploadResult.total}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-semibold">✅ Berhasil</p>
+                <p className="text-2xl font-black text-green-600">{uploadResult.success}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-semibold">❌ Gagal</p>
+                <p className="text-2xl font-black text-red-600">{uploadResult.failed}</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setUploadResult(null)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Search and Action Bar */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139]">
         <div className="flex gap-4 items-center">

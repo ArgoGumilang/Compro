@@ -159,7 +159,7 @@ const BorrowedBookCard = ({ book }: { book: any }) => {
   return (
     <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
       <img 
-        src={getBookCoverUrl(book.cover, book.cover_url)} 
+        src={getBookCoverUrl(book.cover, book.cover_url, book.book_title || book.title)} 
         alt={book.book_title || book.title} 
         className="h-44 w-full object-cover" 
       />
