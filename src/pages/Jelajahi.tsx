@@ -1,32 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User, ChevronLeft } from "lucide-react";
+import { Search, User, ChevronLeft } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getAllBooks } from "../lib/api";
-import { enrichBooksWithCovers } from "../lib/bookCoverHelper";
+import { getBookCoverUrl } from "../lib/bookCoverHelper";
+import { Input } from "../components/ui/input";
+import logoSekolah from "../assets/logo-sekolah.png";
 /* ================= HEADER ================= */
 const Header = () => {
   const navigate = useNavigate();
-  const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-
-  const notifications = [
-    {
-      title: "Buku hampir jatuh tempo",
-      desc: "Buku Matematika Wajib harus dikembalikan besok",
-      time: "1 jam lalu",
-    },
-    {
-      title: "Peminjaman berhasil",
-      desc: "Kamu berhasil meminjam buku Fisika Dasar",
-      time: "2 hari lalu",
-    },
-    {
-      title: "Info Perpustakaan",
-      desc: "Jam operasional berubah selama ujian",
-      time: "1 minggu lalu",
-    },
-  ];
 
   const handleLogout = () => {
     setOpenProfile(false);
@@ -37,9 +20,12 @@ const Header = () => {
     <header className="bg-white border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
         {/* LEFT */}
-        <div className="flex items-center gap-3 font-bold text-sm">
-          <span className="text-[#BE4139]">SMA TELKOM</span>
-          <span className="text-gray-700">BANDUNG</span>
+        <div className="flex items-center gap-3">
+          <img
+            src={logoSekolah}
+            alt="Logo Sekolah"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         {/* CENTER */}
@@ -52,12 +38,6 @@ const Header = () => {
           <button onClick={() => navigate("/pinjamansaya")}>
             Pinjaman Saya
           </button>
-          <button 
-          className="font-semibold text-black"
-          onClick={() => navigate("/kategori")}>
-            Kategori
-          </button>
-
         </nav>
 
         {/* RIGHT */}
@@ -69,41 +49,11 @@ const Header = () => {
 
           <div className="flex items-center gap-4 relative">
             <button
-              onClick={() => {
-                setOpenNotif(!openNotif);
-                setOpenProfile(false);
-              }}
-            >
-              <Bell size={20} />
-            </button>
-
-            <button
-              onClick={() => {
-                setOpenProfile(!openProfile);
-                setOpenNotif(false);
-              }}
+              onClick={() => setOpenProfile(!openProfile)}
             >
               <User size={20} />
             </button>
           </div>
-
-          {openNotif && (
-            <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg">
-              <div className="px-4 py-3 font-semibold text-sm border-b">
-                Notifikasi
-              </div>
-              {notifications.map((n, i) => (
-                <div
-                  key={i}
-                  className="px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
-                >
-                  <p className="font-semibold text-sm">{n.title}</p>
-                  <p className="text-xs text-gray-500">{n.desc}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
-                </div>
-              ))}
-            </div>
-          )}
 
           {openProfile && (
             <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">
@@ -215,7 +165,7 @@ const BookCard: React.FC<Book> = ({ id, cover, cover_url, title, author, author_
       onClick={() => navigate(`/detailbuku?id=${id}`)}
     >
       <img
-        src={cover || cover_url || "https://via.placeholder.com/200x300?text=Book+Cover"}
+        src={cover || cover_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E"}
         alt={title}
         className="h-52 w-full object-cover rounded-xl mb-2 group-hover:shadow-lg transition"
       />
@@ -231,6 +181,8 @@ export default function Jelajahi() {
   const [currentPage, setCurrentPage] = useState(1);
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const itemsPerPage = 14;
 
   useEffect(() => {
@@ -243,17 +195,15 @@ export default function Jelajahi() {
       const response = await getAllBooks();
       const booksArray = response.books || response || [];
       
-      // Enrich books with covers from backend
-      const booksWithCovers = await enrichBooksWithCovers(Array.isArray(booksArray) ? booksArray : []);
-      
       // Convert to Book interface format
-      const formattedBooks = booksWithCovers.map((book: any) => ({
+      const formattedBooks = (Array.isArray(booksArray) ? booksArray : []).map((book: any) => ({
         id: book.id,
         cover: book.cover,
         cover_url: book.cover_url,
         title: book.title,
-        author: book.author?.name || book.author_name || book.author || 'Unknown',
-        author_name: book.author?.name || book.author_name
+        author: typeof book.author === 'string' ? book.author : (book.author?.name || book.author_name || book.author || 'Unknown'),
+        author_name: typeof book.author === 'string' ? book.author : (book.author?.name || book.author_name),
+        category: book.sub_category?.category?.name || book.category?.name || book.category || ''
       }));
       
       setBooks(formattedBooks);
@@ -266,12 +216,32 @@ export default function Jelajahi() {
     }
   };
 
-  const totalPages = Math.ceil(books.length / itemsPerPage);
+  // Filter books based on search and category
+  const filteredBooks = books.filter(book => {
+    const matchesSearch = searchQuery === "" || 
+      book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = categoryFilter === "" || 
+      (book as any).category?.toLowerCase().includes(categoryFilter.toLowerCase());
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  // Get unique categories for filter
+  const categories = Array.from(new Set(books.map(book => (book as any).category).filter(Boolean)));
+
+  const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentBooks = books.slice(
+  const currentBooks = filteredBooks.slice(
     startIndex,
     startIndex + itemsPerPage
   );
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, categoryFilter]);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -289,6 +259,35 @@ export default function Jelajahi() {
         <h1 className="text-2xl font-bold mb-6">
           Jelajahi Koleksi Buku
         </h1>
+
+        {/* Search and Filter */}
+        <div className="mb-6 space-y-4">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Cari judul atau penulis..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#BE4139]"
+            >
+              <option value="">Semua Kategori</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat as string}>{cat as string}</option>
+              ))}
+            </select>
+          </div>
+          {(searchQuery || categoryFilter) && (
+            <p className="text-sm text-gray-600">
+              Menampilkan {filteredBooks.length} dari {books.length} buku
+            </p>
+          )}
+        </div>
 
         {loading ? (
           <div className="text-center py-12">

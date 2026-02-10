@@ -1,19 +1,9 @@
 // API Configuration
 // src/lib/api.ts
 
-import { 
-  USE_DUMMY_DATA, 
-  DUMMY_BOOKS, 
-  DUMMY_USERS, 
-  DUMMY_BOOKING_HISTORIES, 
-  DUMMY_VISIT_HISTORIES,
-  DUMMY_CATEGORIES
-} from './dummyData';
-
 export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 console.log("🔗 API Base URL:", API_BASE_URL);
-console.log("🎭 Using Dummy Data:", USE_DUMMY_DATA);
 
 // Token Management
 export const TOKEN_KEY = "access_token";
@@ -268,10 +258,6 @@ export async function getCurrentUser() {
 
 // GET /users - Get all users
 export async function getAllUsers() {
-  if (USE_DUMMY_DATA) {
-    console.log("👥 Returning dummy users data");
-    return Promise.resolve({ users: DUMMY_USERS });
-  }
   return fetchWithCredentials("/users", {
     method: "GET",
   });
@@ -307,6 +293,29 @@ export async function deleteUser(id: string | number) {
   });
 }
 
+// POST /users/import-excel - Upload users via Excel
+export async function uploadUsersExcel(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const token = getAccessToken();
+
+  const res = await fetch(`${API_BASE_URL}/users/import-excel`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Gagal upload excel: ${text}`);
+  }
+
+  // biasanya backend balikin JSON
+  return res.json();
+}
+
 // ==================== ROLES API ====================
 
 // GET /roles
@@ -327,10 +336,7 @@ export async function getRoleById(id: string | number) {
 
 // GET /visit_hists
 export async function getAllVisitHists() {
-  if (USE_DUMMY_DATA) {
-    console.log("📊 Returning dummy visit histories data");
-    return Promise.resolve({ visit_hists: DUMMY_VISIT_HISTORIES });
-  }
+
   return fetchWithCredentials("/visit_hists", {
     method: "GET",
   });
@@ -355,10 +361,6 @@ export async function createVisitHist(data: any) {
 
 // GET /books
 export async function getAllBooks() {
-  if (USE_DUMMY_DATA) {
-    console.log("📚 Returning dummy books data");
-    return Promise.resolve({ books: DUMMY_BOOKS });
-  }
   return fetchWithCredentials("/books", {
     method: "GET",
   });
@@ -366,14 +368,6 @@ export async function getAllBooks() {
 
 // GET /books/{id}
 export async function getBookById(id: string | number) {
-  if (USE_DUMMY_DATA) {
-    console.log("📚 Returning dummy book by ID:", id);
-    const book = DUMMY_BOOKS.find(b => b.id === Number(id));
-    if (book) {
-      return Promise.resolve(book);
-    }
-    throw new Error("Book not found");
-  }
   return fetchWithCredentials(`/books/${id}`, {
     method: "GET",
   });
@@ -400,6 +394,41 @@ export async function deleteBook(id: string | number) {
   return fetchWithCredentials(`/books/${id}`, {
     method: "DELETE",
   });
+}
+
+// UPLOAD
+export async function uploadBooksExcel(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const token = getAccessToken();
+
+  const res = await fetch(`${API_BASE_URL}/books/import-excel`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Gagal upload excel buku: ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function importBooksExcel(formData: FormData) {
+  const res = await axios.post(
+    `${API_BASE_URL}/books/import`, 
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+  return res.data;
 }
 
 // ==================== UPLOAD BOOK COVER ====================
@@ -511,10 +540,7 @@ export async function deletePublisher(id: string | number) {
 
 // GET /categories
 export async function getAllCategories() {
-  if (USE_DUMMY_DATA) {
-    console.log("📂 Returning dummy categories data");
-    return Promise.resolve({ categories: DUMMY_CATEGORIES });
-  }
+
   return fetchWithCredentials("/categories", {
     method: "GET",
   });
@@ -593,10 +619,7 @@ export async function deleteSubCategory(id: string | number) {
 
 // GET /booking_histories
 export async function getAllBookingHistories() {
-  if (USE_DUMMY_DATA) {
-    console.log("📖 Returning dummy booking histories data");
-    return Promise.resolve({ booking_histories: DUMMY_BOOKING_HISTORIES });
-  }
+
   return fetchWithCredentials("/booking_histories", {
     method: "GET",
   });
@@ -604,14 +627,6 @@ export async function getAllBookingHistories() {
 
 // GET /booking_histories/{id}
 export async function getBookingHistoryById(id: string | number) {
-  if (USE_DUMMY_DATA) {
-    console.log("📖 Returning dummy booking history by ID:", id);
-    const history = DUMMY_BOOKING_HISTORIES.find(h => h.id === Number(id));
-    if (history) {
-      return Promise.resolve(history);
-    }
-    throw new Error("Booking history not found");
-  }
   return fetchWithCredentials(`/booking_histories/${id}`, {
     method: "GET",
   });
@@ -619,11 +634,7 @@ export async function getBookingHistoryById(id: string | number) {
 
 // GET /booking_histories/user/{user_id}
 export async function getBookingHistoriesByUser(userId: string | number) {
-  if (USE_DUMMY_DATA) {
-    console.log("📖 Returning dummy booking histories for user:", userId);
-    const histories = DUMMY_BOOKING_HISTORIES.filter(h => h.user_id === Number(userId));
-    return Promise.resolve({ booking_histories: histories });
-  }
+
   return fetchWithCredentials(`/booking_histories/user/${userId}`, {
     method: "GET",
   });

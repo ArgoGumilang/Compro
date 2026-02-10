@@ -86,61 +86,9 @@ const DetailBukuPage: React.FC = () => {
     fetchBookDetail();
   }, [bookId]);
 
-  /* ======================
-     DUMMY RATING DATA (nanti bisa diganti dengan API)
-  ====================== */
 
-  const ratingData = {
-    averageRating: 4.5,
-    totalReviews: 123,
-    ratings: [
-      { star: 5, percentage: 48 },
-      { star: 4, percentage: 32 },
-      { star: 3, percentage: 14 },
-      { star: 2, percentage: 4 },
-      { star: 1, percentage: 2 },
-    ],
-  };
 
-  const reviews = [
-    {
-      name: "Dinda D",
-      date: "10 Dec 2022",
-      rating: 4,
-      comment:
-        "Struktur materinya sistematis dan mudah dipahami. Cocok untuk persiapan UTBK.",
-    },
-    {
-      name: "Desfira A",
-      date: "04 Oct 2021",
-      rating: 4,
-      comment:
-        "Latihan soalnya bervariasi dan menantang. Sangat membantu siswa.",
-    },
-    {
-      name: "Argo Gumilang",
-      date: "26 Sept 2020",
-      rating: 4,
-      comment:
-        "Bahasanya jelas dan contoh soalnya relevan dengan kehidupan sehari-hari.",
-    },
-  ];
 
-  const renderStars = (rating: number) => (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star
-          key={s}
-          size={16}
-          className={
-            s <= rating
-              ? "fill-yellow-400 text-yellow-400"
-              : "text-gray-300"
-          }
-        />
-      ))}
-    </div>
-  );
 
   /* ======================
      UI
@@ -190,6 +138,7 @@ const DetailBukuPage: React.FC = () => {
 
   const handleSave = async () => {
     try {
+      setSaving(true);
       const payload = {
       ...formData,
       year_published: formData.year_published
@@ -202,10 +151,20 @@ const DetailBukuPage: React.FC = () => {
 
       await updateBook(bookData.id, payload);
 
-      setIsEditMode(false);s
-      fetchBooks(); // auto refresh list
-    } catch (err) {
-      console.error(err);
+      // Refresh data after successful update
+      const updatedBook = await getBookById(bookData.id.toString());
+      
+      setBookData(updatedBook);
+      setFormData(updatedBook);
+      setIsEditMode(false);
+      
+      // Show success message
+      alert('Perubahan berhasil disimpan!');
+    } catch (err: any) {
+      console.error('Failed to update book:', err);
+      alert(err.message || 'Gagal menyimpan perubahan');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -332,10 +291,7 @@ const DetailBukuPage: React.FC = () => {
 
                 <button
                   onClick={() => {
-                    setFormData((prev: any) => ({
-                      ...prev,
-                      location_id: bookData.location_id,
-                    }));
+                    setFormData(bookData); // Reset to original data
                     setIsEditMode(false);
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-gray-400 text-white rounded-xl hover:bg-gray-500"
@@ -355,11 +311,11 @@ const DetailBukuPage: React.FC = () => {
         <div className="xl:col-span-1">
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src={bookData.cover || bookData.cover_url || "https://via.placeholder.com/300x400?text=Book+Cover"}
+              src={bookData.cover || bookData.cover_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E"}
               alt="Cover"
               className="rounded-lg object-cover w-full aspect-[3/4]"
               onError={(e) => {
-                e.currentTarget.src = "https://via.placeholder.com/300x400?text=No+Cover";
+                e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E";
               }}
             />
           </div>
@@ -405,19 +361,19 @@ const DetailBukuPage: React.FC = () => {
                 "number"
               )}
 
-              {renderEditableLocation()}
-
               {renderEditableField(
                 "Penulis",
                 "author_name",
-                bookData.author?.name || "-"
+                typeof bookData.author === 'object' ? bookData.author?.name : bookData.author || "-"
               )}
 
               {renderEditableField(
                 "Publisher",
                 "publisher_name",
-                bookData.publisher?.name || "-"
+                typeof bookData.publisher === 'object' ? bookData.publisher?.name : bookData.publisher || "-"
               )}
+
+              {renderEditableLocation()}
 
             </div>
 
@@ -457,7 +413,7 @@ const DetailBukuPage: React.FC = () => {
                   alt="Denah Perpustakaan" 
                   className="rounded-lg border"
                   onError={(e) => {
-                    e.currentTarget.src = "https://via.placeholder.com/600x400?text=Denah+Tidak+Tersedia";
+                    e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Crect width='600' height='400' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='20' fill='%239ca3af'%3EDenah Tidak Tersedia%3C/text%3E%3C/svg%3E";
                   }}
                 />
                 
@@ -507,61 +463,7 @@ const DetailBukuPage: React.FC = () => {
             </div>
           )}
 
-          {/* RATINGS */}
-          <div className="bg-white rounded-xl border shadow p-6">
-            <h2 className="font-bold text-[#BE4139] mb-6">
-              Rating & Ulasan
-            </h2>
 
-            <div className="flex flex-col md:flex-row gap-8 mb-8">
-              <div className="text-center md:text-left">
-                <div className="text-5xl font-black text-[#BE4139]">
-                  {ratingData.averageRating}
-                </div>
-                {renderStars(Math.round(ratingData.averageRating))}
-                <p className="text-sm text-gray-500 mt-1">
-                  {ratingData.totalReviews} ulasan
-                </p>
-              </div>
-
-              <div className="flex-1 space-y-2">
-                {ratingData.ratings.map((r) => (
-                  <div key={r.star} className="flex items-center gap-3">
-                    <span className="w-4 text-sm">{r.star}</span>
-                    <div className="flex-1 bg-gray-200 h-2 rounded-full">
-                      <div
-                        className="bg-[#BE4139] h-full rounded-full"
-                        style={{ width: `${r.percentage}%` }}
-                      />
-                    </div>
-                    <span className="w-10 text-sm text-right">
-                      {r.percentage}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {reviews.map((r, i) => (
-                <div
-                  key={i}
-                  className="border rounded-lg p-4 bg-gray-50"
-                >
-                  <div className="flex justify-between mb-1">
-                    <p className="font-semibold">{r.name}</p>
-                    <span className="text-xs text-gray-500">
-                      {r.date}
-                    </span>
-                  </div>
-                  {renderStars(r.rating)}
-                  <p className="text-sm text-gray-600 mt-2">
-                    {r.comment}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

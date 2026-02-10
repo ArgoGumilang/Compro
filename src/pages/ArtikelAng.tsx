@@ -1,31 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User, ChevronDown, ChevronLeft } from "lucide-react";
+import { Search, User, ChevronDown, ChevronLeft } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
+import logoSekolah from "../assets/logo-sekolah.png";
 
 /* ================= HEADER ================= */
 const Header = () => {
   const navigate = useNavigate();
-  const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-
-  const notifications = [
-    {
-      title: "Buku hampir jatuh tempo",
-      desc: "Buku Matematika Wajib harus dikembalikan besok",
-      time: "1 jam lalu",
-    },
-    {
-      title: "Peminjaman berhasil",
-      desc: "Kamu berhasil meminjam buku Fisika Dasar",
-      time: "2 hari lalu",
-    },
-    {
-      title: "Info Perpustakaan",
-      desc: "Jam operasional berubah selama ujian",
-      time: "1 minggu lalu",
-    },
-  ];
 
   const handleLogout = () => {
     setOpenProfile(false);
@@ -36,9 +18,12 @@ const Header = () => {
     <header className="bg-white border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
         {/* LEFT */}
-        <div className="flex items-center gap-3 font-bold text-sm">
-          <span className="text-[#BE4139]">SMA TELKOM</span>
-          <span className="text-gray-700">BANDUNG</span>
+        <div className="flex items-center gap-3">
+          <img
+            src={logoSekolah}
+            alt="Logo Sekolah"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         {/* CENTER */}
@@ -55,9 +40,6 @@ const Header = () => {
           <button onClick={() => navigate("/kategori")}>
             Kategori
           </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
-          </button>
         </nav>
 
         {/* RIGHT */}
@@ -69,41 +51,11 @@ const Header = () => {
 
           <div className="flex items-center gap-4 relative">
             <button
-              onClick={() => {
-                setOpenNotif(!openNotif);
-                setOpenProfile(false);
-              }}
-            >
-              <Bell size={20} />
-            </button>
-
-            <button
-              onClick={() => {
-                setOpenProfile(!openProfile);
-                setOpenNotif(false);
-              }}
+              onClick={() => setOpenProfile(!openProfile)}
             >
               <User size={20} />
             </button>
           </div>
-
-          {openNotif && (
-            <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg">
-              <div className="px-4 py-3 font-semibold text-sm border-b">
-                Notifikasi
-              </div>
-              {notifications.map((n, i) => (
-                <div
-                  key={i}
-                  className="px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
-                >
-                  <p className="font-semibold text-sm">{n.title}</p>
-                  <p className="text-xs text-gray-500">{n.desc}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
-                </div>
-              ))}
-            </div>
-          )}
 
           {openProfile && (
             <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">

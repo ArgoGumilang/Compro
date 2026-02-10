@@ -1,33 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User, ChevronDown } from "lucide-react";
+import { Search, User, ChevronDown } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getAllBooks } from "../lib/api";
-import { enrichBooksWithCovers } from "../lib/bookCoverHelper";
+import { getBookCoverUrl } from "../lib/bookCoverHelper";
+import logoSekolah from "../assets/logo-sekolah.png";
 
 /* ================= HEADER ================= */
 const Header = () => {
   const navigate = useNavigate();
-  const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-
-  const notifications = [
-    {
-      title: "Buku hampir jatuh tempo",
-      desc: "Buku Matematika Wajib harus dikembalikan besok",
-      time: "1 jam lalu",
-    },
-    {
-      title: "Peminjaman berhasil",
-      desc: "Kamu berhasil meminjam buku Fisika Dasar",
-      time: "2 hari lalu",
-    },
-    {
-      title: "Info Perpustakaan",
-      desc: "Jam operasional berubah selama ujian",
-      time: "1 minggu lalu",
-    },
-  ];
 
   const handleLogout = () => {
     setOpenProfile(false);
@@ -38,9 +20,12 @@ const Header = () => {
     <header className="bg-white border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
         {/* LEFT */}
-        <div className="flex items-center gap-3 font-bold text-sm">
-          <span className="text-[#BE4139]">SMA TELKOM</span>
-          <span className="text-gray-700">BANDUNG</span>
+        <div className="flex items-center gap-3">
+          <img
+            src={logoSekolah}
+            alt="Logo Sekolah"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         {/* CENTER */}
@@ -54,10 +39,6 @@ const Header = () => {
           <button onClick={() => navigate("/pinjamansaya")}>
             Pinjaman Saya
           </button>
-          <button onClick={() => navigate("/kategori")}>
-            Kategori
-          </button>
-
         </nav>
 
         {/* RIGHT */}
@@ -69,41 +50,11 @@ const Header = () => {
 
           <div className="flex items-center gap-4 relative">
             <button
-              onClick={() => {
-                setOpenNotif(!openNotif);
-                setOpenProfile(false);
-              }}
-            >
-              <Bell size={20} />
-            </button>
-
-            <button
-              onClick={() => {
-                setOpenProfile(!openProfile);
-                setOpenNotif(false);
-              }}
+              onClick={() => setOpenProfile(!openProfile)}
             >
               <User size={20} />
             </button>
           </div>
-
-          {openNotif && (
-            <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg">
-              <div className="px-4 py-3 font-semibold text-sm border-b">
-                Notifikasi
-              </div>
-              {notifications.map((n, i) => (
-                <div
-                  key={i}
-                  className="px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
-                >
-                  <p className="font-semibold text-sm">{n.title}</p>
-                  <p className="text-xs text-gray-500">{n.desc}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
-                </div>
-              ))}
-            </div>
-          )}
 
           {openProfile && (
             <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">
@@ -198,7 +149,12 @@ const Footer = () => (
 
 /* ================= HERO ================= */
 const Hero: React.FC = () => {
-  const navigate = useNavigate(); // <-- di sini
+  const scrollToRecommendations = () => {
+    const element = document.getElementById('recommendations-section');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   return (
     <section
@@ -219,7 +175,7 @@ const Hero: React.FC = () => {
       </p>
 
       <button
-        onClick={() => navigate("/kategori")}
+        onClick={scrollToRecommendations}
         className="mt-8 bg-[#BE4139] text-white px-8 py-3 rounded-xl text-sm
                   shadow-[0_10px_30px_rgba(0,0,0,0.7)]
                   hover:shadow-[0_14px_40px_rgba(0,0,0,0.85)]
@@ -240,12 +196,12 @@ const BookCard = ({ book }: { book: any }) => {
       onClick={() => navigate(`/detailbuku?id=${book.id}`)}
     >
       <img 
-        src={book.cover || book.cover_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E'} 
+        src={book.cover || book.cover_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E"} 
         alt={book.title} 
         className="h-52 w-full object-cover rounded-xl mb-3 group-hover:shadow-md transition" 
       />
       <p className="font-semibold text-sm">{book.title}</p>
-      <p className="text-xs text-gray-500">{book.author_name || book.author?.name || book.author || 'Unknown Author'}</p>
+      <p className="text-xs text-gray-500">{typeof book.author === 'string' ? book.author : (book.author_name || book.author?.name || book.author || 'Unknown Author')}</p>
     </div>
   );
 };
@@ -281,13 +237,23 @@ export default function DashAnggota() {
       setLoading(true);
       const response = await getAllBooks();
       const booksArray = response.books || response || [];
-      // Limit to 5 books for recommendations
-      const limitedBooks = Array.isArray(booksArray) ? booksArray.slice(0, 5) : [];
-      // Enrich with covers from backend
-      const booksWithCovers = await enrichBooksWithCovers(limitedBooks);
-      setBooks(booksWithCovers);
-    } catch (error) {
-      console.error('❌ Failed to fetch books:', error);
+      // Limit to 15 books for recommendations
+      const limitedBooks = Array.isArray(booksArray) 
+        ? booksArray.slice(0, 15).map(book => {
+            // Use cover from API or placeholder
+            const coverUrl = book.cover || book.cover_url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="150" height="200"%3E%3Crect width="150" height="200" fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%23999"%3EBook Cover%3C/text%3E%3C/svg%3E';
+            
+            return {
+              ...book,
+              cover: coverUrl,
+              cover_url: coverUrl
+            };
+          })
+        : [];
+      setBooks(limitedBooks);
+      console.log("📚 Loaded books for recommendations:", limitedBooks.length);
+    } catch (err) {
+      console.error("❌ Failed to load books:", err);
       setBooks([]);
     } finally {
       setLoading(false);
@@ -306,7 +272,7 @@ export default function DashAnggota() {
       <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-16">
         <Hero />
 
-        <section>
+        <section id="recommendations-section">
           <h2 className="font-bold text-lg">Rekomendasi Untukmu</h2>
           <p className="text-sm text-gray-500 mb-6">
             Kami menyarankan buku ini karena aktivitas membacamu!

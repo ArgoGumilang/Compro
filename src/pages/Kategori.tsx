@@ -1,32 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User } from "lucide-react";
+import { Search, User } from "lucide-react";
 import { FaXTwitter, FaInstagram, FaFacebook } from "react-icons/fa6";
 import { getAllCategories } from "../lib/api";
+import logoSekolah from "../assets/logo-sekolah.png";
 
 /* ================= HEADER ================= */
-const Header = () => {
+const Header = ({ searchQuery, setSearchQuery }: { searchQuery: string; setSearchQuery: (q: string) => void }) => {
   const navigate = useNavigate();
-  const [openNotif, setOpenNotif] = useState(false);
   const [openProfile, setOpenProfile] = useState(false);
-
-  const notifications = [
-    {
-      title: "Buku hampir jatuh tempo",
-      desc: "Buku Matematika Wajib harus dikembalikan besok",
-      time: "1 jam lalu",
-    },
-    {
-      title: "Peminjaman berhasil",
-      desc: "Kamu berhasil meminjam buku Fisika Dasar",
-      time: "2 hari lalu",
-    },
-    {
-      title: "Info Perpustakaan",
-      desc: "Jam operasional berubah selama ujian",
-      time: "1 minggu lalu",
-    },
-  ];
 
   const handleLogout = () => {
     setOpenProfile(false);
@@ -36,10 +18,13 @@ const Header = () => {
   return (
     <header className="bg-white border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto h-16 px-6 flex items-center justify-between">
-        {/* LEFT */}
-        <div className="flex items-center gap-3 font-bold text-sm">
-          <span className="text-[#BE4139]">SMA TELKOM</span>
-          <span className="text-gray-700">BANDUNG</span>
+        {/* LEFT - Logo */}
+        <div className="flex items-center gap-3">
+          <img
+            src={logoSekolah}
+            alt="Logo Sekolah"
+            className="h-10 w-auto object-contain"
+          />
         </div>
 
         {/* CENTER */}
@@ -57,55 +42,27 @@ const Header = () => {
           onClick={() => navigate("/kategori")}>
             Kategori
           </button>
-          <button onClick={() => navigate("/forum")}>
-            Forum
-          </button>
         </nav>
 
         {/* RIGHT */}
         <div className="flex items-center gap-4 relative">
           <div className="hidden md:flex items-center border rounded-lg px-2 py-1 text-sm">
             <Search size={16} className="text-gray-400" />
-            <input placeholder="Search" className="outline-none px-2 w-32" />
+            <input 
+              placeholder="Search" 
+              className="outline-none px-2 w-32"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
 
           <div className="flex items-center gap-4 relative">
             <button
-              onClick={() => {
-                setOpenNotif(!openNotif);
-                setOpenProfile(false);
-              }}
-            >
-              <Bell size={20} />
-            </button>
-
-            <button
-              onClick={() => {
-                setOpenProfile(!openProfile);
-                setOpenNotif(false);
-              }}
+              onClick={() => setOpenProfile(!openProfile)}
             >
               <User size={20} />
             </button>
           </div>
-
-          {openNotif && (
-            <div className="absolute right-0 top-12 w-80 bg-white border rounded-xl shadow-lg">
-              <div className="px-4 py-3 font-semibold text-sm border-b">
-                Notifikasi
-              </div>
-              {notifications.map((n, i) => (
-                <div
-                  key={i}
-                  className="px-4 py-3 hover:bg-gray-100 border-b last:border-b-0"
-                >
-                  <p className="font-semibold text-sm">{n.title}</p>
-                  <p className="text-xs text-gray-500">{n.desc}</p>
-                  <p className="text-[10px] text-gray-400 mt-1">{n.time}</p>
-                </div>
-              ))}
-            </div>
-          )}
 
           {openProfile && (
             <div className="absolute right-0 top-12 w-40 bg-white border rounded-xl shadow-md">
@@ -231,6 +188,7 @@ export default function KategoriPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     loadCategories();
@@ -288,10 +246,15 @@ export default function KategoriPage() {
     { genre: "Juz Amma", subtitle: "Bagian Al-Qur’an Juz Amma", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_i1i5HgKMOEpzDvkq-YJIYQ6HN7EF2vielA&s" },
     { genre: "Alkitab", subtitle: "Kitab suci Alkitab", image: "https://warungsatekamu.org/wp-content/uploads/2018/08/lebih-efektif-membaca-alkitab-low.jpg" },
   ];
+  
+  // Filter categories by search query
+  const filteredCategories = displayCategories.filter((item: any) =>
+    (item.name || item.genre).toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Header />
+      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       <main className="pt-16 pb-8 max-w-7xl mx-auto px-6 space-y-12">
         <section>
@@ -311,14 +274,20 @@ export default function KategoriPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {displayCategories.map((item: any, i: number) => (
-                <GenreCard 
-                  key={item.id || i} 
-                  genre={item.name || item.genre}
-                  subtitle={item.description || item.subtitle || `Koleksi ${item.name || item.genre}`}
-                  image={item.image_url || item.image || "https://via.placeholder.com/400x300?text=No+Image"}
-                />
-              ))}
+              {filteredCategories.length > 0 ? (
+                filteredCategories.map((item: any, i: number) => (
+                  <GenreCard 
+                    key={item.id || i} 
+                    genre={item.name || item.genre}
+                    subtitle={item.description || item.subtitle || `Koleksi ${item.name || item.genre}`}
+                    image={item.image_url || item.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Image%3C/text%3E%3C/svg%3E"}
+                  />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-12 text-gray-600">
+                  Tidak ada kategori yang sesuai dengan pencarian
+                </div>
+              )}
             </div>
           )}
         </section>

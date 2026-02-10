@@ -1,13 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Download, Filter, Eye, Trash2, Pencil } from "lucide-react";
+import { Search, Plus, Download, Filter, Eye, Trash2, Pencil, Upload } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ViewBookModal } from "../components/modals/view-book-modal";
 import { AddBookModal } from "../components/modals/add-book-modal";
 import { DeleteBookModal } from "../components/modals/delete-book-modal";
-import { getAllBooks } from "../lib/api";
-import { enrichBooksWithCovers } from "../lib/bookCoverHelper";
+import { getAllBooks, uploadBooksExcel } from "../lib/api";
+import { enrichBooksWithCovers } from "../lib/bookCoverHelper.ts";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -23,6 +24,9 @@ export function ManajemenBukuPage() {
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadBooks();
@@ -189,29 +193,72 @@ export function ManajemenBukuPage() {
     setDeleteModalOpen(true);
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      await uploadBooksExcel(file);
+      alert("✅ Import buku berhasil!");
+      await loadBooks(); // refresh tabel
+    } catch (err: any) {
+      alert("❌ Gagal import: " + err.message);
+    } finally {
+      setUploading(false);
+      e.target.value = ""; // reset input
+    }
+  };
+
   return (
     <div className="space-y-6 p-8">
       {/* Search and Action Bar */}
       <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139] flex gap-4 items-center">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
-            <Input
-              placeholder="Cari buku..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="pl-10 bg-white border-2 border-gray-300 rounded-xl focus:border-[#BE4139] transition-all duration-300"
-            />
-          </div>
-          <Button onClick={() => setAddModalOpen(true)} className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold">
-            <Plus size={18} />
-            Tambah Buku
-          </Button>
-        <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530]">
-          <Filter size={18}/> Filter
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
+          <Input
+            placeholder="Cari buku..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="pl-10 bg-white border-2 border-gray-300 rounded-xl focus:border-[#BE4139]"
+          />
+        </div>
+
+        <Button
+          onClick={handleImportClick}
+          disabled={uploading}
+          className="gap-2 text-white bg-green-600 hover:bg-green-700 rounded-xl font-semibold"
+        >
+          <Download size={18} />
+          {uploading ? "Mengimpor..." : "Import Excel"}
         </Button>
+
+        <Button
+          onClick={() => setAddModalOpen(true)}
+          className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl font-semibold"
+        >
+          <Plus size={18} />
+          Tambah Buku
+        </Button>
+
+        <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl">
+          <Filter size={18} /> Filter
+        </Button>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleFileChange}
+          className="hidden"
+        />
       </div>
 
       {/* Table */}

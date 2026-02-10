@@ -101,56 +101,58 @@ const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <div className="mb-6">
-            <label className="block text-sm font-semibold mb-2">
-              Username / NIS
-            </label>
-            <input
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#BE4139]"
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="text-sm font-semibold mb-2">
-              Password
-            </label>
-
-            <div className="relative">
+          <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+            <div className="mb-6">
+              <label className="block text-sm font-semibold mb-2">
+                Username / NIS
+              </label>
               <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border rounded-lg pr-12 focus:ring-2 focus:ring-[#BE4139]"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#BE4139]"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-500"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
             </div>
-          </div>
 
-          <div className="flex items-center mb-8">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={() => setRememberMe(!rememberMe)}
-              className="mr-2 accent-[#BE4139]"
-            />
-            <span className="text-sm">Keep me logged in</span>
-          </div>
+            <div className="mb-4">
+              <label className="text-sm font-semibold mb-2">
+                Password
+              </label>
 
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full bg-[#BE4139] hover:bg-[#A03A2F] text-white py-3 rounded-lg font-semibold disabled:opacity-60"
-          >
-            {loading ? "Signing in..." : "Sign in"}
-          </button>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 border rounded-lg pr-12 focus:ring-2 focus:ring-[#BE4139]"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-3 text-gray-500"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center mb-8">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
+                className="mr-2 accent-[#BE4139]"
+              />
+              <span className="text-sm">Keep me logged in</span>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#BE4139] hover:bg-[#A03A2F] text-white py-3 rounded-lg font-semibold disabled:opacity-60"
+            >
+              {loading ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
         </div>
       </div>
 
