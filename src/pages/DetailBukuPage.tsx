@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ChevronLeft, Star } from "lucide-react";
+import { ChevronLeft, Star, Pencil, Save, X } from "lucide-react";
 import { getBookById } from "../lib/api";
 import sadCover from "../assets/covers/sad.jpg";
 import ayahkuCover from "../assets/covers/ayahkubukanpembohong.jpg";
@@ -55,7 +55,11 @@ const DetailBukuPage: React.FC = () => {
         // Apply cover mapping
         const titleLower = response.title?.toLowerCase().trim().replace(/\s+/g, ' ') || '';
         console.log('📖 Matching book title:', response.title, '-> normalized:', titleLower);
-        let coverUrl = coverMapping[titleLower];
+        const matchedKey = Object.keys(coverMapping).find(key =>
+          titleLower.includes(key)
+        );
+
+        let coverUrl = matchedKey ? coverMapping[matchedKey] : response.cover;
         console.log('🖼️ Found cover in mapping:', !!coverUrl);
         
         if (!coverUrl) {

@@ -192,8 +192,7 @@ export function ManajemenBukuPage() {
   return (
     <div className="space-y-6 p-8">
       {/* Search and Action Bar */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139]">
-        <div className="flex gap-4 items-center">
+      <div className="bg-white rounded-2xl p-6 shadow-lg border-2 border-[#BE4139] flex gap-4 items-center">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 text-[#BE4139]" size={20} />
             <Input
@@ -210,7 +209,9 @@ export function ManajemenBukuPage() {
             <Plus size={18} />
             Tambah Buku
           </Button>
-        </div>
+        <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530]">
+          <Filter size={18}/> Filter
+        </Button>
       </div>
 
       {/* Table */}

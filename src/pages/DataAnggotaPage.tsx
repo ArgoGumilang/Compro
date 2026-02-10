@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Search, Plus, Eye, Trash2, Pencil } from "lucide-react";
+import { Search, Filter, Plus, Eye, Trash2, Pencil } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ViewMemberModal } from "../components/modals/view-member-modal";
@@ -17,6 +17,7 @@ interface Member {
   email?: string;
   role_id?: number;
   role?: { id: number; name: string };
+  tgl_terdaftar: Date | null;
 }
 
 export function DataAnggotaPage() {
@@ -49,9 +50,9 @@ export function DataAnggotaPage() {
       setError(err.message || "Gagal mengambil data users.");
       // Dummy data development
       setAnggotaData([
-        { id: 1, username: "admin", full_name: "Administrator", email: "admin@example.com", role_id: 1 },
-        { id: 2, username: "user1", full_name: "User Satu", email: "user1@example.com", role_id: 2 },
-        { id: 3, username: "user2", full_name: "User Dua", email: "user2@example.com", role_id: 2 },
+        { id: 1, username: "admin", full_name: "Administrator", email: "admin@example.com", role_id: 1, tgl_terdaftar: new Date() },
+        { id: 2, username: "user1", full_name: "User Satu", email: "user1@example.com", role_id: 2, tgl_terdaftar: new Date("2025-01-01") },
+        { id: 3, username: "user2", full_name: "User Dua", email: "user2@example.com", role_id: 2, tgl_terdaftar: new Date("2025-02-01") },
       ]);
     } finally {
       setLoading(false);
@@ -185,6 +186,9 @@ export function DataAnggotaPage() {
         <Button onClick={() => setAddModalOpen(true)} className="gap-2 text-white bg-[#BE4139] hover:bg-[#9e3530] rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-semibold">
           <Plus size={18} /> Tambah Pengguna
         </Button>
+        <Button variant="outline" className="gap-2 border-2 border-[#BE4139] bg-white rounded-xl hover:bg-gray-50 hover:border-[#9e3530]">
+          <Filter size={18}/> Filter
+        </Button>
       </div>
 
       {/* Table */}
@@ -211,6 +215,7 @@ export function DataAnggotaPage() {
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Nama Lengkap</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Email</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Role</th>
+                  <th className="px-6 py-4 text-left text-sm font-black text-white">Tanggal Terdaftar</th>
                   <th className="px-6 py-4 text-left text-sm font-black text-white">Aksi</th>
                 </tr>
               </thead>
@@ -225,6 +230,15 @@ export function DataAnggotaPage() {
                       <span className={`px-3 py-1 rounded-xl text-xs font-bold shadow-sm ${getRoleBadge(item.role, item.role_id)}`}>
                         {item.role?.name || (item.role_id === 1 ? 'Admin' : item.role_id === 2 ? 'Guru' : 'Siswa')}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
+                      {item.tgl_terdaftar
+                        ? item.tgl_terdaftar.toLocaleDateString("id-ID", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })
+                        : "-"}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <div className="flex gap-2">
