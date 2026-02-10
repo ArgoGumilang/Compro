@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, Pencil, Save, X } from "lucide-react";
 import { getBookById, updateBook } from "../lib/api";
-import { getBookCoverUrl, getImageUrl } from "../lib/bookCoverHelper";
 
 const DetailBukuPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,15 +35,7 @@ const DetailBukuPage: React.FC = () => {
         const response = await getBookById(bookId);
         console.log("📚 Book detail:", response);
         
-        // Use helper to convert cover path
-        const coverUrl = getImageUrl(response.cover || response.cover_url) || getBookCoverUrl(null, null, response.title);
-        console.log('🖼️ Using cover URL:', coverUrl);
-        
-        setBookData({
-          ...response,
-          cover: coverUrl,
-          cover_url: coverUrl
-        });
+        setBookData(response);
         setFormData(response);
       } catch (err: any) {
         console.error("❌ Failed to fetch book:", err);
@@ -125,14 +116,7 @@ const DetailBukuPage: React.FC = () => {
       // Refresh data after successful update
       const updatedBook = await getBookById(bookData.id.toString());
       
-      // Use helper to convert cover path
-      const coverUrl = getImageUrl(updatedBook.cover || updatedBook.cover_url) || getBookCoverUrl(null, null, updatedBook.title);
-      
-      setBookData({
-        ...updatedBook,
-        cover: coverUrl,
-        cover_url: coverUrl
-      });
+      setBookData(updatedBook);
       setFormData(updatedBook);
       setIsEditMode(false);
       
@@ -289,11 +273,11 @@ const DetailBukuPage: React.FC = () => {
         <div className="xl:col-span-1">
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src={getBookCoverUrl(bookData.cover, bookData.cover_url, bookData.title)}
+              src={bookData.cover || bookData.cover_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E"}
               alt="Cover"
               className="rounded-lg object-cover w-full aspect-[3/4]"
               onError={(e) => {
-                e.currentTarget.src = getBookCoverUrl(null, null, bookData.title);
+                e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E";
               }}
             />
           </div>

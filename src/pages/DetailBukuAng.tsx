@@ -301,11 +301,11 @@ const DetailBukuPage: React.FC = () => {
           {/* COVER */}
           <div className="bg-white rounded-xl border shadow p-4">
             <img
-              src={getBookCoverUrl(bookData.cover, bookData.cover_url, bookData.title)}
+              src={bookData.cover || bookData.cover_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E"}
               alt={bookData.title}
               className="rounded-lg w-full aspect-[3/4] object-cover"
               onError={(e) => {
-                e.currentTarget.src = getBookCoverUrl(null, null, bookData.title);
+                e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E";
               }}
             />
           </div>

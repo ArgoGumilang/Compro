@@ -159,7 +159,7 @@ const BorrowedBookCard = ({ book }: { book: any }) => {
   return (
     <div className="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
       <img 
-        src={getBookCoverUrl(book.cover, book.cover_url, book.book_title || book.title)} 
+        src={book.cover || book.cover_url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='18' fill='%239ca3af'%3ENo Cover%3C/text%3E%3C/svg%3E"} 
         alt={book.book_title || book.title} 
         className="h-44 w-full object-cover" 
       />
